@@ -37,7 +37,6 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -117,14 +116,14 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
   .topbar-right { display: flex; align-items: center; gap: 14px; }
   
-  /* Upload button */
-  .upload-btn {
+  /* Google Drive sync button */
+  .btn-sync-drive {
     display: flex; align-items: center; gap: 7px;
     padding: 6px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 800;
     background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold);
     color: #fbbf24; cursor: pointer; transition: all 0.2s; font-family: inherit;
   }
-  .upload-btn:hover {
+  .btn-sync-drive:hover {
     background: var(--gold); color: #000000;
   }
 
@@ -581,8 +580,8 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     .topbar-date { display: none; }
     .sync-pill { padding: 5px 10px; font-size: 11px; }
     .sync-pill span#syncText { display: none; }
-    .upload-btn { padding: 5px 10px; font-size: 11px; }
-    .upload-btn span.upload-btn-text { display: none; }
+    .btn-sync-drive { padding: 5px 10px; font-size: 11px; }
+    .btn-sync-drive span.sync-btn-text { display: none; }
     #back-btn { padding: 6px 12px; font-size: 12px; }
     #back-btn span.back-text-full { display: none; }
 
@@ -735,15 +734,6 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     }
 
     /* TABLES ON MOBILE */
-    .upload-dropzone {
-    border: 2px dashed var(--gold); border-radius: 14px;
-    background: var(--surface-alt); padding: 32px 20px; text-align: center;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .upload-dropzone:hover, .upload-dropzone.dragover {
-    background: var(--gold-light); border-color: var(--gold-dark);
-    transform: scale(1.01);
-  }
 
   .mobile-table-hint { display: flex; }
     .card {
@@ -843,16 +833,16 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     </div>
   </div>
   <div class="topbar-right">
-    <!-- Upload Rep Excel Sheet Button -->
-    <button class="upload-btn" onclick="openUploadModal()" title="Upload Representative Excel Sheet (.xlsx)">
-      <span>📤</span>
-      <span class="upload-btn-text">Upload Sheet</span>
+    <!-- Google Drive Sync Button -->
+    <button class="btn-sync-drive" onclick="syncWithSheets(true)" title="Scan and sync all representative sales reports from your Google Drive folder">
+      <span>🔄</span>
+      <span class="sync-btn-text">Sync Google Drive</span>
     </button>
 
-    <!-- Google Sheets Live Sync Pill -->
-    <div class="sync-pill" onclick="openSheetsModal()" title="Google Sheets Backend Status">
+    <!-- Google Drive Live Sync Pill -->
+    <div class="sync-pill" onclick="openSheetsModal()" title="Google Drive Cloud Connection Settings">
       <span class="sync-dot" id="syncDot"></span>
-      <span id="syncText">Sheets Backend</span>
+      <span id="syncText">Google Drive Status</span>
       <span style="font-size:12px;opacity:0.6;">⚙️</span>
     </div>
     
@@ -874,12 +864,12 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         <div class="title-badge-icon">Δ</div>
         <div>
           <h1>EVA Insulin — Delta Team Performance (YTD 2026)</h1>
-          <div class="subtitle">Live cloud-connected sales tracking, quota achievement, and deficit monitoring across all representatives</div>
+          <div class="subtitle">Live Google Drive-connected sales tracking, quota achievement, and deficit monitoring across all representatives</div>
         </div>
       </div>
       <div>
         <button class="btn" style="background:var(--surface);border:1px solid var(--border-dark);color:var(--text-primary);padding:8px 18px;font-size:12.5px;" onclick="syncWithSheets(true)">
-          🔄 Refresh Live Sheets
+          🔄 Scan & Sync Google Drive
         </button>
       </div>
     </div>
@@ -969,35 +959,32 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
 </main>
 
-<!-- GOOGLE SHEETS SETUP MODAL -->
+<!-- GOOGLE DRIVE & SHEETS CLOUD SETUP MODAL -->
 <div class="modal-overlay" id="sheetsModal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:580px;">
     <div class="modal-header">
-      <h3><span>📊</span> Google Sheets Cloud Backend Connection</h3>
+      <h3><span>📁</span> Google Drive Folder & Live Sync Setup</h3>
       <button class="modal-close" onclick="closeSheetsModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="modal-step">
-        <div class="modal-step-title"><span>1️⃣</span> Google Sheet Database</div>
+        <div class="modal-step-title"><span>1️⃣</span> Create Your Google Drive Sales Folder</div>
         <div class="modal-step-text">
-          Upload <code>Delta_Team_Database.xlsx</code> to your Google Drive and open it as a Google Sheet.
-          <div style="margin-top:10px;">
-            <a href="Delta_Team_Database.xlsx" download class="btn" style="background:#ffffff;border:1px solid var(--border-dark);color:var(--text-primary);padding:6px 14px;font-size:12px;text-decoration:none;display:inline-flex;">
-              📥 Download Latest Delta_Team_Database.xlsx
-            </a>
-          </div>
+          Create a folder on your Google Drive named <code>Delta Team Sales</code> (or any name), with subfolders for each representative (e.g. <code>Hady</code>, <code>Amany</code>, <code>Sabah</code>, etc.), and drop your quarterly <code>.xlsx</code> sales reports into their respective folders.
         </div>
       </div>
       <div class="modal-step">
-        <div class="modal-step-title"><span>2️⃣</span> Deploy Google Apps Script</div>
+        <div class="modal-step-title"><span>2️⃣</span> Deploy Google Apps Script Backend</div>
         <div class="modal-step-text">
-          In your Google Sheet, click <strong>Extensions &rarr; Apps Script</strong>, paste the backend code from <code>GoogleAppsScript_Code.gs</code>, click <strong>Deploy &rarr; New Deployment</strong> (Select <strong>Web app</strong>, Execute as: <strong>Me</strong>, Access: <strong>Anyone</strong>).
+          Open your Google Sheet, click <strong>Extensions &rarr; Apps Script</strong>, paste the code from <code>GoogleAppsScript_Code.gs</code>.<br>
+          <em>(Optional: paste your Google Drive Folder ID into <code>DRIVE_FOLDER_ID</code>, or leave empty if the folder is named "Delta Team Sales")</em>.<br>
+          Click <strong>Deploy &rarr; New Deployment &rarr; Web app</strong> (Execute as: <strong>Me</strong>, Access: <strong>Anyone</strong>).
         </div>
       </div>
       <div class="modal-step">
         <div class="modal-step-title"><span>3️⃣</span> Paste Your Web App URL Here</div>
         <div class="modal-step-text">
-          Paste the deployed Web App URL below to activate 2-way live sync with your Google Sheet:
+          Paste the deployed Web App URL below to activate automatic 2-way live sync with your Google Drive folder:
         </div>
         <input type="url" id="sheetsUrlInput" class="url-input-box" placeholder="https://script.google.com/macros/s/.../exec">
       </div>
@@ -1005,71 +992,6 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     <div class="modal-footer">
       <button class="btn" style="background:#e2e8f0;color:var(--text-primary);" onclick="closeSheetsModal()">Cancel</button>
       <button class="btn btn-save" onclick="saveSheetsUrl()">💾 Connect & Sync Now</button>
-    </div>
-  </div>
-</div>
-
-<!-- UPLOAD REPRESENTATIVE EXCEL SHEET MODAL -->
-<div class="modal-overlay" id="uploadModal">
-  <div class="modal-box" style="max-width:680px;">
-    <div class="modal-header">
-      <h3><span>📤</span> Upload Representative Sales Sheet (.xlsx)</h3>
-      <button class="modal-close" onclick="closeUploadModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div id="uploadDropzone" class="upload-dropzone" onclick="document.getElementById('excelFileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)">
-        <div style="font-size:38px;margin-bottom:8px;">📊</div>
-        <div style="font-size:15px;font-weight:800;color:var(--text-primary);">Click to Select or Drag & Drop Excel File</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Supports official EVA Pharma quarterly reports (.xlsx)</div>
-        <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display:none;" onchange="handleExcelFileSelect(event)">
-      </div>
-
-      <!-- Preview container (revealed once file is chosen) -->
-      <div id="uploadPreviewSection" style="display:none;margin-top:18px;">
-        <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:180px;">
-            <label style="font-size:11.5px;font-weight:800;color:var(--text-secondary);text-transform:uppercase;">Representative:</label>
-            <select id="uploadRepSelect" class="chart-select" style="width:100%;min-height:38px;margin-top:4px;font-size:13px;"></select>
-          </div>
-          <div style="flex:1;min-width:140px;">
-            <label style="font-size:11.5px;font-weight:800;color:var(--text-secondary);text-transform:uppercase;">Quarter Period:</label>
-            <select id="uploadQuarterSelect" class="chart-select" style="width:100%;min-height:38px;margin-top:4px;font-size:13px;">
-              <option value="Q1">Quarter 1 (Q1)</option>
-              <option value="Q2">Quarter 2 (Q2)</option>
-              <option value="Q3">Quarter 3 (Q3)</option>
-              <option value="Q4">Quarter 4 (Q4)</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="font-size:13px;font-weight:800;color:var(--text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-          <span>📋</span> Extracted Products Preview:
-        </div>
-        <div class="table-scroll" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;">
-          <table class="data-table" style="min-width:580px;font-size:12px;" id="uploadPreviewTable">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Sales Units</th>
-                <th>Target Units</th>
-                <th>Sales Value</th>
-                <th>Target Value</th>
-                <th>Ratio %</th>
-              </tr>
-            </thead>
-            <tbody id="uploadPreviewTableBody"></tbody>
-          </table>
-        </div>
-        <div id="uploadStatusNotice" style="font-size:12px;font-weight:700;color:var(--green-text);background:var(--green-bg);padding:8px 12px;border-radius:6px;border:1px solid var(--green-border);">
-          ✅ Valid EVA Insulin quarterly report verified successfully!
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:#e2e8f0;color:var(--text-primary);" onclick="closeUploadModal()">Cancel</button>
-      <button class="btn btn-save" id="uploadConfirmBtn" style="display:none;" onclick="confirmAndApplyUploadedSheet()">
-        💾 Save & Apply to Dashboard
-      </button>
     </div>
   </div>
 </div>
@@ -1113,26 +1035,28 @@ function updateSyncPillStatus(status, text) {
 
   if (status === 'online') {
     dot.className = 'sync-dot online';
-    txt.textContent = text || 'Live Sheets: Connected';
+    txt.textContent = text || 'Google Drive: Live Sync';
   } else if (status === 'loading') {
     dot.className = 'sync-dot loading';
-    txt.textContent = text || 'Syncing with Sheets...';
+    txt.textContent = text || 'Scanning Drive...';
   } else {
     dot.className = 'sync-dot';
-    txt.textContent = text || 'Local Mode (Connect Sheets)';
+    txt.textContent = text || 'Connect Google Drive';
   }
 }
 
 async function syncWithSheets(isManual = false) {
   const url = getSheetsUrl();
   if (!url) {
-    updateSyncPillStatus('offline');
+    updateSyncPillStatus('offline', 'Connect Google Drive');
+    if (isManual) openSheetsModal();
     return;
   }
 
-  updateSyncPillStatus('loading');
+  updateSyncPillStatus('loading', isManual ? 'Scanning Drive...' : 'Loading Data...');
   try {
-    const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'action=getData&_t=' + Date.now();
+    const action = isManual ? 'syncDrive' : 'getData';
+    const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'action=' + action + '&_t=' + Date.now();
     const res = await fetch(fetchUrl);
     const data = await res.json();
     
@@ -1145,15 +1069,23 @@ async function syncWithSheets(isManual = false) {
           localRep.noData = liveRep.noData;
         }
       });
-      updateSyncPillStatus('online', 'Google Sheets: Live');
-      renderHome();
-      if (isManual) alert('✅ Successfully synced latest live data from Google Sheets!');
+      updateSyncPillStatus('online', 'Google Drive: Live Sync');
+      
+      if (document.getElementById('view-home').classList.contains('active')) {
+        renderHome();
+      } else if (currentRepForCharts && currentRepForCharts.key) {
+        showRep(currentRepForCharts.key);
+      }
+
+      if (isManual) {
+        alert('✅ Google Drive scan completed! All representative files have been synced.');
+      }
     } else {
-      updateSyncPillStatus('online', 'Connected');
+      updateSyncPillStatus('online', 'Google Drive: Connected');
     }
   } catch (err) {
-    console.warn('Google Sheets sync notice:', err);
-    updateSyncPillStatus('offline', 'Sheets Offline (Local Data)');
+    console.warn('Google Drive sync notice:', err);
+    updateSyncPillStatus('offline', 'Drive Offline (Baseline Data)');
   }
 }
 
@@ -2202,371 +2134,6 @@ function updateLineChart() {
   });
 }
 
-/* ── EXCEL SHEET UPLOAD & SYNC HANDLER ── */
-let currentUploadedData = null;
-const CUSTOM_DATA_STORAGE_KEY = 'eva_delta_custom_reps_data';
-
-function openUploadModal() {
-  const modal = document.getElementById('uploadModal');
-  if (!modal) return;
-  modal.classList.add('active');
-
-  const repSelect = document.getElementById('uploadRepSelect');
-  if (repSelect) {
-    repSelect.innerHTML = '';
-    REPS.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r.key;
-      opt.textContent = `${r.name} ${r.noData ? '(Pending Data)' : ''}`;
-      repSelect.appendChild(opt);
-    });
-    if (currentRepForCharts && currentRepForCharts.key) {
-      repSelect.value = currentRepForCharts.key;
-    }
-  }
-
-  resetUploadModal();
-}
-
-function closeUploadModal() {
-  const modal = document.getElementById('uploadModal');
-  if (modal) modal.classList.remove('active');
-  resetUploadModal();
-}
-
-function resetUploadModal() {
-  currentUploadedData = null;
-  const fileInput = document.getElementById('excelFileInput');
-  if (fileInput) fileInput.value = '';
-  const dropzone = document.getElementById('uploadDropzone');
-  if (dropzone) {
-    dropzone.style.display = 'block';
-    dropzone.classList.remove('dragover');
-  }
-  const previewSection = document.getElementById('uploadPreviewSection');
-  if (previewSection) previewSection.style.display = 'none';
-  const confirmBtn = document.getElementById('uploadConfirmBtn');
-  if (confirmBtn) confirmBtn.style.display = 'none';
-}
-
-function handleDragOver(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  const dropzone = document.getElementById('uploadDropzone');
-  if (dropzone) dropzone.classList.add('dragover');
-}
-
-function handleDragLeave(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  const dropzone = document.getElementById('uploadDropzone');
-  if (dropzone) dropzone.classList.remove('dragover');
-}
-
-function handleFileDrop(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  const dropzone = document.getElementById('uploadDropzone');
-  if (dropzone) dropzone.classList.remove('dragover');
-  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-    processExcelFile(e.dataTransfer.files[0]);
-  }
-}
-
-function handleExcelFileSelect(e) {
-  if (e.target.files && e.target.files.length > 0) {
-    processExcelFile(e.target.files[0]);
-  }
-}
-
-function parseNum(val) {
-  if (val === null || val === undefined || val === '') return null;
-  if (typeof val === 'number') return isNaN(val) ? null : val;
-  const cleaned = String(val).replace(/,/g, '').trim();
-  const num = parseFloat(cleaned);
-  return isNaN(num) ? null : num;
-}
-
-function processExcelFile(file) {
-  if (!file) return;
-  const fileName = file.name || '';
-  const lowerName = fileName.toLowerCase();
-
-  // Auto-detect representative from file name
-  let detectedRepKey = null;
-  for (const r of REPS) {
-    if (lowerName.includes(r.key.toLowerCase()) || lowerName.includes(r.name.toLowerCase())) {
-      detectedRepKey = r.key;
-      break;
-    }
-  }
-
-  // Auto-detect quarter from file name (Q1, Q2, Q3, Q4)
-  let detectedQuarter = 'Q1';
-  if (/q4/i.test(lowerName)) detectedQuarter = 'Q4';
-  else if (/q3/i.test(lowerName)) detectedQuarter = 'Q3';
-  else if (/q2/i.test(lowerName)) detectedQuarter = 'Q2';
-  else if (/q1/i.test(lowerName)) detectedQuarter = 'Q1';
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      if (typeof XLSX === 'undefined') {
-        alert('SheetJS library is still loading. Please check your internet connection and try again.');
-        return;
-      }
-      const workbook = XLSX.read(data, { type: 'array' });
-      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
-        alert('Invalid Excel file format: No sheets found.');
-        return;
-      }
-
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
-
-      const targetPids = [1260, 1259, 1251, 1110];
-      const foundPids = {};
-      let parsedTotal = null;
-
-      for (let r = 0; r < rawRows.length; r++) {
-        const row = rawRows[r];
-        if (!row || row.length === 0) continue;
-        const colA = String(row[0] || '').trim();
-        const pidNum = parseInt(colA);
-
-        let matchedPid = null;
-        if (targetPids.includes(pidNum)) {
-          matchedPid = pidNum;
-        } else {
-          // Check textual match
-          const rowStr = row.map(c => String(c || '')).join(' ').toLowerCase();
-          if (rowStr.includes('70/30') || rowStr.includes('0284.02')) matchedPid = 1260;
-          else if (rowStr.includes('rapid') || rowStr.includes('0284')) matchedPid = 1259;
-          else if (rowStr.includes('upa') || rowStr.includes('0326.05')) matchedPid = 1251;
-          else if (rowStr.includes('glargivin') || rowStr.includes('0326.03')) matchedPid = 1110;
-        }
-
-        if (matchedPid) {
-          const su = parseNum(row[3]);
-          const sv = parseNum(row[4]);
-          const tu = parseNum(row[5]);
-          const tv = parseNum(row[6]);
-          const ratio = (tv && tv > 0 && sv !== null) ? (sv / tv) * 100 : parseNum(row[7]);
-          const sp = parseNum(row[8]) !== null ? parseNum(row[8]) : (sv !== null ? sv * 2 : null);
-          const tp = parseNum(row[9]) !== null ? parseNum(row[9]) : (tv !== null ? tv * 2 : null);
-
-          foundPids[matchedPid] = {
-            pid: matchedPid,
-            salesUnits: su,
-            salesValue: sv,
-            targetUnits: tu,
-            targetValue: tv,
-            salesPoints: sp,
-            targetPoints: tp,
-            ratio: ratio
-          };
-        } else if (colA === '0' || String(row[1] || '').toLowerCase().includes('total') || String(row[2] || '').toLowerCase().includes('total')) {
-          const su = parseNum(row[3]);
-          const sv = parseNum(row[4]);
-          const tu = parseNum(row[5]);
-          const tv = parseNum(row[6]);
-          const ratio = (tv && tv > 0 && sv !== null) ? (sv / tv) * 100 : parseNum(row[7]);
-          const sp = parseNum(row[8]) !== null ? parseNum(row[8]) : (sv !== null ? sv * 2 : null);
-          const tp = parseNum(row[9]) !== null ? parseNum(row[9]) : (tv !== null ? tv * 2 : null);
-          parsedTotal = {
-            salesUnits: su, salesValue: sv,
-            targetUnits: tu, targetValue: tv,
-            salesPoints: sp, targetPoints: tp,
-            ratio: ratio
-          };
-        }
-      }
-
-      const parsedProducts = [];
-      PRODUCTS.forEach(p => {
-        if (foundPids[p.id]) {
-          parsedProducts.push(foundPids[p.id]);
-        } else {
-          parsedProducts.push({
-            pid: p.id,
-            salesUnits: null, salesValue: null,
-            targetUnits: null, targetValue: null,
-            salesPoints: null, targetPoints: null,
-            ratio: null
-          });
-        }
-      });
-
-      if (!parsedTotal) {
-        let sumSu = 0, sumSv = 0, sumTu = 0, sumTv = 0, sumSp = 0, sumTp = 0;
-        parsedProducts.forEach(p => {
-          if (p.salesUnits !== null) sumSu += p.salesUnits;
-          if (p.salesValue !== null) sumSv += p.salesValue;
-          if (p.targetUnits !== null) sumTu += p.targetUnits;
-          if (p.targetValue !== null) sumTv += p.targetValue;
-          if (p.salesPoints !== null) sumSp += p.salesPoints;
-          if (p.targetPoints !== null) sumTp += p.targetPoints;
-        });
-        const calcRatio = sumTv > 0 ? (sumSv / sumTv) * 100 : null;
-        parsedTotal = {
-          salesUnits: sumSu, salesValue: sumSv,
-          targetUnits: sumTu, targetValue: sumTv,
-          salesPoints: sumSp, targetPoints: sumTp,
-          ratio: calcRatio
-        };
-      }
-
-      currentUploadedData = {
-        fileName,
-        repKey: detectedRepKey || (currentRepForCharts ? currentRepForCharts.key : REPS[0].key),
-        quarter: detectedQuarter,
-        products: parsedProducts,
-        total: parsedTotal
-      };
-
-      const repSelect = document.getElementById('uploadRepSelect');
-      if (repSelect && currentUploadedData.repKey) repSelect.value = currentUploadedData.repKey;
-      const quarterSelect = document.getElementById('uploadQuarterSelect');
-      if (quarterSelect) quarterSelect.value = detectedQuarter;
-
-      const tbody = document.getElementById('uploadPreviewTableBody');
-      if (tbody) {
-        tbody.innerHTML = parsedProducts.map(p => {
-          const prodInfo = PRODUCTS.find(pr => pr.id === p.pid) || { name: 'Product ' + p.pid };
-          return `
-            <tr>
-              <td><strong>${prodInfo.name}</strong></td>
-              <td>${p.salesUnits !== null ? fmt(p.salesUnits) : '—'}</td>
-              <td>${p.targetUnits !== null ? fmt(p.targetUnits) : '—'}</td>
-              <td>${p.salesValue !== null ? fmt(p.salesValue) + ' EGP' : '—'}</td>
-              <td>${p.targetValue !== null ? fmt(p.targetValue) + ' EGP' : '—'}</td>
-              <td style="text-align:center;"><span class="ratio-badge ${ratioClass(p.ratio)}">${fmtPct(p.ratio)}</span></td>
-            </tr>
-          `;
-        }).join('') + `
-          <tr class="row-total" style="font-weight:800;background:var(--surface-alt);">
-            <td>Total Performance</td>
-            <td>${fmt(parsedTotal.salesUnits)}</td>
-            <td>${fmt(parsedTotal.targetUnits)}</td>
-            <td>${fmt(parsedTotal.salesValue)} EGP</td>
-            <td>${fmt(parsedTotal.targetValue)} EGP</td>
-            <td style="text-align:center;"><span class="ratio-badge ${ratioClass(parsedTotal.ratio)}">${fmtPct(parsedTotal.ratio)}</span></td>
-          </tr>
-        `;
-      }
-
-      document.getElementById('uploadPreviewSection').style.display = 'block';
-      document.getElementById('uploadConfirmBtn').style.display = 'inline-flex';
-
-    } catch (err) {
-      console.error('Error parsing Excel sheet:', err);
-      alert('Error parsing Excel sheet: ' + err.message);
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-async function confirmAndApplyUploadedSheet() {
-  if (!currentUploadedData) return;
-
-  const repKey = document.getElementById('uploadRepSelect').value;
-  const quarter = document.getElementById('uploadQuarterSelect').value;
-  const repObj = REPS.find(r => r.key === repKey);
-  const repName = repObj ? repObj.name : repKey;
-
-  const btn = document.getElementById('uploadConfirmBtn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Saving & Syncing...';
-  }
-
-  // 1. Update in-memory REPS model
-  if (repObj) {
-    if (!repObj.quarters) repObj.quarters = {};
-    repObj.quarters[quarter] = {
-      products: currentUploadedData.products,
-      total: currentUploadedData.total
-    };
-    repObj.noData = false;
-    repObj.status = 'Active';
-  }
-
-  // 2. Persist in localStorage
-  saveLocalCustomData(repKey, quarter, currentUploadedData.products, currentUploadedData.total);
-
-  // 3. Dispatch to Google Sheets Web App if connected
-  const sheetsUrl = getSheetsUrl();
-  let cloudSynced = false;
-  if (sheetsUrl) {
-    try {
-      const payload = {
-        repKey: repKey,
-        repName: repName,
-        quarter: quarter,
-        products: currentUploadedData.products,
-        total: currentUploadedData.total
-      };
-      const payloadStr = encodeURIComponent(JSON.stringify(payload));
-      const syncUrl = sheetsUrl + (sheetsUrl.includes('?') ? '&' : '?') + 'action=saveQuarter&payload=' + payloadStr;
-      await fetch(syncUrl, { mode: 'no-cors' });
-      cloudSynced = true;
-    } catch (e) {
-      console.warn('Google Sheets cloud sync notice:', e);
-    }
-  }
-
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = '💾 Save & Apply to Dashboard';
-  }
-
-  closeUploadModal();
-
-  alert(cloudSynced
-    ? `✅ Successfully uploaded and synced ${quarter} data for ${repName} to Google Sheets & Live Dashboard!`
-    : `✅ Successfully uploaded and saved ${quarter} data for ${repName} to Dashboard!`
-  );
-
-  showRep(repKey, 'tab-' + quarter);
-}
-
-function saveLocalCustomData(repKey, quarter, products, total) {
-  try {
-    let custom = {};
-    const existing = localStorage.getItem(CUSTOM_DATA_STORAGE_KEY);
-    if (existing) {
-      custom = JSON.parse(existing);
-    }
-    if (!custom[repKey]) custom[repKey] = {};
-    custom[repKey][quarter] = { products, total };
-    localStorage.setItem(CUSTOM_DATA_STORAGE_KEY, JSON.stringify(custom));
-  } catch (e) {
-    console.warn('Could not save to localStorage:', e);
-  }
-}
-
-function loadLocalCustomData() {
-  try {
-    const existing = localStorage.getItem(CUSTOM_DATA_STORAGE_KEY);
-    if (!existing) return;
-    const custom = JSON.parse(existing);
-    Object.keys(custom).forEach(repKey => {
-      const rep = REPS.find(r => r.key === repKey);
-      if (rep) {
-        if (!rep.quarters) rep.quarters = {};
-        Object.keys(custom[repKey]).forEach(q => {
-          rep.quarters[q] = custom[repKey][q];
-        });
-        rep.noData = false;
-      }
-    });
-  } catch (e) {
-    console.warn('Could not load custom data from localStorage:', e);
-  }
-}
-
 /* ── NAVIGATION ── */
 function showHome() {
   destroyCharts();
@@ -2582,9 +2149,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('topbar-date').textContent =
     now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   
-  loadLocalCustomData();
   renderHome();
-  syncWithSheets();
+  syncWithSheets(false);
 });
 </script>
 </body>
