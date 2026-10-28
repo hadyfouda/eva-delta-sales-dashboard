@@ -214,7 +214,39 @@ REPS_DATA = [
             "Q4": None
         }
     },
-    {"key": "tawfik",  "name": "Tawfik",  "nameAr": "توفيق", "av": "av-8", "noData": True},
+    {
+        "key": "tawfik", "name": "Tawfik", "nameAr": "توفيق", "av": "av-8", "startQ": 1,
+        "quarters": {
+            "Q1": {
+                "products": [
+                    {"pid": 1260, "salesUnits": 877.77, "salesValue": 203755.28, "targetUnits": 602.00, "targetValue": 139741.05, "ratio": 145.81, "salesPoints": 407510.55, "targetPoints": 279482.10},
+                    {"pid": 1259, "salesUnits": 631.81, "salesValue": 146660.21, "targetUnits": 227.50, "targetValue": 52809.12, "ratio": 277.72, "salesPoints": 293320.42, "targetPoints": 105618.24},
+                    {"pid": 1251, "salesUnits": 3010.50, "salesValue": 1816084.12, "targetUnits": 2646.00, "targetValue": 1596199.50, "ratio": 113.78, "salesPoints": 3632168.25, "targetPoints": 3192399.00},
+                    {"pid": 1110, "salesUnits": 653.63, "salesValue": 437667.13, "targetUnits": 386.25, "targetValue": 258633.00, "ratio": 169.22, "salesPoints": 875334.26, "targetPoints": 517266.00}
+                ],
+                "total": {"salesUnits": 5173.71, "salesValue": 2604166.74, "targetUnits": 3861.75, "targetValue": 2047382.67, "ratio": 127.19, "salesPoints": 5208333.48, "targetPoints": 4094765.34}
+            },
+            "Q2": {
+                "products": [
+                    {"pid": 1260, "salesUnits": 699.99, "salesValue": 162487.30, "targetUnits": 1295.00, "targetValue": 300605.76, "ratio": 54.05, "salesPoints": 324974.60, "targetPoints": 601211.52},
+                    {"pid": 1259, "salesUnits": 477.78, "salesValue": 110907.79, "targetUnits": 312.84, "targetValue": 72618.93, "ratio": 152.73, "salesPoints": 221815.58, "targetPoints": 145237.86},
+                    {"pid": 1251, "salesUnits": 615.41, "salesValue": 371246.08, "targetUnits": 498.75, "targetValue": 300870.93, "ratio": 123.39, "salesPoints": 742492.17, "targetPoints": 601741.86},
+                    {"pid": 1110, "salesUnits": 758.94, "salesValue": 508194.59, "targetUnits": 587.40, "targetValue": 393323.04, "ratio": 129.21, "salesPoints": 1016389.19, "targetPoints": 786646.08}
+                ],
+                "total": {"salesUnits": 2552.12, "salesValue": 1152835.77, "targetUnits": 2693.99, "targetValue": 1067418.66, "ratio": 108.00, "salesPoints": 2305671.54, "targetPoints": 2134837.32}
+            },
+            "Q3": {
+                "products": [
+                    {"pid": 1260, "salesUnits": 1214.43, "salesValue": 281903.62, "targetUnits": 928.80, "targetValue": 215600.49, "ratio": 130.75, "salesPoints": 563807.25, "targetPoints": 431200.98},
+                    {"pid": 1259, "salesUnits": 313.33, "salesValue": 72731.78, "targetUnits": 475.20, "targetValue": 110307.24, "ratio": 65.94, "salesPoints": 145463.57, "targetPoints": 220614.48},
+                    {"pid": 1251, "salesUnits": 3558.00, "salesValue": 2146363.50, "targetUnits": 2525.44, "targetValue": 1523473.98, "ratio": 140.89, "salesPoints": 4292727.00, "targetPoints": 3046947.96},
+                    {"pid": 1110, "salesUnits": 667.55, "salesValue": 446994.40, "targetUnits": 671.00, "targetValue": 449301.60, "ratio": 99.49, "salesPoints": 893988.79, "targetPoints": 898603.20}
+                ],
+                "total": {"salesUnits": 5753.31, "salesValue": 2947993.31, "targetUnits": 4600.44, "targetValue": 2298683.31, "ratio": 128.25, "salesPoints": 5895986.61, "targetPoints": 4597366.62}
+            },
+            "Q4": None
+        }
+    },
     {"key": "wedad",   "name": "Wedad",   "nameAr": "وداد",  "av": "av-9", "noData": True},
 ]
 
