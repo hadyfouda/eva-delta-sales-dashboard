@@ -2145,6 +2145,34 @@ function updateLineChart() {
   });
 }
 
+/* ── LOAD LIVE DATA.JSON FROM ONEDRIVE SYNC ── */
+async function loadDataJson() {
+  try {
+    const res = await fetch('./data.json?_t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.reps) {
+        data.reps.forEach(liveRep => {
+          const localRep = REPS.find(r => r.key === liveRep.key);
+          if (localRep) {
+            localRep.quarters = liveRep.quarters;
+            localRep.noData = liveRep.noData;
+          }
+        });
+        updateSyncPillStatus('online', 'OneDrive: Live Sync');
+        if (document.getElementById('view-home').classList.contains('active')) {
+          renderHome();
+        } else if (currentRepForCharts && currentRepForCharts.key) {
+          showRep(currentRepForCharts.key);
+        }
+        console.log('✅ Loaded latest live data.json from OneDrive / SharePoint sync!');
+      }
+    }
+  } catch (err) {
+    console.log('Using baseline data:', err);
+  }
+}
+
 /* ── NAVIGATION ── */
 function showHome() {
   destroyCharts();
@@ -2161,6 +2189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   
   renderHome();
+  loadDataJson();
   syncWithSheets(false);
 });
 </script>
