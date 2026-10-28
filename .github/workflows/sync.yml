@@ -1,0 +1,39 @@
+name: OneDrive Live Sync
+
+on:
+  repository_dispatch:
+    types: [onedrive_sync, sync]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update data.json
+        run: |
+          echo '${{ toJson(github.event.client_payload) }}' > data.json
+          python -c "
+          import json
+          try:
+              with open('data.json', 'r') as f:
+                  d = json.load(f)
+              print('Valid JSON received from OneDrive:', len(str(d)))
+          except Exception as e:
+              print('Formatting fallback:', e)
+          "
+
+      - name: Commit and Push Updated Data
+        run: |
+          git config --global user.name "EVA OneDrive Sync"
+          git config --global user.email "bot@evapharma.com"
+          git add data.json
+          git commit -m "Sync latest sales data from EVA Pharma OneDrive" || echo "No changes to commit"
+          git push
