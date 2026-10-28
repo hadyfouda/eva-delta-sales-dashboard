@@ -563,7 +563,7 @@ function initDatabase() {
       ["nadeem", "Nadeem", "Q1", "Active"],
       ["sabah", "Sabah", "Q1", "Active"],
       ["tawfik", "Tawfik", "Q1", "Active"],
-      ["wedad", "Wedad", "Q1", "Pending Data"]
+      ["wedad", "Wedad", "Q1", "Active"]
     ];
     reps.forEach(r => wsReps.appendRow(r));
     wsReps.getRange("A1:D1").setFontWeight("bold").setBackground("#0F172A").setFontColor("#FFFFFF");
