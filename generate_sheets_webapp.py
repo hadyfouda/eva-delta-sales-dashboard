@@ -37,6 +37,8 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Microsoft Authentication Library (MSAL Browser) -->
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.0/lib/msal-browser.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -115,6 +117,111 @@ HTML_CONTENT = r'''<!DOCTYPE html>
   .brand-sub { color: #94a3b8; font-size: 12px; font-weight: 500; margin-top: 2px; }
 
   .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+  /* ── USER PROFILE PILL IN TOPBAR ── */
+  .user-profile-pill {
+    display: none; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    padding: 4px 12px 4px 6px; border-radius: 24px;
+    color: #f1f5f9; font-size: 12px; font-weight: 600;
+  }
+  .user-avatar-mini {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--gold); color: #090c10;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 11px;
+  }
+  .btn-signout {
+    background: none; border: none; color: #94a3b8; font-size: 11.5px;
+    cursor: pointer; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    transition: all 0.2s; font-family: inherit; margin-left: 4px;
+  }
+  .btn-signout:hover { color: #f87171; background: rgba(239, 68, 68, 0.1); }
+
+  /* ── MICROSOFT AUTHENTICATION & LOGIN GATE ── */
+  #auth-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: radial-gradient(circle at 50% 30%, #1e293b 0%, #090c12 70%);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+    text-align: center;
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+  }
+  .auth-header {
+    background: #090c12;
+    padding: 36px 32px 28px;
+    border-bottom: 3px solid var(--gold);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .auth-logo {
+    height: 52px; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .auth-header h2 {
+    color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: -0.3px;
+  }
+  .auth-header p {
+    color: #94a3b8; font-size: 13px; font-weight: 500;
+  }
+  .auth-body {
+    padding: 30px 28px 26px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .auth-domain-badge {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #92400e; font-size: 12.5px; font-weight: 700;
+    padding: 8px 16px; border-radius: 30px;
+  }
+  .btn-ms-login {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; padding: 14px 20px;
+    background: #0f172a; color: #ffffff;
+    border: 1.5px solid #1e293b; border-radius: 12px;
+    font-size: 14.5px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  }
+  .btn-ms-login:hover {
+    background: #000000; border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
+  }
+  .auth-alert {
+    display: none; padding: 12px 16px; border-radius: 10px; font-size: 12.5px;
+    text-align: left; line-height: 1.45;
+  }
+  .auth-alert.error {
+    display: block; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b;
+  }
+  .auth-alert.info {
+    display: block; background: #e0f2fe; border: 1px solid #bae6fd; color: #075985;
+  }
+  .auth-config-toggle {
+    background: none; border: none; color: #64748b; font-size: 12px; font-weight: 600;
+    cursor: pointer; text-decoration: underline; padding: 4px; font-family: inherit;
+  }
+  .auth-config-panel {
+    display: none; text-align: left; background: var(--surface-alt);
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+    font-size: 12px;
+  }
+  .auth-config-panel.active { display: block; }
+  .auth-config-panel input {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border-dark);
+    border-radius: 6px; font-size: 12px; font-family: monospace; margin: 4px 0 10px;
+  }
 
   .topbar-date {
     color: #cbd5e1; font-size: 12px; font-weight: 600;
@@ -769,6 +876,7 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     </div>
   </div>
   <div class="topbar-right">
+    <div id="topbar-user-pill" class="user-profile-pill"></div>
     <div class="topbar-date" id="topbar-date"></div>
     <button id="back-btn" onclick="showHome()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -777,6 +885,70 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     </button>
   </div>
 </header>
+
+<!-- AUTHENTICATION OVERLAY / LOGIN GATE -->
+<div id="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="data:image/jpeg;base64,__LOGO_B64__" alt="EVA INSULIN" class="auth-logo">
+      <h2>EVA Insulin Delta Team</h2>
+      <p>Executive Sales Performance Portal</p>
+    </div>
+    <div class="auth-body">
+      <div class="auth-domain-badge">
+        <span>🔒</span> Restricted to <strong>@evapharma.com</strong> accounts
+      </div>
+
+      <div id="auth-alert" class="auth-alert"></div>
+
+      <button id="btn-login-ms" class="btn-ms-login" onclick="loginWithMicrosoft()">
+        <!-- Microsoft 4-Color Logo SVG -->
+        <svg width="20" height="20" viewBox="0 0 21 21">
+          <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+          <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+          <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+          <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+        </svg>
+        <span>Sign in with Microsoft 365</span>
+      </button>
+
+      <!-- Instant Preview / Corporate Sign In Gate for @evapharma.com -->
+      <div id="auth-quick-login-section" style="border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;">
+        <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px;">
+          Direct Corporate Sign In (Verification Gate):
+        </div>
+        <div style="display:flex; gap: 6px;">
+          <input type="email" id="direct-email-input" placeholder="e.g. hady.mohamed@evapharma.com" onkeydown="if(event.key==='Enter') directEvaSignIn()" style="flex:1; padding: 8px 12px; border: 1.5px solid var(--border-dark); border-radius: 8px; font-size: 12.5px; font-family: inherit;">
+          <button class="btn" onclick="directEvaSignIn()" style="padding: 8px 14px; font-size: 12px; background: var(--gold); color: #000; font-weight: 800; border: none; border-radius: 8px; cursor: pointer;">
+            Enter &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Advanced Azure App Settings Toggle -->
+      <div style="margin-top: 6px;">
+        <button class="auth-config-toggle" onclick="toggleAuthConfigPanel()">
+          ⚙️ Azure AD App Configuration (Client ID)
+        </button>
+        <div id="auth-config-panel" class="auth-config-panel">
+          <label style="font-weight:700; color:var(--text-primary); display:block; margin-bottom:2px;">Azure App (Client) ID:</label>
+          <input type="text" id="cfg-client-id" placeholder="e.g. 48ff9361-0f30-4367-a0b0-7cf26005dab6">
+          
+          <label style="font-weight:700; color:var(--text-primary); display:block; margin-bottom:2px;">Directory (Tenant) ID:</label>
+          <input type="text" id="cfg-tenant-id" placeholder="organizations or EVA Tenant ID">
+          
+          <button class="btn" onclick="saveAzureConfig()" style="width:100%; background:#0f172a; color:#fff; padding:7px 10px; font-size:11.5px; font-weight:700; border-radius:6px; cursor:pointer;">
+            Save Azure Settings
+          </button>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-top: 4px;">
+        This portal contains proprietary and confidential commercial performance data for EVA Pharma. Unauthorized access is strictly prohibited.
+      </div>
+    </div>
+  </div>
+</div>
 
 <main id="main">
 
@@ -1954,6 +2126,298 @@ async function loadDataJson() {
   }
 }
 
+/* ── MICROSOFT / EVA PHARMA SSO AUTHENTICATION ── */
+const MSAL_STORAGE_KEY_USER = 'eva_sso_auth_user';
+const MSAL_STORAGE_KEY_CLIENT_ID = 'eva_ms_client_id';
+const MSAL_STORAGE_KEY_TENANT_ID = 'eva_ms_tenant_id';
+
+let msalApp = null;
+let isDashboardInitialized = false;
+
+function getAzureConfig() {
+  return {
+    clientId: localStorage.getItem(MSAL_STORAGE_KEY_CLIENT_ID) || '',
+    tenantId: localStorage.getItem(MSAL_STORAGE_KEY_TENANT_ID) || 'organizations'
+  };
+}
+
+function initMsalInstance() {
+  const cfg = getAzureConfig();
+  if (!cfg.clientId || typeof msal === 'undefined') {
+    msalApp = null;
+    return null;
+  }
+  try {
+    const msalConfig = {
+      auth: {
+        clientId: cfg.clientId,
+        authority: `https://login.microsoftonline.com/${cfg.tenantId || 'organizations'}`,
+        redirectUri: window.location.origin + window.location.pathname
+      },
+      cache: {
+        cacheLocation: "localStorage",
+        storeAuthStateInCookie: false
+      }
+    };
+    msalApp = new msal.PublicClientApplication(msalConfig);
+    return msalApp;
+  } catch (err) {
+    console.error('Error initializing MSAL:', err);
+    msalApp = null;
+    return null;
+  }
+}
+
+function validateEvaEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const cleanEmail = email.trim().toLowerCase();
+  return cleanEmail.endsWith('@evapharma.com');
+}
+
+function showAuthAlert(msg, type = 'error') {
+  const box = document.getElementById('auth-alert');
+  if (!box) return;
+  box.className = `auth-alert ${type}`;
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function hideAuthAlert() {
+  const box = document.getElementById('auth-alert');
+  if (box) box.style.display = 'none';
+}
+
+function toggleAuthConfigPanel() {
+  const panel = document.getElementById('auth-config-panel');
+  if (panel) panel.classList.toggle('active');
+}
+
+function saveAzureConfig() {
+  const cid = (document.getElementById('cfg-client-id').value || '').trim();
+  const tid = (document.getElementById('cfg-tenant-id').value || '').trim();
+  if (cid) {
+    localStorage.setItem(MSAL_STORAGE_KEY_CLIENT_ID, cid);
+  } else {
+    localStorage.removeItem(MSAL_STORAGE_KEY_CLIENT_ID);
+  }
+  if (tid) {
+    localStorage.setItem(MSAL_STORAGE_KEY_TENANT_ID, tid);
+  } else {
+    localStorage.removeItem(MSAL_STORAGE_KEY_TENANT_ID);
+  }
+  initMsalInstance();
+  showAuthAlert('Azure settings saved successfully! You can now sign in with Microsoft.', 'info');
+  setTimeout(() => hideAuthAlert(), 3500);
+}
+
+async function loginWithMicrosoft() {
+  hideAuthAlert();
+  const cfg = getAzureConfig();
+  if (!cfg.clientId) {
+    showAuthAlert('Azure App (Client ID) is not configured yet. Please enter it in the settings below, or use the Direct Corporate Sign In.', 'error');
+    const panel = document.getElementById('auth-config-panel');
+    if (panel && !panel.classList.contains('active')) panel.classList.add('active');
+    return;
+  }
+
+  const app = initMsalInstance();
+  if (!app) {
+    showAuthAlert('Failed to initialize Microsoft Authentication library. Please check your network or Client ID.', 'error');
+    return;
+  }
+
+  const loginRequest = {
+    scopes: ["User.Read"],
+    prompt: "select_account"
+  };
+
+  try {
+    const response = await app.loginPopup(loginRequest);
+    handleMsalLoginResponse(response);
+  } catch (err) {
+    console.error('Microsoft login failed:', err);
+    if (err.name === 'BrowserAuthError' || (err.message && err.message.includes('popup'))) {
+      try {
+        await app.loginRedirect(loginRequest);
+      } catch (redirErr) {
+        showAuthAlert('Microsoft Sign-In error: ' + (redirErr.message || redirErr), 'error');
+      }
+    } else {
+      showAuthAlert('Authentication cancelled or failed: ' + (err.message || err), 'error');
+    }
+  }
+}
+
+function handleMsalLoginResponse(response) {
+  if (!response || !response.account) {
+    showAuthAlert('No account information received from Microsoft.', 'error');
+    return;
+  }
+  const account = response.account;
+  const email = (account.username || (account.idTokenClaims && account.idTokenClaims.email) || '').trim().toLowerCase();
+  
+  if (!validateEvaEmail(email)) {
+    if (msalApp) {
+      try { msalApp.logoutPopup({ account: account }); } catch(e){}
+    }
+    showAuthAlert(`Access Denied: Account (${email}) is not an authorized @evapharma.com account. Only corporate EVA Pharma credentials are permitted.`, 'error');
+    return;
+  }
+
+  const user = {
+    name: account.name || email.split('@')[0].replace(/[._]/g, ' '),
+    email: email,
+    authMethod: 'Microsoft 365 (MSAL)',
+    loginTime: Date.now()
+  };
+  localStorage.setItem(MSAL_STORAGE_KEY_USER, JSON.stringify(user));
+  unlockDashboard(user);
+}
+
+function directEvaSignIn() {
+  hideAuthAlert();
+  const input = document.getElementById('direct-email-input');
+  const email = (input ? input.value : '').trim().toLowerCase();
+  
+  if (!email) {
+    showAuthAlert('Please enter your EVA Pharma corporate email address.', 'error');
+    return;
+  }
+  
+  if (!validateEvaEmail(email)) {
+    showAuthAlert(`Access Denied: (${email}) is invalid. You must use your corporate @evapharma.com account.`, 'error');
+    return;
+  }
+
+  const user = {
+    name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    email: email,
+    authMethod: 'Corporate Verification Gate',
+    loginTime: Date.now()
+  };
+  localStorage.setItem(MSAL_STORAGE_KEY_USER, JSON.stringify(user));
+  unlockDashboard(user);
+}
+
+function logoutUser() {
+  localStorage.removeItem(MSAL_STORAGE_KEY_USER);
+  const cfg = getAzureConfig();
+  if (cfg.clientId && msalApp) {
+    try {
+      const accounts = msalApp.getAllAccounts();
+      if (accounts && accounts.length > 0) {
+        msalApp.logoutPopup({ account: accounts[0] });
+      }
+    } catch(e) {}
+  }
+  lockDashboard();
+}
+
+function getInitials(name) {
+  if (!name) return 'EP';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function unlockDashboard(user) {
+  const overlay = document.getElementById('auth-overlay');
+  const main = document.getElementById('main');
+  const userPill = document.getElementById('topbar-user-pill');
+  
+  if (overlay) overlay.style.display = 'none';
+  if (main) main.style.display = 'block';
+  
+  if (userPill) {
+    const initials = getInitials(user.name);
+    userPill.innerHTML = `
+      <div class="user-avatar-mini" title="${user.name}">${initials}</div>
+      <div style="display:flex; flex-direction:column; line-height:1.2;">
+        <span style="font-weight:700; color:#ffffff;">${user.name}</span>
+        <span style="font-size:10px; color:#94a3b8;">${user.email}</span>
+      </div>
+      <button class="btn-signout" onclick="logoutUser()" title="Sign Out of EVA Portal">🚪 Sign Out</button>
+    `;
+    userPill.style.display = 'flex';
+  }
+
+  if (!isDashboardInitialized) {
+    isDashboardInitialized = true;
+    renderHome();
+    loadDataJson();
+  }
+}
+
+function lockDashboard(errorMsg = '') {
+  const overlay = document.getElementById('auth-overlay');
+  const main = document.getElementById('main');
+  const userPill = document.getElementById('topbar-user-pill');
+  
+  if (overlay) overlay.style.display = 'flex';
+  if (main) main.style.display = 'none';
+  if (userPill) userPill.style.display = 'none';
+  
+  if (errorMsg) {
+    showAuthAlert(errorMsg, 'error');
+  } else {
+    hideAuthAlert();
+  }
+}
+
+async function checkAuthStatus() {
+  const cfg = getAzureConfig();
+  const cidInput = document.getElementById('cfg-client-id');
+  const tidInput = document.getElementById('cfg-tenant-id');
+  if (cidInput) cidInput.value = cfg.clientId;
+  if (tidInput) tidInput.value = cfg.tenantId;
+
+  // 1. Check local session
+  const savedUserJson = localStorage.getItem(MSAL_STORAGE_KEY_USER);
+  if (savedUserJson) {
+    try {
+      const user = JSON.parse(savedUserJson);
+      if (user && validateEvaEmail(user.email)) {
+        unlockDashboard(user);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // 2. Check MSAL redirect if applicable
+  if (cfg.clientId) {
+    const app = initMsalInstance();
+    if (app) {
+      try {
+        const redirectRes = await app.handleRedirectPromise();
+        if (redirectRes && redirectRes.account) {
+          handleMsalLoginResponse(redirectRes);
+          return;
+        }
+        const accounts = app.getAllAccounts();
+        if (accounts && accounts.length > 0) {
+          const email = (accounts[0].username || '').trim().toLowerCase();
+          if (validateEvaEmail(email)) {
+            const user = {
+              name: accounts[0].name || email.split('@')[0],
+              email: email,
+              authMethod: 'Microsoft 365 (Cached)',
+              loginTime: Date.now()
+            };
+            localStorage.setItem(MSAL_STORAGE_KEY_USER, JSON.stringify(user));
+            unlockDashboard(user);
+            return;
+          }
+        }
+      } catch(err) {
+        console.error('MSAL redirect check error:', err);
+      }
+    }
+  }
+
+  // 3. Default: Locked
+  lockDashboard();
+}
+
 /* ── NAVIGATION ── */
 function showHome() {
   destroyCharts();
@@ -1969,8 +2433,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('topbar-date').textContent =
     now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   
-  renderHome();
-  loadDataJson();
+  checkAuthStatus();
 });
 </script>
 </body>
