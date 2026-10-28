@@ -252,6 +252,18 @@ HTML_CONTENT = r'''<!DOCTYPE html>
   }
   .kpi-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .kpi-row:last-child { margin-bottom: 0; }
+  .kpi-row-stacked {
+    display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;
+    padding-top: 6px; border-top: 1px dashed var(--border);
+  }
+  .prod-unit-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px;
+    background: #ffffff; padding: 6px 10px; border-radius: 6px;
+    border: 1px solid var(--border); font-size: 11px;
+  }
+  .prod-unit-item {
+    display: flex; justify-content: space-between; align-items: center;
+  }
   .kpi-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
   .kpi-value { font-size: 14px; font-weight: 800; color: var(--text-primary); }
 
@@ -593,6 +605,9 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     <!-- YTD STRIP -->
     <div class="ytd-strip" id="rep-ytd-strip"></div>
 
+    <!-- UNITS BREAKDOWN CARD PER PRODUCT -->
+    <div id="rep-unit-cards-container"></div>
+
     <!-- TABS -->
     <div class="tabs-nav" id="rep-tabs-nav"></div>
 
@@ -787,6 +802,17 @@ function ratioClass(r) {
   return 'ratio-red';
 }
 
+/* ── SHORT PRODUCT NAME HELPER ── */
+function getShortProdName(pid) {
+  switch (Number(pid)) {
+    case 1260: return 'Mix 70/30';
+    case 1259: return 'Rapid';
+    case 1251: return 'G. UPA';
+    case 1110: return 'G. 100IU';
+    default: return 'Product';
+  }
+}
+
 /* ── DEFICIT FORMATTERS ── */
 function renderDeficitUnit(targetUnits, salesUnits) {
   if (targetUnits === null || salesUnits === null || targetUnits === undefined || salesUnits === undefined) {
@@ -799,6 +825,20 @@ function renderDeficitUnit(targetUnits, salesUnits) {
     return `<span class="deficit-badge deficit-green">Surplus +${fmt(Math.abs(diff))}</span>`;
   } else {
     return `<span class="deficit-badge deficit-green">Target Met</span>`;
+  }
+}
+
+function renderDeficitUnitCompact(targetUnits, salesUnits) {
+  if (targetUnits === null || salesUnits === null || targetUnits === undefined || salesUnits === undefined) {
+    return '<span style="color:var(--text-muted);font-weight:500;">—</span>';
+  }
+  const diff = targetUnits - salesUnits;
+  if (diff > 0.001) {
+    return `<span class="deficit-badge deficit-red" style="padding:1px 5px;font-size:10px;letter-spacing:0;font-weight:700;">-${fmt(diff)}</span>`;
+  } else if (diff <= -0.001) {
+    return `<span class="deficit-badge deficit-green" style="padding:1px 5px;font-size:10px;letter-spacing:0;font-weight:700;">+${fmt(Math.abs(diff))}</span>`;
+  } else {
+    return `<span class="deficit-badge deficit-green" style="padding:1px 5px;font-size:10px;letter-spacing:0;font-weight:700;">0</span>`;
   }
 }
 
@@ -1075,9 +1115,27 @@ function renderHome() {
               <span class="kpi-label">Deficit / Surplus:</span>
               <span>${ytd ? renderDeficitVal(ytd.targetValue, ytd.salesValue) : '—'}</span>
             </div>
-            <div class="kpi-row">
-              <span class="kpi-label">Units Sold:</span>
-              <span class="kpi-value">${ytd ? fmt(ytd.salesUnits) : '—'} units</span>
+            <div class="kpi-row-stacked">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="kpi-label" style="font-size:11.5px;color:var(--text-primary);font-weight:700;">Units Sold (Per Product):</span>
+              </div>
+              <div class="prod-unit-grid">
+                ${PRODUCTS.map(pr => {
+                  const p = ytd && ytd.productsYTD ? ytd.productsYTD[pr.id] : null;
+                  return `<div class="prod-unit-item"><span style="color:var(--text-muted);font-weight:600;">${getShortProdName(pr.id)}:</span><strong style="color:var(--text-primary);">${p && p.salesUnits !== null ? fmt(p.salesUnits) : '—'}</strong></div>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="kpi-row-stacked">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="kpi-label" style="font-size:11.5px;color:var(--text-primary);font-weight:700;">Unit Deficit / Surplus (Per Product):</span>
+              </div>
+              <div class="prod-unit-grid">
+                ${PRODUCTS.map(pr => {
+                  const p = ytd && ytd.productsYTD ? ytd.productsYTD[pr.id] : null;
+                  return `<div class="prod-unit-item"><span style="color:var(--text-muted);font-weight:600;">${getShortProdName(pr.id)}:</span> ${p ? renderDeficitUnitCompact(p.targetUnits, p.salesUnits) : '—'}</div>`;
+                }).join('')}
+              </div>
             </div>
           </div>
 
@@ -1158,10 +1216,25 @@ function buildProductsTable(title, sub, productsList, totalData) {
           <tbody>
             ${rows}
             <tr class="row-total">
-              <td>Total Performance</td>
-              <td><strong>${fmt(totalData.salesUnits)}</strong></td>
-              <td><strong>${fmt(totalData.targetUnits)}</strong></td>
-              <td>${renderDeficitUnit(totalData.targetUnits, totalData.salesUnits)}</td>
+              <td>
+                <strong>Total Performance</strong>
+                <div style="font-size:10.5px;color:var(--text-muted);font-weight:600;margin-top:2px;">Units broken down per product</div>
+              </td>
+              <td style="vertical-align:top;">
+                <div style="font-size:11px;line-height:1.6;font-weight:700;">
+                  ${products.map(p => `<div style="white-space:nowrap;"><span style="color:var(--text-muted);font-weight:600;">${getShortProdName(p.pid)}:</span> ${p.salesUnits !== null ? fmt(p.salesUnits) : '—'}</div>`).join('')}
+                </div>
+              </td>
+              <td style="vertical-align:top;">
+                <div style="font-size:11px;line-height:1.6;">
+                  ${products.map(p => `<div style="white-space:nowrap;"><span style="color:var(--text-muted);font-weight:600;">${getShortProdName(p.pid)}:</span> ${p.targetUnits !== null ? fmt(p.targetUnits) : '—'}</div>`).join('')}
+                </div>
+              </td>
+              <td style="vertical-align:top;">
+                <div style="font-size:11px;line-height:1.6;">
+                  ${products.map(p => `<div style="margin:2px 0;white-space:nowrap;"><span style="color:var(--text-muted);font-weight:600;">${getShortProdName(p.pid)}:</span> ${renderDeficitUnitCompact(p.targetUnits, p.salesUnits)}</div>`).join('')}
+                </div>
+              </td>
               <td><strong>${fmt(totalData.salesValue)}</strong> EGP</td>
               <td><strong>${fmt(totalData.targetValue)}</strong> EGP</td>
               <td>${renderDeficitVal(totalData.targetValue, totalData.salesValue)}</td>
@@ -1364,22 +1437,17 @@ function showRep(repKey, targetTabId = null) {
       <div class="ytd-item">
         <div class="ytd-label">Actual Sales (YTD)</div>
         <div class="ytd-val">${fmt(ytd.salesValue)} <span style="font-size:12px;color:var(--gold);">EGP</span></div>
-        <div class="ytd-unit">${fmt(ytd.salesUnits)} units sold</div>
+        <div class="ytd-unit">Cumulative revenue achieved</div>
       </div>
       <div class="ytd-item">
         <div class="ytd-label">Quota Target (YTD)</div>
         <div class="ytd-val">${fmt(ytd.targetValue)} <span style="font-size:12px;color:#94a3b8;">EGP</span></div>
-        <div class="ytd-unit">${fmt(ytd.targetUnits)} units target</div>
+        <div class="ytd-unit">Assigned sales quota</div>
       </div>
       <div class="ytd-item">
-        <div class="ytd-label">Value Deficit / Surplus</div>
+        <div class="ytd-label">Financial Variance</div>
         <div class="ytd-val">${renderDeficitVal(ytd.targetValue, ytd.salesValue)}</div>
-        <div class="ytd-unit">Net annual financial variance</div>
-      </div>
-      <div class="ytd-item">
-        <div class="ytd-label">Unit Deficit / Surplus</div>
-        <div class="ytd-val">${renderDeficitUnit(ytd.targetUnits, ytd.salesUnits)}</div>
-        <div class="ytd-unit">Net physical units gap</div>
+        <div class="ytd-unit">Net annual value deficit / surplus</div>
       </div>
       <div class="ytd-item">
         <div class="ytd-label">Sales Points</div>
@@ -1390,6 +1458,52 @@ function showRep(repKey, targetTabId = null) {
         <div class="ytd-badge-label">YTD Fulfillment</div>
         <div class="ytd-badge-val" style="color:${ytd.ratio >= 100 ? '#4ade80' : ytd.ratio >= 70 ? '#fbbf24' : '#f87171'};">
           ${fmtPct(ytd.ratio)}
+        </div>
+      </div>
+    `;
+  }
+
+  // UNITS BREAKDOWN CARDS PER PRODUCT
+  const unitCardsContainer = document.getElementById('rep-unit-cards-container');
+  if (unitCardsContainer && ytd) {
+    unitCardsContainer.innerHTML = `
+      <div class="card" style="margin-bottom:24px;padding:20px 24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h4 style="font-size:14.5px;font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:8px;">
+              <span>📦</span> Units Sold & Unit Deficit / Surplus per Product (YTD 2026)
+            </h4>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Physical units performance and quota evaluation per individual insulin product</div>
+          </div>
+          <span style="font-size:11.5px;background:var(--surface-alt);border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-weight:700;color:var(--text-secondary);">Per-Product Units Breakdown</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));gap:14px;">
+          ${PRODUCTS.map(prod => {
+            const p = ytd.productsYTD[prod.id];
+            const su = p ? p.salesUnits : null;
+            const tu = p ? p.targetUnits : null;
+            return `
+              <div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+                <div style="font-weight:800;font-size:13px;color:var(--text-primary);margin-bottom:2px;">${prod.name}</div>
+                <div style="font-size:10.5px;color:var(--text-muted);font-family:monospace;margin-bottom:12px;font-weight:600;">${prod.code}</div>
+                
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12.5px;">
+                  <span style="color:var(--text-secondary);font-weight:600;">Units Sold:</span>
+                  <strong style="color:var(--text-primary);">${su !== null ? fmt(su) + ' u' : '—'}</strong>
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:12.5px;">
+                  <span style="color:var(--text-secondary);font-weight:600;">Target Units:</span>
+                  <span style="color:var(--text-muted);">${tu !== null ? fmt(tu) + ' u' : '—'}</span>
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px dashed var(--border);">
+                  <span style="font-size:11.5px;color:var(--text-secondary);font-weight:700;">Unit Deficit:</span>
+                  <span>${renderDeficitUnit(tu, su)}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
