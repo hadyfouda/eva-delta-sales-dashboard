@@ -858,7 +858,7 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
 <!-- TOPBAR -->
 <header id="topbar">
-  <div class="brand" onclick="showHome()">
+  <div class="brand" onclick="handleBrandClick()">
     <img src="data:image/jpeg;base64,__LOGO_B64__" alt="EVA INSULIN" class="brand-logo-img">
     <div class="brand-titles">
       <div class="brand-name">
@@ -1625,6 +1625,11 @@ function clearQ4Data(repKey) {
 
 /* ── SHOW REP VIEW ── */
 function showRep(repKey, targetTabId = null) {
+  // Access Restriction: Representatives can ONLY view their own page
+  if (currentUser && currentUser.repKey) {
+    repKey = currentUser.repKey;
+  }
+
   const rep = REPS.find(r => r.key === repKey);
   if (!rep || rep.noData) return;
 
@@ -1632,7 +1637,13 @@ function showRep(repKey, targetTabId = null) {
 
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-rep').classList.add('active');
-  document.getElementById('back-btn').classList.add('visible');
+
+  // Only show Back / Team Overview button for Dr. Sherif (Manager)
+  if (currentUser && !currentUser.repKey) {
+    document.getElementById('back-btn').classList.add('visible');
+  } else {
+    document.getElementById('back-btn').classList.remove('visible');
+  }
 
   const av = document.getElementById('rep-avatar-large');
   av.textContent = rep.name[0];
@@ -2223,7 +2234,10 @@ function handleUserLogin() {
   unlockDashboard(user);
 }
 
+let currentUser = null;
+
 function logoutUser() {
+  currentUser = null;
   localStorage.removeItem(AUTH_STORAGE_KEY_USER);
   lockDashboard();
   const input = document.getElementById('login-email-input');
@@ -2241,6 +2255,7 @@ function getInitials(name) {
 }
 
 function unlockDashboard(user) {
+  currentUser = user;
   const overlay = document.getElementById('auth-overlay');
   const main = document.getElementById('main');
   const userPill = document.getElementById('topbar-user-pill');
@@ -2250,14 +2265,12 @@ function unlockDashboard(user) {
 
   if (userPill) {
     const initials = getInitials(user.name);
-    const myStatsBtn = user.repKey ? `<button class="btn" onclick="showRep('${user.repKey}')" style="background:var(--gold);color:#000000;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;border:none;cursor:pointer;margin:0 4px;" title="View your personal sales performance">My Card</button>` : '';
     userPill.innerHTML = `
       <div class="user-avatar-mini" title="${user.name} (${user.role})">${initials}</div>
       <div style="display:flex; flex-direction:column; line-height:1.2;">
         <span style="font-weight:700; color:#ffffff;">${user.name}</span>
         <span style="font-size:10px; color:#94a3b8;">${user.email}</span>
       </div>
-      ${myStatsBtn}
       <button class="btn-signout" onclick="logoutUser()" title="Sign Out of EVA Portal">🚪 Sign Out</button>
     `;
     userPill.style.display = 'flex';
@@ -2267,6 +2280,15 @@ function unlockDashboard(user) {
     isDashboardInitialized = true;
     renderHome();
     loadDataJson();
+  }
+
+  // Role-based routing:
+  // - Medical Reps -> strictly their own personal page
+  // - Dr. Sherif (Manager) -> Full team dashboard overview
+  if (user && user.repKey) {
+    showRep(user.repKey);
+  } else {
+    showHome();
   }
 }
 
@@ -2307,11 +2329,25 @@ function checkAuthStatus() {
 
 /* ── NAVIGATION ── */
 function showHome() {
+  // Access control: Reps are never allowed to access Team Overview
+  if (currentUser && currentUser.repKey) {
+    showRep(currentUser.repKey);
+    return;
+  }
+
   destroyCharts();
   document.getElementById('view-rep').classList.remove('active');
   document.getElementById('view-home').classList.add('active');
   document.getElementById('back-btn').classList.remove('visible');
   renderHome();
+}
+
+function handleBrandClick() {
+  if (currentUser && currentUser.repKey) {
+    showRep(currentUser.repKey);
+  } else {
+    showHome();
+  }
 }
 
 /* ── INIT ── */
