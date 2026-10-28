@@ -86,30 +86,6 @@
   .brand-sub { color: #94a3b8; font-size: 12px; font-weight: 500; margin-top: 2px; }
 
   .topbar-right { display: flex; align-items: center; gap: 14px; }
-  
-  /* Google Drive sync button */
-  .btn-sync-drive {
-    display: flex; align-items: center; gap: 7px;
-    padding: 6px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 800;
-    background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold);
-    color: #fbbf24; cursor: pointer; transition: all 0.2s; font-family: inherit;
-  }
-  .btn-sync-drive:hover {
-    background: var(--gold); color: #000000;
-  }
-
-  /* Backend sync pill */
-  .sync-pill {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    color: #cbd5e1; cursor: pointer; transition: all 0.2s;
-  }
-  .sync-pill:hover { background: rgba(255,255,255,0.14); }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
-  .sync-dot.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-  .sync-dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
-  @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
   .topbar-date {
     color: #cbd5e1; font-size: 12px; font-weight: 600;
@@ -472,42 +448,6 @@
   }
   .save-toast.visible { display: flex; animation: fadeIn 0.2s; }
 
-  /* ── MODAL (FOR GOOGLE SHEETS SETUP) ── */
-  .modal-overlay {
-    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center;
-    padding: 20px; backdrop-filter: blur(4px);
-  }
-  .modal-overlay.active { display: flex; }
-  .modal-box {
-    background: #ffffff; border-radius: 16px; width: 100%; max-width: 640px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25); overflow: hidden; border: 1px solid var(--border);
-    animation: fadeIn 0.25s ease;
-  }
-  .modal-header {
-    background: #090c12; color: #ffffff; padding: 18px 24px;
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 3px solid var(--gold);
-  }
-  .modal-header h3 { font-size: 17px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; }
-  .modal-close { background: none; border: none; color: #cbd5e1; font-size: 20px; cursor: pointer; }
-  .modal-body { padding: 24px; max-height: 75vh; overflow-y: auto; }
-  .modal-step {
-    background: var(--surface-alt); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
-    border: 1px solid var(--border);
-  }
-  .modal-step-title { font-weight: 800; font-size: 13.5px; color: var(--text-primary); margin-bottom: 6px; display: flex; gap: 8px; }
-  .modal-step-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
-  .url-input-box {
-    width: 100%; padding: 12px 14px; border: 2px solid var(--gold); border-radius: 8px;
-    font-family: monospace; font-size: 13px; color: var(--text-primary); margin-top: 8px;
-    background: #ffffff;
-  }
-  .modal-footer {
-    padding: 16px 24px; background: #f8fafc; border-top: 1px solid var(--border);
-    display: flex; justify-content: flex-end; gap: 12px;
-  }
-
   .upload-dropzone {
     border: 2px dashed var(--gold); border-radius: 14px;
     background: var(--surface-alt); padding: 32px 20px; text-align: center;
@@ -549,10 +489,6 @@
     .brand-tag { font-size: 9px; padding: 2px 6px; }
     .brand-sub { display: none; }
     .topbar-date { display: none; }
-    .sync-pill { padding: 5px 10px; font-size: 11px; }
-    .sync-pill span#syncText { display: none; }
-    .btn-sync-drive { padding: 5px 10px; font-size: 11px; }
-    .btn-sync-drive span.sync-btn-text { display: none; }
     #back-btn { padding: 6px 12px; font-size: 12px; }
     #back-btn span.back-text-full { display: none; }
 
@@ -804,25 +740,6 @@
     </div>
   </div>
   <div class="topbar-right">
-    <!-- Open SharePoint Folder Link -->
-    <a href="https://evapharma-my.sharepoint.com/:f:/r/personal/hady_mohamed_evapharma_com/Documents/EVA%20Insulin%20Line%20Sales?d=wc9148c5fdbba4f70a5b2d11c8e958454&csf=1&web=1&e=TojXj4" target="_blank" class="btn-sync-drive" style="text-decoration:none;" title="Open EVA Pharma SharePoint Sales Folder">
-      <span>📁</span>
-      <span class="sync-btn-text">SharePoint Folder</span>
-    </a>
-
-    <!-- Google Drive Sync Button -->
-    <button class="btn-sync-drive" onclick="syncWithSheets(true)" title="Scan and sync all representative sales reports from your Google Drive folder">
-      <span>🔄</span>
-      <span class="sync-btn-text">Sync Google Drive</span>
-    </button>
-
-    <!-- Google Drive Live Sync Pill -->
-    <div class="sync-pill" onclick="openSheetsModal()" title="Google Drive Cloud Connection Settings">
-      <span class="sync-dot" id="syncDot"></span>
-      <span id="syncText">Google Drive Status</span>
-      <span style="font-size:12px;opacity:0.6;">⚙️</span>
-    </div>
-    
     <div class="topbar-date" id="topbar-date"></div>
     <button id="back-btn" onclick="showHome()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -841,13 +758,8 @@
         <div class="title-badge-icon">Δ</div>
         <div>
           <h1>EVA Insulin — Delta Team Performance (YTD 2026)</h1>
-          <div class="subtitle">Live Google Drive-connected sales tracking, quota achievement, and deficit monitoring across all representatives</div>
+          <div class="subtitle">Executive sales tracking, quota achievement, and deficit monitoring across all representatives</div>
         </div>
-      </div>
-      <div>
-        <button class="btn" style="background:var(--surface);border:1px solid var(--border-dark);color:var(--text-primary);padding:8px 18px;font-size:12.5px;" onclick="syncWithSheets(true)">
-          🔄 Scan & Sync Google Drive
-        </button>
       </div>
     </div>
 
@@ -935,48 +847,6 @@
   </div>
 
 </main>
-
-<!-- GOOGLE DRIVE & SHEETS CLOUD SETUP MODAL -->
-<div class="modal-overlay" id="sheetsModal">
-  <div class="modal-box" style="max-width:580px;">
-    <div class="modal-header">
-      <h3><span>📁</span> Google Drive Folder & Live Sync Setup</h3>
-      <button class="modal-close" onclick="closeSheetsModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-step">
-        <div class="modal-step-title"><span>📁</span> Connected EVA Pharma SharePoint Folder</div>
-        <div class="modal-step-text">
-          Target Folder: <strong>EVA Insulin Line Sales</strong> (SharePoint / OneDrive)<br>
-          <div style="margin-top:8px;">
-            <a href="https://evapharma-my.sharepoint.com/:f:/r/personal/hady_mohamed_evapharma_com/Documents/EVA%20Insulin%20Line%20Sales?d=wc9148c5fdbba4f70a5b2d11c8e958454&csf=1&web=1&e=TojXj4" target="_blank" class="btn" style="background:#ffffff;border:1px solid var(--border-dark);color:var(--text-primary);padding:6px 14px;font-size:12px;text-decoration:none;display:inline-flex;">
-              📂 Open SharePoint Folder &rarr;
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="modal-step">
-        <div class="modal-step-title"><span>2️⃣</span> Deploy Google Apps Script Engine</div>
-        <div class="modal-step-text">
-          In your Google Sheet, click <strong>Extensions &rarr; Apps Script</strong>, paste the code from <code>GoogleAppsScript_Code.gs</code>.<br>
-          <em>(The script is already pre-configured to read your folder <code>1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao</code>)</em>.<br>
-          Click <strong>Deploy &rarr; New Deployment &rarr; Web app</strong> (Execute as: <strong>Me</strong>, Access: <strong>Anyone</strong>).
-        </div>
-      </div>
-      <div class="modal-step">
-        <div class="modal-step-title"><span>3️⃣</span> Paste Your Web App URL Here</div>
-        <div class="modal-step-text">
-          Paste the deployed Web App URL below to activate automatic 2-way live sync with your Google Drive folder:
-        </div>
-        <input type="url" id="sheetsUrlInput" class="url-input-box" placeholder="https://script.google.com/macros/s/.../exec">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:#e2e8f0;color:var(--text-primary);" onclick="closeSheetsModal()">Cancel</button>
-      <button class="btn btn-save" onclick="saveSheetsUrl()">💾 Connect & Sync Now</button>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ── DATA DEFINITIONS ── */
@@ -2385,94 +2255,6 @@ let REPS = [
   }
 ]; // Mutable for live cloud updates
 
-/* ── GOOGLE SHEETS BACKEND INTEGRATION ── */
-const SHEETS_URL_KEY = 'eva_sheets_backend_url';
-
-function getSheetsUrl() {
-  return localStorage.getItem(SHEETS_URL_KEY) || '';
-}
-
-function openSheetsModal() {
-  document.getElementById('sheetsUrlInput').value = getSheetsUrl();
-  document.getElementById('sheetsModal').classList.add('active');
-}
-function closeSheetsModal() {
-  document.getElementById('sheetsModal').classList.remove('active');
-}
-function saveSheetsUrl() {
-  const url = document.getElementById('sheetsUrlInput').value.trim();
-  if (url) {
-    localStorage.setItem(SHEETS_URL_KEY, url);
-    closeSheetsModal();
-    syncWithSheets(true);
-  } else {
-    localStorage.removeItem(SHEETS_URL_KEY);
-    closeSheetsModal();
-    updateSyncPillStatus('offline');
-  }
-}
-
-function updateSyncPillStatus(status, text) {
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncText');
-  if (!dot || !txt) return;
-
-  if (status === 'online') {
-    dot.className = 'sync-dot online';
-    txt.textContent = text || 'Google Drive: Live Sync';
-  } else if (status === 'loading') {
-    dot.className = 'sync-dot loading';
-    txt.textContent = text || 'Scanning Drive...';
-  } else {
-    dot.className = 'sync-dot';
-    txt.textContent = text || 'Connect Google Drive';
-  }
-}
-
-async function syncWithSheets(isManual = false) {
-  const url = getSheetsUrl();
-  if (!url) {
-    updateSyncPillStatus('offline', 'Connect Google Drive');
-    if (isManual) openSheetsModal();
-    return;
-  }
-
-  updateSyncPillStatus('loading', isManual ? 'Scanning Drive...' : 'Loading Data...');
-  try {
-    const action = isManual ? 'syncDrive' : 'getData';
-    const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'action=' + action + '&_t=' + Date.now();
-    const res = await fetch(fetchUrl);
-    const data = await res.json();
-    
-    if (data && data.status === 'success' && data.reps) {
-      // Merge live data with reps
-      data.reps.forEach(liveRep => {
-        const localRep = REPS.find(r => r.key === liveRep.key);
-        if (localRep) {
-          localRep.quarters = liveRep.quarters;
-          localRep.noData = liveRep.noData;
-        }
-      });
-      updateSyncPillStatus('online', 'Google Drive: Live Sync');
-      
-      if (document.getElementById('view-home').classList.contains('active')) {
-        renderHome();
-      } else if (currentRepForCharts && currentRepForCharts.key) {
-        showRep(currentRepForCharts.key);
-      }
-
-      if (isManual) {
-        alert('✅ Google Drive scan completed! All representative files have been synced.');
-      }
-    } else {
-      updateSyncPillStatus('online', 'Google Drive: Connected');
-    }
-  } catch (err) {
-    console.warn('Google Drive sync notice:', err);
-    updateSyncPillStatus('offline', 'Drive Offline (Baseline Data)');
-  }
-}
-
 /* ── NUMBER FORMATTERS ── */
 function fmt(n) {
   if (n === null || n === undefined || isNaN(n)) return '—';
@@ -3532,7 +3314,6 @@ async function loadDataJson() {
             localRep.noData = liveRep.noData;
           }
         });
-        updateSyncPillStatus('online', 'OneDrive: Live Sync');
         if (document.getElementById('view-home').classList.contains('active')) {
           renderHome();
         } else if (currentRepForCharts && currentRepForCharts.key) {
@@ -3563,7 +3344,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   renderHome();
   loadDataJson();
-  syncWithSheets(false);
 });
 </script>
 </body>
