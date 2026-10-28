@@ -3465,22 +3465,82 @@ async function loadDataJson() {
 /* ── AUTHORIZED DELTA TEAM ACCESS LIST (MANAGER + 9 REPS) ── */
 const AUTH_STORAGE_KEY_USER = 'eva_delta_auth_user';
 
-// Authorized emails registry (The 10 accounts: Manager + 9 Reps)
+// The 10 official Delta Team members (Manager + 9 Representatives)
 const AUTHORIZED_TEAM_MEMBERS = {
-  // Manager
-  "manager@evapharma.com": { name: "Delta Team Manager", role: "Sales Management", repKey: null },
+  // 1. Manager
+  "sherif.nessim@evapharma.com": {
+    name: "Dr. Sherif Nessim",
+    role: "Delta Team District Manager",
+    repKey: null
+  },
 
-  // 9 Medical Representatives
-  "hady.mohamed@evapharma.com": { name: "Hady Fouda", role: "Medical Representative", repKey: "hady" },
-  "hady_mohamed@evapharma.com": { name: "Hady Fouda", role: "Medical Representative", repKey: "hady" },
-  "amany.hassan@evapharma.com": { name: "Amany Hassan", role: "Medical Representative", repKey: "amany" },
-  "ibrahim.abdelaty@evapharma.com": { name: "Ibrahim Abdelaty", role: "Medical Representative", repKey: "ibrahim" },
-  "radwa.gamal@evapharma.com": { name: "Radwa Gamal", role: "Medical Representative", repKey: "radwa" },
-  "hassan.yassin@evapharma.com": { name: "Hassan Yassin", role: "Medical Representative", repKey: "hassan" },
-  "nadeem.ragab@evapharma.com": { name: "Nadeem Ragab", role: "Medical Representative", repKey: "nadeem" },
-  "sabah.gomaa@evapharma.com": { name: "Sabah Gomaa", role: "Medical Representative", repKey: "sabah" },
-  "tawfik.mohamed@evapharma.com": { name: "Tawfik Mohamed", role: "Medical Representative", repKey: "tawfik" },
-  "wedad.mostafa@evapharma.com": { name: "Wedad Mostafa", role: "Medical Representative", repKey: "wedad" }
+  // 2. Amany
+  "amany.mostafa@evapharma.com": {
+    name: "Amany Mostafa",
+    role: "Medical Representative",
+    repKey: "amany"
+  },
+
+  // 3. Nadeem
+  "nadeem.nasser@evapharma.com": {
+    name: "Nadeem Nasser",
+    role: "Medical Representative",
+    repKey: "nadeem"
+  },
+
+  // 4. Ibrahim
+  "ibrahim.ragab@evapharma.com": {
+    name: "Ibrahim Ragab",
+    role: "Medical Representative",
+    repKey: "ibrahim"
+  },
+
+  // 5. Hassan
+  "hassan.khaled@evapharma.com": {
+    name: "Hassan Khaled",
+    role: "Medical Representative",
+    repKey: "hassan"
+  },
+
+  // 6. Sabah
+  "sabah.safwat@evapharma.com": {
+    name: "Sabah Safwat",
+    role: "Medical Representative",
+    repKey: "sabah"
+  },
+
+  // 7. Mohamed Tawfik
+  "mohamed.tawfik@evapharma.com": {
+    name: "Mohamed Tawfik",
+    role: "Medical Representative",
+    repKey: "tawfik"
+  },
+
+  // 8. Rawda Ahmed
+  "rawda.ahmed@evapharma.com": {
+    name: "Rawda Ahmed",
+    role: "Medical Representative",
+    repKey: "radwa"
+  },
+
+  // 9. Wedad Esmaeel
+  "wedad.esmaeel@evapharma.com": {
+    name: "Wedad Esmaeel",
+    role: "Medical Representative",
+    repKey: "wedad"
+  },
+
+  // 10. Hady Mohamed
+  "hady.mohamed@evapharma.com": {
+    name: "Hady Mohamed",
+    role: "Medical Representative",
+    repKey: "hady"
+  },
+  "hady_mohamed@evapharma.com": {
+    name: "Hady Mohamed",
+    role: "Medical Representative",
+    repKey: "hady"
+  }
 };
 
 let isDashboardInitialized = false;
@@ -3502,7 +3562,12 @@ function handleUserLogin() {
   hideAuthAlert();
   const input = document.getElementById('login-email-input');
   const rawEmail = input ? input.value : '';
-  const email = (rawEmail || '').trim().toLowerCase();
+  let email = (rawEmail || '').trim().toLowerCase();
+
+  // Auto-append domain if user entered username only (e.g. hady.mohamed)
+  if (email && !email.includes('@')) {
+    email += '@evapharma.com';
+  }
 
   if (!email) {
     showAuthAlert('Please enter your registered EVA Pharma email address.', 'error');
@@ -3558,12 +3623,14 @@ function unlockDashboard(user) {
 
   if (userPill) {
     const initials = getInitials(user.name);
+    const myStatsBtn = user.repKey ? `<button class="btn" onclick="showRep('${user.repKey}')" style="background:var(--gold);color:#000000;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;border:none;cursor:pointer;margin:0 4px;" title="View your personal sales performance">My Card</button>` : '';
     userPill.innerHTML = `
       <div class="user-avatar-mini" title="${user.name} (${user.role})">${initials}</div>
       <div style="display:flex; flex-direction:column; line-height:1.2;">
         <span style="font-weight:700; color:#ffffff;">${user.name}</span>
         <span style="font-size:10px; color:#94a3b8;">${user.email}</span>
       </div>
+      ${myStatsBtn}
       <button class="btn-signout" onclick="logoutUser()" title="Sign Out of EVA Portal">🚪 Sign Out</button>
     `;
     userPill.style.display = 'flex';
