@@ -833,10 +833,10 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     </div>
   </div>
   <div class="topbar-right">
-    <!-- Open Google Drive Folder Link -->
-    <a href="https://drive.google.com/drive/folders/1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao?usp=drive_link" target="_blank" class="btn-sync-drive" style="text-decoration:none;" title="Open Team Google Drive Sales Folder">
+    <!-- Open SharePoint Folder Link -->
+    <a href="https://evapharma-my.sharepoint.com/:f:/r/personal/hady_mohamed_evapharma_com/Documents/EVA%20Insulin%20Line%20Sales?d=wc9148c5fdbba4f70a5b2d11c8e958454&csf=1&web=1&e=TojXj4" target="_blank" class="btn-sync-drive" style="text-decoration:none;" title="Open EVA Pharma SharePoint Sales Folder">
       <span>📁</span>
-      <span class="sync-btn-text">Open Drive</span>
+      <span class="sync-btn-text">SharePoint Folder</span>
     </a>
 
     <!-- Google Drive Sync Button -->
@@ -974,12 +974,12 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     </div>
     <div class="modal-body">
       <div class="modal-step">
-        <div class="modal-step-title"><span>1️⃣</span> Linked Google Drive Sales Folder</div>
+        <div class="modal-step-title"><span>📁</span> Connected EVA Pharma SharePoint Folder</div>
         <div class="modal-step-text">
-          Target Folder ID: <code>1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao</code><br>
+          Target Folder: <strong>EVA Insulin Line Sales</strong> (SharePoint / OneDrive)<br>
           <div style="margin-top:8px;">
-            <a href="https://drive.google.com/drive/folders/1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao?usp=drive_link" target="_blank" class="btn" style="background:#ffffff;border:1px solid var(--border-dark);color:var(--text-primary);padding:6px 14px;font-size:12px;text-decoration:none;display:inline-flex;">
-              📂 Open Drive Folder in Google Drive &rarr;
+            <a href="https://evapharma-my.sharepoint.com/:f:/r/personal/hady_mohamed_evapharma_com/Documents/EVA%20Insulin%20Line%20Sales?d=wc9148c5fdbba4f70a5b2d11c8e958454&csf=1&web=1&e=TojXj4" target="_blank" class="btn" style="background:#ffffff;border:1px solid var(--border-dark);color:var(--text-primary);padding:6px 14px;font-size:12px;text-decoration:none;display:inline-flex;">
+              📂 Open SharePoint Folder &rarr;
             </a>
           </div>
         </div>
