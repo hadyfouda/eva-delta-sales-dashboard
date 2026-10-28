@@ -33,9 +33,9 @@ function doGet(e) {
   try {
     const action = e.parameter.action || "getData";
 
-    if (action === "saveQ4" && e.parameter.payload) {
+    if ((action === "saveQuarter" || action === "saveQ4") && e.parameter.payload) {
       const payload = JSON.parse(decodeURIComponent(e.parameter.payload));
-      return saveQ4Data(payload);
+      return saveQuarterData(payload);
     }
 
     return getSalesData();
@@ -45,7 +45,7 @@ function doGet(e) {
 }
 
 /**
- * Handle POST Requests (Save Q4 records)
+ * Handle POST Requests (Save Quarter records)
  */
 function doPost(e) {
   try {
@@ -60,7 +60,7 @@ function doPost(e) {
       return createJsonResponse({ status: "error", message: "No data payload provided" });
     }
 
-    return saveQ4Data(payload);
+    return saveQuarterData(payload);
   } catch (err) {
     return createJsonResponse({ status: "error", message: err.toString() });
   }
@@ -179,29 +179,48 @@ function getSalesData() {
 }
 
 /**
- * Save Q4 records to the Sales_Database sheet
+ * Save quarterly records to the Sales_Database sheet (Supports Q1, Q2, Q3, Q4)
  */
-function saveQ4Data(payload) {
+function saveQuarterData(payload) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let wsSales = ss.getSheetByName(SHEET_SALES);
-  if (!wsSales) {
+  let wsReps  = ss.getSheetByName(SHEET_REPS);
+  if (!wsSales || !wsReps) {
     initDatabase();
     wsSales = ss.getSheetByName(SHEET_SALES);
+    wsReps  = ss.getSheetByName(SHEET_REPS);
   }
 
   const repKey = (payload.repKey || "").toString().toLowerCase().trim();
   const repName = payload.repName || repKey.toUpperCase();
-  const quarter = "Q4";
+  const quarter = (payload.quarter || "Q4").toUpperCase().trim();
   const products = payload.products || [];
 
   if (!repKey || products.length === 0) {
     return createJsonResponse({ status: "error", message: "Invalid payload: missing repKey or products" });
   }
 
+  // Update Rep status in Reps_List if needed
+  const repsData = wsReps.getDataRange().getValues();
+  let repFound = false;
+  for (let i = 1; i < repsData.length; i++) {
+    if ((repsData[i][0] || "").toString().toLowerCase().trim() === repKey) {
+      repFound = true;
+      if (repsData[i][3] === "Pending Data") {
+        wsReps.getRange(i + 1, 3).setValue(quarter);
+        wsReps.getRange(i + 1, 4).setValue("Active");
+      }
+      break;
+    }
+  }
+  if (!repFound) {
+    wsReps.appendRow([repKey, repName, quarter, "Active"]);
+  }
+
   const data = wsSales.getDataRange().getValues();
   const existingRows = {};
 
-  // Track existing rows for this rep and Q4
+  // Track existing rows for this rep and quarter
   for (let i = 1; i < data.length; i++) {
     const rowRep = (data[i][0] || "").toString().toLowerCase().trim();
     const rowQ   = data[i][2] || "";
@@ -214,19 +233,19 @@ function saveQ4Data(payload) {
   products.forEach(p => {
     const pid = p.pid;
     const pMeta = PRODUCTS_MAP[pid] || { code: "", name: "Product " + pid };
-    const su = parseFloat(p.salesUnits) || 0;
-    const tu = parseFloat(p.targetUnits) || 0;
-    const uDef = tu - su;
+    const su = p.salesUnits !== null && p.salesUnits !== undefined ? parseFloat(p.salesUnits) : null;
+    const tu = p.targetUnits !== null && p.targetUnits !== undefined ? parseFloat(p.targetUnits) : null;
+    const uDef = (tu !== null && su !== null) ? (tu - su) : null;
 
-    const sv = parseFloat(p.salesValue) || 0;
-    const tv = parseFloat(p.targetValue) || 0;
-    const vDef = tv - sv;
+    const sv = p.salesValue !== null && p.salesValue !== undefined ? parseFloat(p.salesValue) : null;
+    const tv = p.targetValue !== null && p.targetValue !== undefined ? parseFloat(p.targetValue) : null;
+    const vDef = (tv !== null && sv !== null) ? (tv - sv) : null;
 
-    const sp = parseFloat(p.salesPoints) || (sv * 2);
-    const tp = parseFloat(p.targetPoints) || (tv * 2);
-    const pDef = tp - sp;
+    const sp = p.salesPoints !== null && p.salesPoints !== undefined ? parseFloat(p.salesPoints) : (sv !== null ? sv * 2 : null);
+    const tp = p.targetPoints !== null && p.targetPoints !== undefined ? parseFloat(p.targetPoints) : (tv !== null ? tv * 2 : null);
+    const pDef = (tp !== null && sp !== null) ? (tp - sp) : null;
 
-    const ratio = tv > 0 ? (sv / tv) * 100 : null;
+    const ratio = (tv && tv > 0 && sv !== null) ? (sv / tv) * 100 : null;
 
     const rowValues = [
       repKey, repName, quarter,
@@ -248,9 +267,15 @@ function saveQ4Data(payload) {
 
   return createJsonResponse({
     status: "success",
-    message: "Q4 records successfully saved to Google Sheet for " + repName,
-    repKey: repKey
+    message: quarter + " records successfully saved to Google Sheet for " + repName,
+    repKey: repKey,
+    quarter: quarter
   });
+}
+
+function saveQ4Data(payload) {
+  payload.quarter = "Q4";
+  return saveQuarterData(payload);
 }
 
 function createJsonResponse(obj) {
@@ -273,10 +298,10 @@ function initDatabase() {
       ["hady", "Hady", "Q1", "Active"],
       ["ibrahim", "Ibrahim", "Q2", "Active"],
       ["radwa", "Radwa", "Q1", "Active"],
-      ["hassan", "Hassan", "Q1", "Pending Data"],
-      ["nadeem", "Nadeem", "Q1", "Pending Data"],
-      ["sabah", "Sabah", "Q1", "Pending Data"],
-      ["tawfik", "Tawfik", "Q1", "Pending Data"],
+      ["hassan", "Hassan", "Q1", "Active"],
+      ["nadeem", "Nadeem", "Q1", "Active"],
+      ["sabah", "Sabah", "Q1", "Active"],
+      ["tawfik", "Tawfik", "Q1", "Active"],
       ["wedad", "Wedad", "Q1", "Pending Data"]
     ];
     reps.forEach(r => wsReps.appendRow(r));
