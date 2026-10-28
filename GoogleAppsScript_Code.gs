@@ -23,7 +23,7 @@
 // Example: If URL is drive.google.com/drive/folders/1ABC_xyz123, use "1ABC_xyz123"
 // If left empty, it will automatically search for a folder named "Delta Team Sales" or "EVA Insulin Line Sales"
 // ============================================================================
-const DRIVE_FOLDER_ID = "";
+const DRIVE_FOLDER_ID = "1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao";
 
 const SHEET_SALES = "Sales_Database";
 const SHEET_REPS  = "Reps_List";

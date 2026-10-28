@@ -804,6 +804,12 @@
     </div>
   </div>
   <div class="topbar-right">
+    <!-- Open Google Drive Folder Link -->
+    <a href="https://drive.google.com/drive/folders/1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao?usp=drive_link" target="_blank" class="btn-sync-drive" style="text-decoration:none;" title="Open Team Google Drive Sales Folder">
+      <span>📁</span>
+      <span class="sync-btn-text">Open Drive</span>
+    </a>
+
     <!-- Google Drive Sync Button -->
     <button class="btn-sync-drive" onclick="syncWithSheets(true)" title="Scan and sync all representative sales reports from your Google Drive folder">
       <span>🔄</span>
@@ -939,16 +945,21 @@
     </div>
     <div class="modal-body">
       <div class="modal-step">
-        <div class="modal-step-title"><span>1️⃣</span> Create Your Google Drive Sales Folder</div>
+        <div class="modal-step-title"><span>1️⃣</span> Linked Google Drive Sales Folder</div>
         <div class="modal-step-text">
-          Create a folder on your Google Drive named <code>Delta Team Sales</code> (or any name), with subfolders for each representative (e.g. <code>Hady</code>, <code>Amany</code>, <code>Sabah</code>, etc.), and drop your quarterly <code>.xlsx</code> sales reports into their respective folders.
+          Target Folder ID: <code>1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao</code><br>
+          <div style="margin-top:8px;">
+            <a href="https://drive.google.com/drive/folders/1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao?usp=drive_link" target="_blank" class="btn" style="background:#ffffff;border:1px solid var(--border-dark);color:var(--text-primary);padding:6px 14px;font-size:12px;text-decoration:none;display:inline-flex;">
+              📂 Open Drive Folder in Google Drive &rarr;
+            </a>
+          </div>
         </div>
       </div>
       <div class="modal-step">
-        <div class="modal-step-title"><span>2️⃣</span> Deploy Google Apps Script Backend</div>
+        <div class="modal-step-title"><span>2️⃣</span> Deploy Google Apps Script Engine</div>
         <div class="modal-step-text">
-          Open your Google Sheet, click <strong>Extensions &rarr; Apps Script</strong>, paste the code from <code>GoogleAppsScript_Code.gs</code>.<br>
-          <em>(Optional: paste your Google Drive Folder ID into <code>DRIVE_FOLDER_ID</code>, or leave empty if the folder is named "Delta Team Sales")</em>.<br>
+          In your Google Sheet, click <strong>Extensions &rarr; Apps Script</strong>, paste the code from <code>GoogleAppsScript_Code.gs</code>.<br>
+          <em>(The script is already pre-configured to read your folder <code>1rIRiEeyhKDdX6ctSHM-pQ3AKV_PPmmao</code>)</em>.<br>
           Click <strong>Deploy &rarr; New Deployment &rarr; Web app</strong> (Execute as: <strong>Me</strong>, Access: <strong>Anyone</strong>).
         </div>
       </div>
