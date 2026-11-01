@@ -4126,6 +4126,10 @@ function computeTeamDeficit() {
     team.salesPoints += ytd.salesPoints;
     team.targetPoints += ytd.targetPoints;
 
+    const repProdDeficits = {};
+    const repProdSales = {};
+    const repProdTargets = {};
+
     PRODUCTS.forEach(p => {
       const py = ytd.productsYTD[p.id];
       if (py) {
@@ -4135,6 +4139,14 @@ function computeTeamDeficit() {
         team.products[p.id].targetValue += py.targetValue;
         team.products[p.id].salesPoints += py.salesPoints;
         team.products[p.id].targetPoints += py.targetPoints;
+
+        repProdDeficits[p.id] = py.deficitUnits;
+        repProdSales[p.id] = py.salesUnits;
+        repProdTargets[p.id] = py.targetUnits;
+      } else {
+        repProdDeficits[p.id] = 0;
+        repProdSales[p.id] = 0;
+        repProdTargets[p.id] = 0;
       }
     });
 
@@ -4148,20 +4160,23 @@ function computeTeamDeficit() {
       salesValue: ytd.salesValue,
       targetValue: ytd.targetValue,
       deficitValue: ytd.deficitValue,
-      ratio: ytd.ratio
+      ratio: ytd.targetUnits > 0 ? (ytd.salesUnits / ytd.targetUnits) * 100 : 0,
+      prodDeficits: repProdDeficits,
+      prodSales: repProdSales,
+      prodTargets: repProdTargets
     });
   });
 
   team.deficitUnits = team.targetUnits - team.salesUnits;
   team.deficitValue = team.targetValue - team.salesValue;
   team.deficitPoints = team.targetPoints - team.salesPoints;
-  team.ratio = team.targetValue > 0 ? (team.salesValue / team.targetValue) * 100 : 0;
+  team.ratio = team.targetUnits > 0 ? (team.salesUnits / team.targetUnits) * 100 : 0;
 
   PRODUCTS.forEach(p => {
     const prod = team.products[p.id];
     prod.deficitUnits = prod.targetUnits - prod.salesUnits;
     prod.deficitValue = prod.targetValue - prod.salesValue;
-    prod.ratio = prod.targetValue > 0 ? (prod.salesValue / prod.targetValue) * 100 : 0;
+    prod.ratio = prod.targetUnits > 0 ? (prod.salesUnits / prod.targetUnits) * 100 : 0;
   });
 
   return team;
@@ -4184,7 +4199,7 @@ function computeSingleRepDeficit(repKey) {
     salesPoints: ytd.salesPoints,
     targetPoints: ytd.targetPoints,
     deficitPoints: ytd.deficitPoints,
-    ratio: ytd.ratio,
+    ratio: ytd.targetUnits > 0 ? (ytd.salesUnits / ytd.targetUnits) * 100 : 0,
     products: []
   };
 
@@ -4200,11 +4215,25 @@ function computeSingleRepDeficit(repKey) {
       salesValue: py ? py.salesValue : 0,
       targetValue: py ? py.targetValue : 0,
       deficitValue: py ? py.deficitValue : 0,
-      ratio: py ? py.ratio : 0
+      ratio: py && py.targetUnits > 0 ? (py.salesUnits / py.targetUnits) * 100 : 0
     });
   });
 
   return data;
+}
+
+function renderUnitDeficitBadge(targetUnits, salesUnits) {
+  if (targetUnits === null || salesUnits === null || targetUnits === undefined || salesUnits === undefined) {
+    return '<span style="color:#94a3b8;font-weight:600;">—</span>';
+  }
+  const diff = targetUnits - salesUnits;
+  if (diff > 0.001) {
+    return `<span class="priority-tag priority-critical" style="font-size:11.5px; font-weight:800; white-space:nowrap;">-${fmt(diff)} u</span>`;
+  } else if (diff <= -0.001) {
+    return `<span class="priority-tag priority-success" style="font-size:11.5px; font-weight:800; white-space:nowrap;">+${fmt(Math.abs(diff))} u</span>`;
+  } else {
+    return `<span class="priority-tag priority-success" style="font-size:11.5px; font-weight:800; white-space:nowrap;">Met</span>`;
+  }
 }
 
 function openDeficitReport(targetType) {
@@ -4223,61 +4252,61 @@ function openDeficitReport(targetType) {
   if (!modal || !bodyEl) return;
 
   if (isTeam) {
-    titleEl.textContent = 'Delta Team — Year-End Quota Deficit & Gap Analysis Report 2026';
-    subEl.textContent = 'Overall team quota gap, net financial deficit, and per-medicine shortage across all Delta territories';
+    titleEl.textContent = 'Delta Team — Annual Unit Deficit & Shortage Report 2026';
+    subEl.textContent = 'تقرير النقص في عدد الوحدات السنوي — النقص في عدد العلب لكل مندوب ولكل دوا';
 
     const d = computeTeamDeficit();
-    const valClass = d.deficitValue > 0 ? 'kpi-deficit' : 'kpi-surplus';
-    const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
+    const valClass = d.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus';
+    const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
 
     let html = `
-      <!-- KPI CARDS -->
+      <!-- KPI CARDS (UNITS FOCUSED) -->
       <div class="report-kpi-grid">
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Annual Quota (Value)</span>
-            <span>💰</span>
+            <span>Target Quota (Units) | المستهدف</span>
+            <span>🎯</span>
           </div>
-          <div class="report-kpi-val">${fmt(d.salesValue)} <span style="font-size:13px; color:var(--gold);">EGP</span></div>
-          <div class="report-kpi-sub">Target: ${fmt(d.targetValue)} EGP (${fmtPct(d.ratio)} achieved)</div>
+          <div class="report-kpi-val">${fmt(d.targetUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
+          <div class="report-kpi-sub">Total annual physical quota for Delta territory</div>
+        </div>
+
+        <div class="report-kpi-card">
+          <div class="report-kpi-title">
+            <span>Actual Units Sold | المباع فعلياً</span>
+            <span>📦</span>
+          </div>
+          <div class="report-kpi-val">${fmt(d.salesUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
+          <div class="report-kpi-sub">Cumulative volume sold (YTD 2026)</div>
         </div>
 
         <div class="report-kpi-card ${valClass}">
           <div class="report-kpi-title">
-            <span>Net Value Deficit / Surplus</span>
-            <span>${d.deficitValue > 0 ? '📉' : '🏆'}</span>
-          </div>
-          <div class="report-kpi-val" style="color:${d.deficitValue > 0 ? '#ef4444' : '#22c55e'};">
-            ${d.deficitValue > 0 ? '-' + fmt(d.deficitValue) : '+' + fmt(Math.abs(d.deficitValue))} <span style="font-size:13px;">EGP</span>
-          </div>
-          <div class="report-kpi-sub">${d.deficitValue > 0 ? 'Remaining financial gap to 100% quota' : 'Aggregate financial quota exceeded!'}</div>
-        </div>
-
-        <div class="report-kpi-card ${d.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus'}">
-          <div class="report-kpi-title">
-            <span>Physical Units Deficit</span>
-            <span>📦</span>
+            <span>Net Units Deficit | إجمالي النقص</span>
+            <span>${d.deficitUnits > 0 ? '📉' : '🏆'}</span>
           </div>
           <div class="report-kpi-val" style="color:${d.deficitUnits > 0 ? '#ef4444' : '#22c55e'};">
             ${d.deficitUnits > 0 ? '-' + fmt(d.deficitUnits) : '+' + fmt(Math.abs(d.deficitUnits))} <span style="font-size:13px;">units</span>
           </div>
-          <div class="report-kpi-sub">Sold: ${fmt(d.salesUnits)} u | Target: ${fmt(d.targetUnits)} u</div>
+          <div class="report-kpi-sub">${d.deficitUnits > 0 ? 'Remaining physical units required to close quota' : 'Annual volume quota surpassed!'}</div>
         </div>
 
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Sales Points Deficit</span>
+            <span>Unit Fulfillment | نسبة التحقيق</span>
             <span>⭐</span>
           </div>
-          <div class="report-kpi-val">${d.deficitPoints > 0 ? '-' + fmt(d.deficitPoints) : '+' + fmt(Math.abs(d.deficitPoints))} <span style="font-size:13px;">pts</span></div>
-          <div class="report-kpi-sub">Points: ${fmt(d.salesPoints)} pts / Target: ${fmt(d.targetPoints)} pts</div>
+          <div class="report-kpi-val" style="color:${d.ratio >= 100 ? '#22c55e' : d.ratio >= 80 ? '#fbbf24' : '#ef4444'};">
+            ${fmtPct(d.ratio)}
+          </div>
+          <div class="report-kpi-sub">Volume achievement vs annual quota</div>
         </div>
       </div>
 
       <!-- SECTION 1: PER-MEDICINE SHORTAGE BREAKDOWN TABLE -->
       <div class="report-section-title">
-        <span>💊 Per-Medicine Shortage & Deficit Breakdown (النقص في كل دوا)</span>
-        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Evaluated against EVA Insulin official list prices</span>
+        <span>💊 Per-Medicine Shortage Breakdown (النقص في كل دوا على مستوى الفريق)</span>
+        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Delta Region Aggregate</span>
       </div>
 
       <div class="report-table-box">
@@ -4286,14 +4315,10 @@ function openDeficitReport(targetType) {
             <tr>
               <th>Medicine / Insulin Product</th>
               <th>Code</th>
-              <th>Unit Price</th>
               <th>Target Units</th>
-              <th>Actual Units</th>
-              <th>Unit Deficit (Shortage)</th>
-              <th>Target Value</th>
-              <th>Actual Sales</th>
-              <th>Value Deficit</th>
-              <th>Fulfillment</th>
+              <th>Actual Units Sold</th>
+              <th>Unit Deficit / Shortage (النقص بالعلب)</th>
+              <th>Unit Fulfillment %</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -4313,13 +4338,9 @@ function openDeficitReport(targetType) {
         <tr>
           <td><strong>${prod.name}</strong></td>
           <td><span style="font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">#${prod.pid}</span></td>
-          <td>${fmt(prod.price)} EGP</td>
-          <td>${fmt(prod.targetUnits)}</td>
-          <td><strong>${fmt(prod.salesUnits)}</strong></td>
-          <td>${renderDeficitUnit(prod.targetUnits, prod.salesUnits)}</td>
-          <td>${fmt(prod.targetValue)} EGP</td>
-          <td><strong>${fmt(prod.salesValue)}</strong> EGP</td>
-          <td>${renderDeficitVal(prod.targetValue, prod.salesValue)}</td>
+          <td>${fmt(prod.targetUnits)} units</td>
+          <td><strong>${fmt(prod.salesUnits)}</strong> units</td>
+          <td>${renderUnitDeficitBadge(prod.targetUnits, prod.salesUnits)}</td>
           <td>
             <div style="font-weight:800; color:${prod.ratio >= 100 ? '#16a34a' : prod.ratio >= 70 ? '#d97706' : '#dc2626'};">
               ${fmtPct(prod.ratio)}
@@ -4332,40 +4353,36 @@ function openDeficitReport(targetType) {
 
     html += `
           <tr class="total-row">
-            <td colspan="3">TOTAL (ALL 4 INSULIN PRODUCTS)</td>
-            <td>${fmt(d.targetUnits)}</td>
-            <td>${fmt(d.salesUnits)}</td>
-            <td>${renderDeficitUnit(d.targetUnits, d.salesUnits)}</td>
-            <td>${fmt(d.targetValue)} EGP</td>
-            <td>${fmt(d.salesValue)} EGP</td>
-            <td>${renderDeficitVal(d.targetValue, d.salesValue)}</td>
+            <td colspan="2">TOTAL (ALL 4 INSULIN PRODUCTS)</td>
+            <td>${fmt(d.targetUnits)} units</td>
+            <td>${fmt(d.salesUnits)} units</td>
+            <td>${renderUnitDeficitBadge(d.targetUnits, d.salesUnits)}</td>
             <td style="color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
-            <td>${d.deficitValue > 0 ? '<span class="priority-tag priority-warning">Net Deficit</span>' : '<span class="priority-tag priority-success">Surplus</span>'}</td>
+            <td>${d.deficitUnits > 0 ? '<span class="priority-tag priority-warning">Net Shortage</span>' : '<span class="priority-tag priority-success">Surplus</span>'}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- SECTION 2: REPRESENTATIVES QUOTA BREAKDOWN -->
+    <!-- SECTION 2: MANAGER MATRIX — UNIT SHORTAGE PER REP FOR EACH DRUG -->
     <div class="report-section-title">
-      <span>👥 Representatives Quota Fulfillment & Deficit Breakdown</span>
-      <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Individual contributor deficit breakdown</span>
+      <span>👥 Manager's Matrix: Unit Shortage per Representative for Each Medicine (النقص في عدد الوحدات لكل مندوب لكل دوا)</span>
+      <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Operational Gap Matrix</span>
     </div>
 
     <div class="report-table-box">
       <table class="report-table">
         <thead>
           <tr>
-            <th>Representative</th>
-            <th>Territory</th>
-            <th>Target Units</th>
-            <th>Actual Units</th>
-            <th>Unit Deficit</th>
-            <th>Target Value</th>
-            <th>Actual Sales</th>
-            <th>Value Deficit</th>
-            <th>Fulfillment</th>
-            <th>Action</th>
+            <th style="min-width:140px;">Medical Rep</th>
+            <th style="min-width:110px;">Territory</th>
+            <th style="text-align:center;">Humaxin Mix<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1260</span></th>
+            <th style="text-align:center;">Humaxin Rapid<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1259</span></th>
+            <th style="text-align:center;">Glargivin UPA<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1251</span></th>
+            <th style="text-align:center;">Glargivin 100IU<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1110</span></th>
+            <th style="text-align:center; background:#1e293b; color:var(--gold);">Total Shortage<br><span style="font-size:10px;font-weight:600;">إجمالي النقص</span></th>
+            <th style="text-align:center;">Unit Fulfillment</th>
+            <th style="text-align:center;">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -4376,18 +4393,17 @@ function openDeficitReport(targetType) {
         <tr>
           <td><strong>${r.name}</strong></td>
           <td><span style="font-size:12px; color:var(--text-secondary);">${r.note}</span></td>
-          <td>${fmt(r.targetUnits)}</td>
-          <td><strong>${fmt(r.salesUnits)}</strong></td>
-          <td>${renderDeficitUnit(r.targetUnits, r.salesUnits)}</td>
-          <td>${fmt(r.targetValue)} EGP</td>
-          <td><strong>${fmt(r.salesValue)}</strong> EGP</td>
-          <td>${renderDeficitVal(r.targetValue, r.salesValue)}</td>
-          <td>
+          <td style="text-align:center;">${renderUnitDeficitBadge(r.prodTargets[1260], r.prodSales[1260])}</td>
+          <td style="text-align:center;">${renderUnitDeficitBadge(r.prodTargets[1259], r.prodSales[1259])}</td>
+          <td style="text-align:center;">${renderUnitDeficitBadge(r.prodTargets[1251], r.prodSales[1251])}</td>
+          <td style="text-align:center;">${renderUnitDeficitBadge(r.prodTargets[1110], r.prodSales[1110])}</td>
+          <td style="text-align:center; background:rgba(245, 158, 11, 0.05);">${renderUnitDeficitBadge(r.targetUnits, r.salesUnits)}</td>
+          <td style="text-align:center;">
             <div style="font-weight:800; color:${r.ratio >= 100 ? '#16a34a' : r.ratio >= 70 ? '#d97706' : '#dc2626'};">
               ${fmtPct(r.ratio)}
             </div>
           </td>
-          <td>
+          <td style="text-align:center;">
             <button onclick="openDeficitReport('${r.key}')" style="background:#090c12; color:#fbbf24; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="View Rep Deficit Report">
               View Rep ↗
             </button>
@@ -4398,15 +4414,14 @@ function openDeficitReport(targetType) {
 
     html += `
           <tr class="total-row">
-            <td colspan="2">DELTA TEAM TOTAL</td>
-            <td>${fmt(d.targetUnits)}</td>
-            <td>${fmt(d.salesUnits)}</td>
-            <td>${renderDeficitUnit(d.targetUnits, d.salesUnits)}</td>
-            <td>${fmt(d.targetValue)} EGP</td>
-            <td>${fmt(d.salesValue)} EGP</td>
-            <td>${renderDeficitVal(d.targetValue, d.salesValue)}</td>
-            <td style="color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
-            <td>-</td>
+            <td colspan="2">DELTA TEAM TOTAL SHORTAGE</td>
+            <td style="text-align:center;">${renderUnitDeficitBadge(d.products[1260].targetUnits, d.products[1260].salesUnits)}</td>
+            <td style="text-align:center;">${renderUnitDeficitBadge(d.products[1259].targetUnits, d.products[1259].salesUnits)}</td>
+            <td style="text-align:center;">${renderUnitDeficitBadge(d.products[1251].targetUnits, d.products[1251].salesUnits)}</td>
+            <td style="text-align:center;">${renderUnitDeficitBadge(d.products[1110].targetUnits, d.products[1110].salesUnits)}</td>
+            <td style="text-align:center;">${renderUnitDeficitBadge(d.targetUnits, d.salesUnits)}</td>
+            <td style="text-align:center; color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
+            <td style="text-align:center;">-</td>
           </tr>
         </tbody>
       </table>
@@ -4414,9 +4429,9 @@ function openDeficitReport(targetType) {
 
     <!-- ACTIONABLE INSIGHTS BOX -->
     <div class="report-insight-box">
-      <strong>💡 Strategic Focus & Shortage Driver (تحليل وسد العجز):</strong><br>
-      The primary shortage driver for Delta Team is <strong>${topDeficit.name}</strong> with a total deficit gap of <strong>${fmt(topDeficit.deficitUnits)} physical units</strong> (equivalent to <strong>${fmt(topDeficit.deficitValue)} EGP</strong> remaining).
-      Targeting pharmacy stocking and tender fulfillment for this key SKU will eliminate ${d.deficitValue > 0 ? ((topDeficit.deficitValue / d.deficitValue) * 100).toFixed(1) : 0}% of the team's entire financial quota deficit.
+      <strong>💡 Manager Strategic Insight (تحليل وسد عجز الوحدات):</strong><br>
+      The primary unit shortage driver across Delta Team is <strong>${topDeficit.name}</strong> with a total deficit of <strong>${fmt(topDeficit.deficitUnits)} units</strong> remaining to achieve the annual quota.
+      Focusing sales efforts and pharmacy order placements on this SKU will resolve ${d.deficitUnits > 0 ? ((topDeficit.deficitUnits / d.deficitUnits) * 100).toFixed(1) : 0}% of the entire team's volume shortage!
     </div>
     `;
 
@@ -4428,59 +4443,59 @@ function openDeficitReport(targetType) {
     if (!repData) return;
     const rep = repData.rep;
 
-    titleEl.textContent = `${rep.name} — Year-End Quota Deficit & Shortage Report 2026`;
-    subEl.textContent = `Territory: ${rep.note} | Personal quota gap, net financial deficit, and per-medicine shortage`;
+    titleEl.textContent = `${rep.name} — Annual Unit Deficit & Shortage Report 2026`;
+    subEl.textContent = `Territory: ${rep.note} | النقص في عدد الوحدات لكل دوا لتحقيق التارجت السنوي`;
 
-    const valClass = repData.deficitValue > 0 ? 'kpi-deficit' : 'kpi-surplus';
-    const topDeficit = repData.products.reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
+    const valClass = repData.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus';
+    const topDeficit = repData.products.reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
 
     let html = `
-      <!-- KPI CARDS -->
+      <!-- KPI CARDS (UNITS FOCUSED) -->
       <div class="report-kpi-grid">
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Annual Quota (Value)</span>
-            <span>💰</span>
+            <span>Target Quota (Units) | المستهدف</span>
+            <span>🎯</span>
           </div>
-          <div class="report-kpi-val">${fmt(repData.salesValue)} <span style="font-size:13px; color:var(--gold);">EGP</span></div>
-          <div class="report-kpi-sub">Target: ${fmt(repData.targetValue)} EGP (${fmtPct(repData.ratio)} achieved)</div>
+          <div class="report-kpi-val">${fmt(repData.targetUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
+          <div class="report-kpi-sub">Personal annual quota target</div>
+        </div>
+
+        <div class="report-kpi-card">
+          <div class="report-kpi-title">
+            <span>Actual Units Sold | المباع فعلياً</span>
+            <span>📦</span>
+          </div>
+          <div class="report-kpi-val">${fmt(repData.salesUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
+          <div class="report-kpi-sub">Cumulative volume sold (YTD 2026)</div>
         </div>
 
         <div class="report-kpi-card ${valClass}">
           <div class="report-kpi-title">
-            <span>Net Value Deficit / Surplus</span>
-            <span>${repData.deficitValue > 0 ? '📉' : '🏆'}</span>
-          </div>
-          <div class="report-kpi-val" style="color:${repData.deficitValue > 0 ? '#ef4444' : '#22c55e'};">
-            ${repData.deficitValue > 0 ? '-' + fmt(repData.deficitValue) : '+' + fmt(Math.abs(repData.deficitValue))} <span style="font-size:13px;">EGP</span>
-          </div>
-          <div class="report-kpi-sub">${repData.deficitValue > 0 ? 'Remaining financial gap to 100% quota' : 'Personal annual quota surpassed!'}</div>
-        </div>
-
-        <div class="report-kpi-card ${repData.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus'}">
-          <div class="report-kpi-title">
-            <span>Physical Units Deficit</span>
-            <span>📦</span>
+            <span>Net Units Deficit | إجمالي النقص</span>
+            <span>${repData.deficitUnits > 0 ? '📉' : '🏆'}</span>
           </div>
           <div class="report-kpi-val" style="color:${repData.deficitUnits > 0 ? '#ef4444' : '#22c55e'};">
             ${repData.deficitUnits > 0 ? '-' + fmt(repData.deficitUnits) : '+' + fmt(Math.abs(repData.deficitUnits))} <span style="font-size:13px;">units</span>
           </div>
-          <div class="report-kpi-sub">Sold: ${fmt(repData.salesUnits)} u | Target: ${fmt(repData.targetUnits)} u</div>
+          <div class="report-kpi-sub">${repData.deficitUnits > 0 ? 'Remaining physical units required to close quota' : 'Personal annual quota surpassed!'}</div>
         </div>
 
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Sales Points Deficit</span>
+            <span>Unit Fulfillment | نسبة التحقيق</span>
             <span>⭐</span>
           </div>
-          <div class="report-kpi-val">${repData.deficitPoints > 0 ? '-' + fmt(repData.deficitPoints) : '+' + fmt(Math.abs(repData.deficitPoints))} <span style="font-size:13px;">pts</span></div>
-          <div class="report-kpi-sub">Points: ${fmt(repData.salesPoints)} pts / Target: ${fmt(repData.targetPoints)} pts</div>
+          <div class="report-kpi-val" style="color:${repData.ratio >= 100 ? '#22c55e' : repData.ratio >= 80 ? '#fbbf24' : '#ef4444'};">
+            ${fmtPct(repData.ratio)}
+          </div>
+          <div class="report-kpi-sub">Volume achievement vs annual quota</div>
         </div>
       </div>
 
       <!-- SECTION: PER-MEDICINE SHORTAGE BREAKDOWN TABLE -->
       <div class="report-section-title">
-        <span>💊 Per-Medicine Shortage & Deficit Breakdown (النقص في كل دوا)</span>
+        <span>💊 Per-Medicine Shortage Breakdown (النقص في كل دوا)</span>
         ${currentUser && !currentUser.repKey ? `<button onclick="openDeficitReport('team')" style="background:#f1f5f9; border:1px solid var(--border); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">← Back to Team Report</button>` : ''}
       </div>
 
@@ -4490,14 +4505,10 @@ function openDeficitReport(targetType) {
             <tr>
               <th>Medicine / Insulin Product</th>
               <th>Code</th>
-              <th>Unit Price</th>
               <th>Target Units</th>
-              <th>Actual Units</th>
-              <th>Unit Deficit (Shortage)</th>
-              <th>Target Value</th>
-              <th>Actual Sales</th>
-              <th>Value Deficit</th>
-              <th>Fulfillment</th>
+              <th>Actual Units Sold</th>
+              <th>Unit Deficit / Shortage (النقص بالعلب)</th>
+              <th>Unit Fulfillment %</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -4516,13 +4527,9 @@ function openDeficitReport(targetType) {
         <tr>
           <td><strong>${prod.name}</strong></td>
           <td><span style="font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">#${prod.pid}</span></td>
-          <td>${fmt(prod.price)} EGP</td>
-          <td>${fmt(prod.targetUnits)}</td>
-          <td><strong>${fmt(prod.salesUnits)}</strong></td>
-          <td>${renderDeficitUnit(prod.targetUnits, prod.salesUnits)}</td>
-          <td>${fmt(prod.targetValue)} EGP</td>
-          <td><strong>${fmt(prod.salesValue)}</strong> EGP</td>
-          <td>${renderDeficitVal(prod.targetValue, prod.salesValue)}</td>
+          <td>${fmt(prod.targetUnits)} units</td>
+          <td><strong>${fmt(prod.salesUnits)}</strong> units</td>
+          <td>${renderUnitDeficitBadge(prod.targetUnits, prod.salesUnits)}</td>
           <td>
             <div style="font-weight:800; color:${prod.ratio >= 100 ? '#16a34a' : prod.ratio >= 70 ? '#d97706' : '#dc2626'};">
               ${fmtPct(prod.ratio)}
@@ -4535,15 +4542,12 @@ function openDeficitReport(targetType) {
 
     html += `
           <tr class="total-row">
-            <td colspan="3">TOTAL ANNUAL QUOTA</td>
-            <td>${fmt(repData.targetUnits)}</td>
-            <td>${fmt(repData.salesUnits)}</td>
-            <td>${renderDeficitUnit(repData.targetUnits, repData.salesUnits)}</td>
-            <td>${fmt(repData.targetValue)} EGP</td>
-            <td>${fmt(repData.salesValue)} EGP</td>
-            <td>${renderDeficitVal(repData.targetValue, repData.salesValue)}</td>
+            <td colspan="2">TOTAL ANNUAL QUOTA</td>
+            <td>${fmt(repData.targetUnits)} units</td>
+            <td>${fmt(repData.salesUnits)} units</td>
+            <td>${renderUnitDeficitBadge(repData.targetUnits, repData.salesUnits)}</td>
             <td style="color:${repData.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(repData.ratio)}</td>
-            <td>${repData.deficitValue > 0 ? '<span class="priority-tag priority-warning">Net Deficit</span>' : '<span class="priority-tag priority-success">Surplus</span>'}</td>
+            <td>${repData.deficitUnits > 0 ? '<span class="priority-tag priority-warning">Net Shortage</span>' : '<span class="priority-tag priority-success">Surplus</span>'}</td>
           </tr>
         </tbody>
       </table>
@@ -4552,9 +4556,9 @@ function openDeficitReport(targetType) {
     <!-- ACTIONABLE INSIGHTS BOX -->
     <div class="report-insight-box">
       <strong>💡 Personalized Shortage Insights (سد عجز التارجت):</strong><br>
-      ${repData.deficitValue > 0 
-        ? `To achieve 100% of your annual quota, your primary focus should be <strong>${topDeficit.name}</strong> where you currently have a deficit of <strong>${fmt(topDeficit.deficitUnits)} units</strong> (remaining value: <strong>${fmt(topDeficit.deficitValue)} EGP</strong>). Closing this gap will achieve ${((topDeficit.deficitValue / repData.deficitValue) * 100).toFixed(1)}% of your remaining quota!`
-        : `Outstanding work! You have exceeded your overall annual quota by <strong>+${fmt(Math.abs(repData.deficitValue))} EGP</strong>.`}
+      ${repData.deficitUnits > 0 
+        ? `To achieve 100% of your annual quota, your primary focus should be <strong>${topDeficit.name}</strong> where you currently have a shortage of <strong>${fmt(topDeficit.deficitUnits)} units</strong>. Closing this gap will eliminate ${((topDeficit.deficitUnits / repData.deficitUnits) * 100).toFixed(1)}% of your remaining volume shortage!`
+        : `Outstanding work! You have exceeded your overall annual unit quota by <strong>+${fmt(Math.abs(repData.deficitUnits))} units</strong>.`}
     </div>
     `;
 
@@ -4583,20 +4587,18 @@ function downloadDeficitExcel(targetType) {
   if (isTeam) {
     const teamData = computeTeamDeficit();
     
-    // Sheet 1: Medicine Deficit Analysis
+    // Sheet 1: Medicine Deficit Analysis (Units Focused)
     const medRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["ANNUAL QUOTA DEFICIT & PER-MEDICINE SHORTAGE REPORT 2026"],
-      ["Scope: Delta Team Aggregate", "", "", "", "Generated: " + new Date().toLocaleString()],
+      ["ANNUAL QUOTA UNIT SHORTAGE REPORT 2026 (تقرير عجز الوحدات السنوي)"],
+      ["Scope: Delta Team Aggregate", "", "", "Generated: " + new Date().toLocaleString()],
       [],
-      ["--- EXECUTIVE KPI SUMMARY ---"],
-      ["Metric", "Target Quota", "Actual Achieved", "Remaining Deficit / Shortage", "Fulfillment Rate %"],
-      ["Sales Value (EGP)", teamData.targetValue, teamData.salesValue, teamData.deficitValue, (teamData.ratio || 0).toFixed(2) + "%"],
-      ["Physical Units", teamData.targetUnits, teamData.salesUnits, teamData.deficitUnits, (teamData.targetUnits > 0 ? (teamData.salesUnits / teamData.targetUnits * 100).toFixed(2) : "0") + "%"],
-      ["Sales Points", teamData.targetPoints, teamData.salesPoints, teamData.deficitPoints, (teamData.targetPoints > 0 ? (teamData.salesPoints / teamData.targetPoints * 100).toFixed(2) : "0") + "%"],
+      ["--- EXECUTIVE UNIT KPI SUMMARY ---"],
+      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Fulfillment %"],
+      ["Physical Units", teamData.targetUnits, teamData.salesUnits, teamData.deficitUnits, (teamData.ratio || 0).toFixed(2) + "%"],
       [],
-      ["--- PER-MEDICINE SHORTAGE & DEFICIT BREAKDOWN ---"],
-      ["Product Code", "Medicine Name", "Unit Price (EGP)", "Target Units", "Actual Sales Units", "Unit Deficit (Shortage)", "Target Value (EGP)", "Actual Sales Value (EGP)", "Value Deficit (EGP)", "Fulfillment %", "Status"]
+      ["--- PER-MEDICINE UNIT SHORTAGE BREAKDOWN ---"],
+      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Fulfillment %", "Status"]
     ];
 
     PRODUCTS.forEach(p => {
@@ -4605,13 +4607,9 @@ function downloadDeficitExcel(targetType) {
       medRows.push([
         prod.pid,
         prod.name,
-        prod.price,
         prod.targetUnits,
         prod.salesUnits,
         prod.deficitUnits,
-        prod.targetValue,
-        prod.salesValue,
-        prod.deficitValue,
         (prod.ratio || 0).toFixed(2) + "%",
         status
       ]);
@@ -4620,62 +4618,66 @@ function downloadDeficitExcel(targetType) {
     medRows.push([
       "TOTAL",
       "ALL 4 INSULIN PRODUCTS",
-      "-",
       teamData.targetUnits,
       teamData.salesUnits,
       teamData.deficitUnits,
-      teamData.targetValue,
-      teamData.salesValue,
-      teamData.deficitValue,
       (teamData.ratio || 0).toFixed(2) + "%",
-      teamData.deficitValue > 0 ? "Deficit" : "Surplus"
+      teamData.deficitUnits > 0 ? "Net Shortage" : "Surplus"
     ]);
 
     const wsMed = XLSX.utils.aoa_to_sheet(medRows);
-    XLSX.utils.book_append_sheet(wb, wsMed, "Product Deficit Analysis");
+    XLSX.utils.book_append_sheet(wb, wsMed, "Team Unit Shortage by Medicine");
 
-    // Sheet 2: Reps Breakdown
+    // Sheet 2: Manager Matrix - Unit Deficit per Rep for Each Drug
     const repRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["REPRESENTATIVE QUOTA FULFILLMENT & DEFICIT BREAKDOWN 2026"],
-      ["Generated: " + new Date().toLocaleString()],
+      ["MANAGER MATRIX: UNIT SHORTAGE PER REPRESENTATIVE PER MEDICINE 2026"],
+      ["تقرير النقص في عدد الوحدات لكل مندوب لكل دوا", "", "", "", "", "", "Generated: " + new Date().toLocaleString()],
       [],
-      ["Representative", "Territory / Area", "Target Units", "Actual Units Sold", "Unit Deficit", "Target Value (EGP)", "Actual Sales (EGP)", "Value Deficit (EGP)", "Fulfillment %", "Status"]
+      [
+        "Representative",
+        "Territory / Area",
+        "Humaxin Mix 70/30 Shortage (Units)",
+        "Humaxin Rapid Shortage (Units)",
+        "Glargivin UPA Shortage (Units)",
+        "Glargivin 100IU Shortage (Units)",
+        "Total Unit Shortage (Units)",
+        "Unit Fulfillment %",
+        "Status"
+      ]
     ];
 
     teamData.reps.forEach(r => {
-      const status = r.deficitValue > 0 ? (r.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+      const status = r.deficitUnits > 0 ? (r.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
       repRows.push([
         r.name,
         r.note,
-        r.targetUnits,
-        r.salesUnits,
+        r.prodDeficits[1260],
+        r.prodDeficits[1259],
+        r.prodDeficits[1251],
+        r.prodDeficits[1110],
         r.deficitUnits,
-        r.targetValue,
-        r.salesValue,
-        r.deficitValue,
         (r.ratio || 0).toFixed(2) + "%",
         status
       ]);
     });
 
     repRows.push([
-      "TOTAL DELTA TEAM",
-      "Aggregate Region",
-      teamData.targetUnits,
-      teamData.salesUnits,
+      "DELTA TEAM TOTAL SHORTAGE",
+      "All Territories",
+      teamData.products[1260].deficitUnits,
+      teamData.products[1259].deficitUnits,
+      teamData.products[1251].deficitUnits,
+      teamData.products[1110].deficitUnits,
       teamData.deficitUnits,
-      teamData.targetValue,
-      teamData.salesValue,
-      teamData.deficitValue,
       (teamData.ratio || 0).toFixed(2) + "%",
-      teamData.deficitValue > 0 ? "Deficit" : "Surplus"
+      teamData.deficitUnits > 0 ? "Net Shortage" : "Surplus"
     ]);
 
     const wsReps = XLSX.utils.aoa_to_sheet(repRows);
-    XLSX.utils.book_append_sheet(wb, wsReps, "Reps Quota Breakdown");
+    XLSX.utils.book_append_sheet(wb, wsReps, "Manager Matrix - Units Deficit");
 
-    XLSX.writeFile(wb, "EVA_Delta_Team_YearEnd_Deficit_Report_2026.xlsx");
+    XLSX.writeFile(wb, "EVA_Delta_Team_Unit_Deficit_Report_2026.xlsx");
   } else {
     const repData = computeSingleRepDeficit(targetType);
     if (!repData) return;
@@ -4683,17 +4685,15 @@ function downloadDeficitExcel(targetType) {
     const rep = repData.rep;
     const medRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["ANNUAL QUOTA DEFICIT & PER-MEDICINE SHORTAGE REPORT 2026"],
+      ["ANNUAL QUOTA UNIT SHORTAGE REPORT 2026 (تقرير عجز الوحدات السنوي)"],
       ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
       [],
-      ["--- EXECUTIVE KPI SUMMARY ---"],
-      ["Metric", "Target Quota", "Actual Achieved", "Remaining Deficit / Shortage", "Fulfillment Rate %"],
-      ["Sales Value (EGP)", repData.targetValue, repData.salesValue, repData.deficitValue, (repData.ratio || 0).toFixed(2) + "%"],
-      ["Physical Units", repData.targetUnits, repData.salesUnits, repData.deficitUnits, (repData.targetUnits > 0 ? (repData.salesUnits / repData.targetUnits * 100).toFixed(2) : "0") + "%"],
-      ["Sales Points", repData.targetPoints, repData.salesPoints, repData.deficitPoints, (repData.targetPoints > 0 ? (repData.salesPoints / repData.targetPoints * 100).toFixed(2) : "0") + "%"],
+      ["--- EXECUTIVE UNIT KPI SUMMARY ---"],
+      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Fulfillment %"],
+      ["Physical Units", repData.targetUnits, repData.salesUnits, repData.deficitUnits, (repData.ratio || 0).toFixed(2) + "%"],
       [],
-      ["--- PER-MEDICINE SHORTAGE & DEFICIT BREAKDOWN ---"],
-      ["Product Code", "Medicine Name", "Unit Price (EGP)", "Target Units", "Actual Sales Units", "Unit Deficit (Shortage)", "Target Value (EGP)", "Actual Sales Value (EGP)", "Value Deficit (EGP)", "Fulfillment %", "Status"]
+      ["--- PER-MEDICINE UNIT SHORTAGE BREAKDOWN ---"],
+      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Fulfillment %", "Status"]
     ];
 
     repData.products.forEach(prod => {
@@ -4701,13 +4701,9 @@ function downloadDeficitExcel(targetType) {
       medRows.push([
         prod.pid,
         prod.name,
-        prod.price,
         prod.targetUnits,
         prod.salesUnits,
         prod.deficitUnits,
-        prod.targetValue,
-        prod.salesValue,
-        prod.deficitValue,
         (prod.ratio || 0).toFixed(2) + "%",
         status
       ]);
@@ -4716,22 +4712,18 @@ function downloadDeficitExcel(targetType) {
     medRows.push([
       "TOTAL",
       "ALL 4 INSULIN PRODUCTS",
-      "-",
       repData.targetUnits,
       repData.salesUnits,
       repData.deficitUnits,
-      repData.targetValue,
-      repData.salesValue,
-      repData.deficitValue,
       (repData.ratio || 0).toFixed(2) + "%",
-      repData.deficitValue > 0 ? "Deficit" : "Surplus"
+      repData.deficitUnits > 0 ? "Net Shortage" : "Surplus"
     ]);
 
     const wsRep = XLSX.utils.aoa_to_sheet(medRows);
-    XLSX.utils.book_append_sheet(wb, wsRep, "Deficit & Shortage Analysis");
+    XLSX.utils.book_append_sheet(wb, wsRep, "Unit Shortage by Medicine");
 
     const cleanName = rep.name.replace(/[^a-zA-Z0-9]/g, "_");
-    XLSX.writeFile(wb, `EVA_Deficit_Report_${cleanName}_2026.xlsx`);
+    XLSX.writeFile(wb, `EVA_Unit_Deficit_Report_${cleanName}_2026.xlsx`);
   }
 
   showToast("📊 Excel report downloaded successfully!");
@@ -4746,32 +4738,42 @@ function copyDeficitSummary(targetType) {
 
   if (isTeam) {
     const d = computeTeamDeficit();
-    const valDeficitStr = d.deficitValue > 0 ? `عجز (-${fmt(d.deficitValue)} EGP)` : `فائض (+${fmt(Math.abs(d.deficitValue))} EGP)`;
-    const unitDeficitStr = d.deficitUnits > 0 ? `عجز (-${fmt(d.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(d.deficitUnits))} u)`;
+    const unitDeficitStr = d.deficitUnits > 0 ? `عجز (-${fmt(d.deficitUnits)} علبة)` : `فائض (+${fmt(Math.abs(d.deficitUnits))} علبة)`;
 
     text = `📊 *EVA PHARMA - DELTA TEAM*
-*تقرير العجز والمتبقي لتحقيق التارجت السنوي 2026*
+*تقرير النقص في عدد الوحدات السنوي 2026*
+*(Annual Quota Unit Shortage Report)*
 ━━━━━━━━━━━━━━━━━━━━
-🎯 *الموقف الإجمالي لفريق الدلتا (Total Year Quota):*
-• Target Value: ${fmt(d.targetValue)} EGP
-• Actual Sales: ${fmt(d.salesValue)} EGP
-• Remaining Deficit: ${valDeficitStr}
-• Units Deficit: ${unitDeficitStr}
-• Fulfillment Rate: ${fmtPct(d.ratio)}
+🎯 *الموقف الإجمالي للوحدات (Total Units):*
+• المستهدف: ${fmt(d.targetUnits)} علبة
+• المباع فعلياً: ${fmt(d.salesUnits)} علبة
+• إجمالي النقص: ${unitDeficitStr}
+• نسبة التحقيق: ${fmtPct(d.ratio)}
 
 ━━━━━━━━━━━━━━━━━━━━
-💊 *عجز الأدوية بالتفصيل (Per-Medicine Shortage):*
+💊 *النقص في كل دوا على مستوى الفريق:*
 `;
 
     PRODUCTS.forEach((p, idx) => {
       const prod = d.products[p.id];
-      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} وحدة (-${fmt(prod.deficitValue)} ج.م)` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} وحدة)`;
-      text += `${idx + 1}️⃣ *${prod.name}* (كود: ${prod.pid})\n   - الموقف: ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
+      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} علبة` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} علبة)`;
+      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
     });
 
-    const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
-    if (topDeficit && topDeficit.deficitValue > 0) {
-      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز مطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} وحدة / ${fmt(topDeficit.deficitValue)} ج.م)`;
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n👥 *النقص في عدد الوحدات لكل مندوب لكل دوا (Manager Matrix):*\n`;
+
+    d.reps.forEach(r => {
+      const defMix = r.prodDeficits[1260] > 0 ? `-${fmt(r.prodDeficits[1260])}` : `+${fmt(Math.abs(r.prodDeficits[1260]))}`;
+      const defRap = r.prodDeficits[1259] > 0 ? `-${fmt(r.prodDeficits[1259])}` : `+${fmt(Math.abs(r.prodDeficits[1259]))}`;
+      const defUPA = r.prodDeficits[1251] > 0 ? `-${fmt(r.prodDeficits[1251])}` : `+${fmt(Math.abs(r.prodDeficits[1251]))}`;
+      const def100 = r.prodDeficits[1110] > 0 ? `-${fmt(r.prodDeficits[1110])}` : `+${fmt(Math.abs(r.prodDeficits[1110]))}`;
+      const totDef = r.deficitUnits > 0 ? `عجز (-${fmt(r.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(r.deficitUnits))} u)`;
+      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - الإجمالي: ${totDef} (${fmtPct(r.ratio)})\n`;
+    });
+
+    const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
+    if (topDeficit && topDeficit.deficitUnits > 0) {
+      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز بالوحدات المطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} علبة)`;
     }
 
     text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`;
@@ -4779,32 +4781,30 @@ function copyDeficitSummary(targetType) {
     const repData = computeSingleRepDeficit(targetType);
     if (!repData) return;
     const rep = repData.rep;
-    const valDeficitStr = repData.deficitValue > 0 ? `عجز (-${fmt(repData.deficitValue)} EGP)` : `فائض (+${fmt(Math.abs(repData.deficitValue))} EGP)`;
-    const unitDeficitStr = repData.deficitUnits > 0 ? `عجز (-${fmt(repData.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(repData.deficitUnits))} u)`;
+    const unitDeficitStr = repData.deficitUnits > 0 ? `عجز (-${fmt(repData.deficitUnits)} علبة)` : `فائض (+${fmt(Math.abs(repData.deficitUnits))} علبة)`;
 
     text = `📊 *EVA PHARMA - DELTA TEAM*
-*تقرير العجز والمتبقي لتحقيق التارجت السنوي 2026*
+*تقرير النقص في عدد الوحدات السنوي 2026*
 👤 *المندوب:* ${rep.name} (${rep.note})
 ━━━━━━━━━━━━━━━━━━━━
-🎯 *الموقف الإجمالي للتارجت السنوي (Total Year Quota):*
-• Target Value: ${fmt(repData.targetValue)} EGP
-• Actual Sales: ${fmt(repData.salesValue)} EGP
-• Remaining Deficit: ${valDeficitStr}
-• Units Deficit: ${unitDeficitStr}
-• Fulfillment Rate: ${fmtPct(repData.ratio)}
+🎯 *الموقف الإجمالي للوحدات (Total Units):*
+• المستهدف: ${fmt(repData.targetUnits)} علبة
+• المباع فعلياً: ${fmt(repData.salesUnits)} علبة
+• إجمالي النقص: ${unitDeficitStr}
+• نسبة التحقيق: ${fmtPct(repData.ratio)}
 
 ━━━━━━━━━━━━━━━━━━━━
-💊 *عجز الأدوية بالتفصيل (Per-Medicine Shortage):*
+💊 *النقص في كل دوا (Per-Medicine Shortage):*
 `;
 
     repData.products.forEach((prod, idx) => {
-      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} وحدة (-${fmt(prod.deficitValue)} ج.م)` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} وحدة)`;
-      text += `${idx + 1}️⃣ *${prod.name}* (كود: ${prod.pid})\n   - الموقف: ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
+      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} علبة` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} علبة)`;
+      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
     });
 
-    const topDeficit = repData.products.reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
-    if (topDeficit && topDeficit.deficitValue > 0) {
-      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز مطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} وحدة / ${fmt(topDeficit.deficitValue)} ج.م)`;
+    const topDeficit = repData.products.reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
+    if (topDeficit && topDeficit.deficitUnits > 0) {
+      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز بالوحدات المطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} علبة)`;
     }
 
     text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`;
