@@ -1351,14 +1351,18 @@ function computeRepYTD(rep) {
 
   if (!summary.hasData) return null;
 
-  summary.ratio = summary.targetValue > 0 ? (summary.salesValue / summary.targetValue) * 100 : null;
+  summary.ratio = (summary.targetPoints !== null && summary.targetPoints > 0)
+    ? (summary.salesPoints / summary.targetPoints) * 100
+    : (summary.targetValue > 0 ? (summary.salesValue / summary.targetValue) * 100 : null);
   summary.deficitValue = summary.targetValue - summary.salesValue;
   summary.deficitUnits = summary.targetUnits - summary.salesUnits;
   summary.deficitPoints = summary.targetPoints - summary.salesPoints;
 
   PRODUCTS.forEach(p => {
     const py = summary.productsYTD[p.id];
-    py.ratio = py.targetValue > 0 ? (py.salesValue / py.targetValue) * 100 : null;
+    py.ratio = (py.targetPoints !== null && py.targetPoints > 0)
+      ? (py.salesPoints / py.targetPoints) * 100
+      : (py.targetValue > 0 ? (py.salesValue / py.targetValue) * 100 : null);
     py.deficitValue = py.targetValue - py.salesValue;
     py.deficitUnits = py.targetUnits - py.salesUnits;
     py.deficitPoints = py.targetPoints - py.salesPoints;
@@ -1379,7 +1383,7 @@ function destroyCharts() {
 function renderHome() {
   destroyCharts();
 
-  let totalSales = 0, totalTarget = 0, totalUnits = 0, totalPoints = 0, activeCount = 0;
+  let totalSales = 0, totalTarget = 0, totalUnits = 0, totalPoints = 0, totalTargetPoints = 0, activeCount = 0;
   REPS.forEach(r => {
     const ytd = computeRepYTD(r);
     if (ytd) {
@@ -1387,10 +1391,11 @@ function renderHome() {
       totalTarget += ytd.targetValue;
       totalUnits  += ytd.salesUnits;
       totalPoints += ytd.salesPoints;
+      totalTargetPoints += ytd.targetPoints;
       activeCount++;
     }
   });
-  const teamRatio = totalTarget > 0 ? (totalSales / totalTarget) * 100 : 0;
+  const teamRatio = totalTargetPoints > 0 ? (totalPoints / totalTargetPoints) * 100 : (totalTarget > 0 ? (totalSales / totalTarget) * 100 : 0);
   const teamDeficit = totalTarget - totalSales;
 
   document.getElementById('team-stat-grid').innerHTML = `
@@ -1422,11 +1427,11 @@ function renderHome() {
     </div>
     <div class="stat-card">
       <div class="stat-header">
-        <span class="stat-label">Achievement Rate</span>
+        <span class="stat-label">Achievement Rate (Points)</span>
         <span class="stat-icon">📈</span>
       </div>
       <div class="stat-val"><span class="ratio-badge ${ratioClass(teamRatio)}" style="font-size:18px;">${fmtPct(teamRatio)}</span></div>
-      <div class="stat-sub">Overall team fulfillment ratio</div>
+      <div class="stat-sub">Team points quota fulfillment (Sales vs Target Pts)</div>
     </div>
     <div class="stat-card">
       <div class="stat-header">
@@ -1542,7 +1547,7 @@ function renderHome() {
 
           <div class="progress-wrap">
             <div class="progress-label">
-              <span>Quota Fulfillment:</span>
+              <span>Points Quota Fulfillment:</span>
               <span class="ratio-badge ${ratioClass(ratio)}">${fmtPct(ratio)}</span>
             </div>
             <div class="progress-bar">
@@ -1697,7 +1702,7 @@ function showRep(repKey, targetTabId = null) {
         <div class="ytd-unit">Target: ${fmt(ytd.targetPoints)} pts</div>
       </div>
       <div class="ytd-badge-box">
-        <div class="ytd-badge-label">YTD Fulfillment</div>
+        <div class="ytd-badge-label">YTD Points Fulfillment</div>
         <div class="ytd-badge-val" style="color:${ytd.ratio >= 100 ? '#4ade80' : ytd.ratio >= 70 ? '#fbbf24' : '#f87171'};">
           ${fmtPct(ytd.ratio)}
         </div>
@@ -2425,7 +2430,10 @@ function computeTeamDeficit() {
       salesValue: ytd.salesValue,
       targetValue: ytd.targetValue,
       deficitValue: ytd.deficitValue,
-      ratio: ytd.targetUnits > 0 ? (ytd.salesUnits / ytd.targetUnits) * 100 : 0,
+      salesPoints: ytd.salesPoints,
+      targetPoints: ytd.targetPoints,
+      deficitPoints: ytd.deficitPoints,
+      ratio: ytd.targetPoints > 0 ? (ytd.salesPoints / ytd.targetPoints) * 100 : 0,
       prodDeficits: repProdDeficits,
       prodSales: repProdSales,
       prodTargets: repProdTargets
@@ -2435,13 +2443,14 @@ function computeTeamDeficit() {
   team.deficitUnits = team.targetUnits - team.salesUnits;
   team.deficitValue = team.targetValue - team.salesValue;
   team.deficitPoints = team.targetPoints - team.salesPoints;
-  team.ratio = team.targetUnits > 0 ? (team.salesUnits / team.targetUnits) * 100 : 0;
+  team.ratio = team.targetPoints > 0 ? (team.salesPoints / team.targetPoints) * 100 : 0;
 
   PRODUCTS.forEach(p => {
     const prod = team.products[p.id];
     prod.deficitUnits = prod.targetUnits - prod.salesUnits;
     prod.deficitValue = prod.targetValue - prod.salesValue;
-    prod.ratio = prod.targetUnits > 0 ? (prod.salesUnits / prod.targetUnits) * 100 : 0;
+    prod.deficitPoints = prod.targetPoints - prod.salesPoints;
+    prod.ratio = prod.targetPoints > 0 ? (prod.salesPoints / prod.targetPoints) * 100 : 0;
   });
 
   return team;
@@ -2464,7 +2473,7 @@ function computeSingleRepDeficit(repKey) {
     salesPoints: ytd.salesPoints,
     targetPoints: ytd.targetPoints,
     deficitPoints: ytd.deficitPoints,
-    ratio: ytd.targetUnits > 0 ? (ytd.salesUnits / ytd.targetUnits) * 100 : 0,
+    ratio: ytd.targetPoints > 0 ? (ytd.salesPoints / ytd.targetPoints) * 100 : 0,
     products: []
   };
 
@@ -2480,7 +2489,10 @@ function computeSingleRepDeficit(repKey) {
       salesValue: py ? py.salesValue : 0,
       targetValue: py ? py.targetValue : 0,
       deficitValue: py ? py.deficitValue : 0,
-      ratio: py && py.targetUnits > 0 ? (py.salesUnits / py.targetUnits) * 100 : 0
+      salesPoints: py ? py.salesPoints : 0,
+      targetPoints: py ? py.targetPoints : 0,
+      deficitPoints: py ? py.deficitPoints : 0,
+      ratio: py && py.targetPoints > 0 ? (py.salesPoints / py.targetPoints) * 100 : 0
     });
   });
 
@@ -2558,13 +2570,13 @@ function openDeficitReport(targetType) {
 
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Unit Fulfillment | نسبة التحقيق</span>
+            <span>Total Achievement | نسبة تحقيق التارجت</span>
             <span>⭐</span>
           </div>
           <div class="report-kpi-val" style="color:${d.ratio >= 100 ? '#22c55e' : d.ratio >= 80 ? '#fbbf24' : '#ef4444'};">
             ${fmtPct(d.ratio)}
           </div>
-          <div class="report-kpi-sub">Volume achievement vs annual quota</div>
+          <div class="report-kpi-sub">Points quota fulfillment (${fmt(d.salesPoints)} / ${fmt(d.targetPoints)} pts)</div>
         </div>
       </div>
 
@@ -2583,7 +2595,7 @@ function openDeficitReport(targetType) {
               <th>Target Units</th>
               <th>Actual Units Sold</th>
               <th>Unit Deficit / Shortage (النقص بالعلب)</th>
-              <th>Unit Fulfillment %</th>
+              <th>Points Achievement %</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -2646,7 +2658,7 @@ function openDeficitReport(targetType) {
             <th style="text-align:center;">Glargivin UPA<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1251</span></th>
             <th style="text-align:center;">Glargivin 100IU<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1110</span></th>
             <th style="text-align:center; background:#1e293b; color:var(--gold);">Total Shortage<br><span style="font-size:10px;font-weight:600;">إجمالي النقص</span></th>
-            <th style="text-align:center;">Unit Fulfillment</th>
+            <th style="text-align:center; min-width:130px;">Total Achievement %<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Sales vs Target Points)</span></th>
             <th style="text-align:center;">Action</th>
           </tr>
         </thead>
@@ -2748,13 +2760,13 @@ function openDeficitReport(targetType) {
 
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Unit Fulfillment | نسبة التحقيق</span>
+            <span>Total Achievement | نسبة تحقيق التارجت</span>
             <span>⭐</span>
           </div>
           <div class="report-kpi-val" style="color:${repData.ratio >= 100 ? '#22c55e' : repData.ratio >= 80 ? '#fbbf24' : '#ef4444'};">
             ${fmtPct(repData.ratio)}
           </div>
-          <div class="report-kpi-sub">Volume achievement vs annual quota</div>
+          <div class="report-kpi-sub">Points quota fulfillment (${fmt(repData.salesPoints)} / ${fmt(repData.targetPoints)} pts)</div>
         </div>
       </div>
 
@@ -2773,7 +2785,7 @@ function openDeficitReport(targetType) {
               <th>Target Units</th>
               <th>Actual Units Sold</th>
               <th>Unit Deficit / Shortage (النقص بالعلب)</th>
-              <th>Unit Fulfillment %</th>
+              <th>Points Achievement %</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -2859,11 +2871,11 @@ function downloadDeficitExcel(targetType) {
       ["Scope: Delta Team Aggregate", "", "", "Generated: " + new Date().toLocaleString()],
       [],
       ["--- EXECUTIVE UNIT KPI SUMMARY ---"],
-      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Fulfillment %"],
+      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Total Achievement % (Points)"],
       ["Physical Units", teamData.targetUnits, teamData.salesUnits, teamData.deficitUnits, (teamData.ratio || 0).toFixed(2) + "%"],
       [],
       ["--- PER-MEDICINE UNIT SHORTAGE BREAKDOWN ---"],
-      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Fulfillment %", "Status"]
+      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Points Achievement %", "Status"]
     ];
 
     PRODUCTS.forEach(p => {
@@ -2907,7 +2919,7 @@ function downloadDeficitExcel(targetType) {
         "Glargivin UPA Shortage (Units)",
         "Glargivin 100IU Shortage (Units)",
         "Total Unit Shortage (Units)",
-        "Unit Fulfillment %",
+        "Total Achievement % (Points)",
         "Status"
       ]
     ];
@@ -2954,11 +2966,11 @@ function downloadDeficitExcel(targetType) {
       ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
       [],
       ["--- EXECUTIVE UNIT KPI SUMMARY ---"],
-      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Fulfillment %"],
+      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Total Achievement % (Points)"],
       ["Physical Units", repData.targetUnits, repData.salesUnits, repData.deficitUnits, (repData.ratio || 0).toFixed(2) + "%"],
       [],
       ["--- PER-MEDICINE UNIT SHORTAGE BREAKDOWN ---"],
-      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Fulfillment %", "Status"]
+      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Points Achievement %", "Status"]
     ];
 
     repData.products.forEach(prod => {
@@ -3006,26 +3018,27 @@ function copyDeficitSummary(targetType) {
     const unitDeficitStr = d.deficitUnits > 0 ? `عجز (-${fmt(d.deficitUnits)} علبة)` : `فائض (+${fmt(Math.abs(d.deficitUnits))} علبة)`;
 
     text = `📊 *EVA PHARMA - DELTA TEAM*
-*تقرير النقص في عدد الوحدات السنوي 2026*
-*(Annual Quota Unit Shortage Report)*
+*تقرير عجز الوحدات ونسبة تحقيق التارجت بالنقاط 2026*
+*(Annual Quota Unit Shortage & Points Achievement Report)*
 ━━━━━━━━━━━━━━━━━━━━
-🎯 *الموقف الإجمالي للوحدات (Total Units):*
-• المستهدف: ${fmt(d.targetUnits)} علبة
-• المباع فعلياً: ${fmt(d.salesUnits)} علبة
-• إجمالي النقص: ${unitDeficitStr}
-• نسبة التحقيق: ${fmtPct(d.ratio)}
+🎯 *الموقف الإجمالي لفريق الدلتا (Delta Region):*
+• المستهدف بالعلب: ${fmt(d.targetUnits)} علبة
+• المباع فعلياً بالعلب: ${fmt(d.salesUnits)} علبة
+• إجمالي النقص بالعلب: ${unitDeficitStr}
+• نسبة تحقيق التارجت الكلية (بالنقاط): ${fmtPct(d.ratio)}
+  (نقاط المبيعات: ${fmt(d.salesPoints)} pts | تارجت النقاط: ${fmt(d.targetPoints)} pts)
 
 ━━━━━━━━━━━━━━━━━━━━
-💊 *النقص في كل دوا على مستوى الفريق:*
+💊 *النقص في كل دوا ونسبة تحقيق النقاط:*
 `;
 
     PRODUCTS.forEach((p, idx) => {
       const prod = d.products[p.id];
       const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} علبة` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} علبة)`;
-      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
+      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق النقاط: ${fmtPct(prod.ratio)}\n`;
     });
 
-    text += `\n━━━━━━━━━━━━━━━━━━━━\n👥 *النقص في عدد الوحدات لكل مندوب لكل دوا (Manager Matrix):*\n`;
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n👥 *النقص بالعلب لكل مندوب وتحقيق التارجت بالنقاط (Manager Matrix):*\n`;
 
     d.reps.forEach(r => {
       const defMix = r.prodDeficits[1260] > 0 ? `-${fmt(r.prodDeficits[1260])}` : `+${fmt(Math.abs(r.prodDeficits[1260]))}`;
@@ -3033,7 +3046,7 @@ function copyDeficitSummary(targetType) {
       const defUPA = r.prodDeficits[1251] > 0 ? `-${fmt(r.prodDeficits[1251])}` : `+${fmt(Math.abs(r.prodDeficits[1251]))}`;
       const def100 = r.prodDeficits[1110] > 0 ? `-${fmt(r.prodDeficits[1110])}` : `+${fmt(Math.abs(r.prodDeficits[1110]))}`;
       const totDef = r.deficitUnits > 0 ? `عجز (-${fmt(r.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(r.deficitUnits))} u)`;
-      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - الإجمالي: ${totDef} (${fmtPct(r.ratio)})\n`;
+      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - الإجمالي: ${totDef} | نسبة التحقيق بالنقاط: ${fmtPct(r.ratio)}\n`;
     });
 
     const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
@@ -3049,22 +3062,23 @@ function copyDeficitSummary(targetType) {
     const unitDeficitStr = repData.deficitUnits > 0 ? `عجز (-${fmt(repData.deficitUnits)} علبة)` : `فائض (+${fmt(Math.abs(repData.deficitUnits))} علبة)`;
 
     text = `📊 *EVA PHARMA - DELTA TEAM*
-*تقرير النقص في عدد الوحدات السنوي 2026*
+*تقرير عجز الوحدات ونسبة تحقيق التارجت بالنقاط 2026*
 👤 *المندوب:* ${rep.name} (${rep.note})
 ━━━━━━━━━━━━━━━━━━━━
-🎯 *الموقف الإجمالي للوحدات (Total Units):*
-• المستهدف: ${fmt(repData.targetUnits)} علبة
-• المباع فعلياً: ${fmt(repData.salesUnits)} علبة
-• إجمالي النقص: ${unitDeficitStr}
-• نسبة التحقيق: ${fmtPct(repData.ratio)}
+🎯 *الموقف الإجمالي للمندوب:*
+• المستهدف بالعلب: ${fmt(repData.targetUnits)} علبة
+• المباع فعلياً بالعلب: ${fmt(repData.salesUnits)} علبة
+• إجمالي النقص بالعلب: ${unitDeficitStr}
+• نسبة تحقيق التارجت الكلية (بالنقاط): ${fmtPct(repData.ratio)}
+  (نقاط المبيعات: ${fmt(repData.salesPoints)} pts | تارجت النقاط: ${fmt(repData.targetPoints)} pts)
 
 ━━━━━━━━━━━━━━━━━━━━
-💊 *النقص في كل دوا (Per-Medicine Shortage):*
+💊 *النقص في كل دوا ونسبة تحقيق النقاط:*
 `;
 
     repData.products.forEach((prod, idx) => {
       const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} علبة` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} علبة)`;
-      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
+      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق النقاط: ${fmtPct(prod.ratio)}\n`;
     });
 
     const topDeficit = repData.products.reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);

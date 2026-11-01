@@ -82,7 +82,7 @@
             "targetUnits": 4551.5,
             "targetValue": 1574622.78,
             "ratio": 103.67,
-            "salesPoints": 3264770.0,
+            "salesPoints": 3264770.01,
             "targetPoints": 3149245.56
           }
         },
@@ -135,7 +135,7 @@
             "targetUnits": 3376.44,
             "targetValue": 1054753.92,
             "ratio": 41.19,
-            "salesPoints": 868924.44,
+            "salesPoints": 868924.45,
             "targetPoints": 2109507.84
           }
         },
@@ -188,7 +188,7 @@
             "targetUnits": 4397.93,
             "targetValue": 2020947.51,
             "ratio": 130.02,
-            "salesPoints": 5255470.64,
+            "salesPoints": 5255470.62,
             "targetPoints": 4041895.02
           }
         },
@@ -241,7 +241,7 @@
             "targetUnits": 5337.5,
             "targetValue": 2305609.38,
             "ratio": 8.6,
-            "salesPoints": 396360.56,
+            "salesPoints": 396360.55,
             "targetPoints": 4611218.76
           }
         }
@@ -303,7 +303,7 @@
             "targetUnits": 4085.5,
             "targetValue": 2142838.08,
             "ratio": 118.19,
-            "salesPoints": 5065277.3,
+            "salesPoints": 5065277.33,
             "targetPoints": 4285676.16
           }
         },
@@ -356,7 +356,7 @@
             "targetUnits": 2087.21,
             "targetValue": 683534.04,
             "ratio": 87.4,
-            "salesPoints": 1194810.56,
+            "salesPoints": 1194814.45,
             "targetPoints": 1367068.08
           }
         },
@@ -525,7 +525,7 @@
             "targetUnits": 4878.44,
             "targetValue": 2044031.46,
             "ratio": 94.27,
-            "salesPoints": 3853668.48,
+            "salesPoints": 3853668.44,
             "targetPoints": 4088062.92
           }
         },
@@ -578,7 +578,7 @@
             "targetUnits": 4303.92,
             "targetValue": 1879950.21,
             "ratio": 136.94,
-            "salesPoints": 5148651.82,
+            "salesPoints": 5148651.85,
             "targetPoints": 3759900.42
           }
         },
@@ -631,7 +631,7 @@
             "targetUnits": 4056.9,
             "targetValue": 1679395.11,
             "ratio": 42.76,
-            "salesPoints": 1436089.98,
+            "salesPoints": 1436089.97,
             "targetPoints": 3358790.22
           }
         }
@@ -694,7 +694,7 @@
             "targetUnits": 3258.25,
             "targetValue": 1523462.88,
             "ratio": 107.95,
-            "salesPoints": 3289081.28,
+            "salesPoints": 3289081.29,
             "targetPoints": 3046925.76
           }
         },
@@ -747,7 +747,7 @@
             "targetUnits": 2471.37,
             "targetValue": 890676.81,
             "ratio": 102.49,
-            "salesPoints": 1825622.96,
+            "salesPoints": 1825622.94,
             "targetPoints": 1781353.62
           }
         },
@@ -800,7 +800,7 @@
             "targetUnits": 3074.22,
             "targetValue": 1348191.48,
             "ratio": 125.58,
-            "salesPoints": 3386137.42,
+            "salesPoints": 3386137.44,
             "targetPoints": 2696382.96
           }
         },
@@ -853,7 +853,7 @@
             "targetUnits": 3455.82,
             "targetValue": 1522226.73,
             "ratio": 14.36,
-            "salesPoints": 437334.94,
+            "salesPoints": 437334.93,
             "targetPoints": 3044453.46
           }
         }
@@ -917,7 +917,7 @@
             "targetUnits": 6673.44,
             "targetValue": 3541822.92,
             "ratio": 132.49,
-            "salesPoints": 9385058.68,
+            "salesPoints": 9385058.7,
             "targetPoints": 7083645.84
           }
         },
@@ -970,7 +970,7 @@
             "targetUnits": 8359.92,
             "targetValue": 4525418.88,
             "ratio": 15.35,
-            "salesPoints": 1389076.56,
+            "salesPoints": 1389076.55,
             "targetPoints": 9050837.76
           }
         }
@@ -1033,7 +1033,7 @@
             "targetUnits": 4359.5,
             "targetValue": 2243640.87,
             "ratio": 133.07,
-            "salesPoints": 5971227.0,
+            "salesPoints": 5971226.98,
             "targetPoints": 4487281.74
           }
         },
@@ -1086,7 +1086,7 @@
             "targetUnits": 3493.92,
             "targetValue": 1262033.4,
             "ratio": 118.57,
-            "salesPoints": 2992719.5,
+            "salesPoints": 2992719.51,
             "targetPoints": 2524066.8
           }
         },
@@ -1139,7 +1139,7 @@
             "targetUnits": 6846.2,
             "targetValue": 3333632.85,
             "ratio": 132.49,
-            "salesPoints": 8833268.9,
+            "salesPoints": 8833268.91,
             "targetPoints": 6667265.7
           }
         },
@@ -1202,7 +1202,7 @@
             "targetUnits": 2387.75,
             "targetValue": 1099122.74,
             "ratio": 132.72,
-            "salesPoints": 2917573.78,
+            "salesPoints": 2917573.77,
             "targetPoints": 2198245.48
           }
         },
@@ -1255,7 +1255,7 @@
             "targetUnits": 2778.23,
             "targetValue": 1033731.7,
             "ratio": 115.5,
-            "salesPoints": 2387846.1,
+            "salesPoints": 2387846.08,
             "targetPoints": 2067463.4
           }
         },
@@ -1308,7 +1308,7 @@
             "targetUnits": 3090.86,
             "targetValue": 1352950.95,
             "ratio": 119.55,
-            "salesPoints": 3234800.3,
+            "salesPoints": 3234800.33,
             "targetPoints": 2705901.9
           }
         },
@@ -1361,7 +1361,7 @@
             "targetUnits": 4004.31,
             "targetValue": 1863676.77,
             "ratio": 26.8,
-            "salesPoints": 998887.98,
+            "salesPoints": 998887.97,
             "targetPoints": 3727353.54
           }
         }
@@ -1465,7 +1465,7 @@
               "salesValue": 508186.22,
               "targetUnits": 587.4,
               "targetValue": 393323.04,
-              "ratio": 129.2,
+              "ratio": 129.21,
               "salesPoints": 1016389.19,
               "targetPoints": 786646.08
             }
@@ -1476,7 +1476,7 @@
             "targetUnits": 2693.99,
             "targetValue": 1067418.66,
             "ratio": 108.0,
-            "salesPoints": 2305650.54,
+            "salesPoints": 2305667.3,
             "targetPoints": 2134837.32
           }
         },
@@ -1529,7 +1529,7 @@
             "targetUnits": 4600.44,
             "targetValue": 2298683.31,
             "ratio": 128.25,
-            "salesPoints": 5895980.76,
+            "salesPoints": 5895986.61,
             "targetPoints": 4597366.62
           }
         },
@@ -1582,7 +1582,7 @@
             "targetUnits": 5321.65,
             "targetValue": 2696079.42,
             "ratio": 111.75,
-            "salesPoints": 6025791.4,
+            "salesPoints": 6025791.38,
             "targetPoints": 5392158.84
           }
         }
@@ -1644,7 +1644,7 @@
             "targetUnits": 3097.75,
             "targetValue": 1464659.37,
             "ratio": 91.03,
-            "salesPoints": 2666590.68,
+            "salesPoints": 2666590.69,
             "targetPoints": 2929318.74
           }
         },
@@ -1697,7 +1697,7 @@
             "targetUnits": 2569.32,
             "targetValue": 957744.81,
             "ratio": 98.42,
-            "salesPoints": 1885289.8,
+            "salesPoints": 1885289.81,
             "targetPoints": 1915489.62
           }
         },
@@ -1750,7 +1750,7 @@
             "targetUnits": 2946.92,
             "targetValue": 1279566.18,
             "ratio": 123.96,
-            "salesPoints": 3172355.42,
+            "salesPoints": 3172355.41,
             "targetPoints": 2559132.36
           }
         },

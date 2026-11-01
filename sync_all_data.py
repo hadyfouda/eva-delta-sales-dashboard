@@ -117,9 +117,9 @@ for cfg in REPS_CONFIG:
                 if tu is None and tv is not None: tu = round(tv / price, 2)
                 if tv is None and tu is not None: tv = round(tu * price, 2)
 
-                ratio = round((sv / tv) * 100, 2) if (tv and tv > 0 and sv is not None) else (100.0 if sv else 0.0)
                 sp = clean_f(row_found.get('I')) or (round(sv * 2, 2) if sv else 0.0)
                 tp = clean_f(row_found.get('J')) or (round(tv * 2, 2) if tv else 0.0)
+                ratio = round((sp / tp) * 100, 2) if (tp and tp > 0 and sp is not None) else (round((sv / tv) * 100, 2) if (tv and tv > 0 and sv is not None) else (100.0 if sv else 0.0))
 
                 if sv is not None: tot_sv += sv
                 if tv is not None: tot_tv += tv
@@ -148,7 +148,9 @@ for cfg in REPS_CONFIG:
                     'targetPoints': None
                 })
 
-        tot_ratio = round((tot_sv / tot_tv) * 100, 2) if tot_tv > 0 else 0.0
+        tot_sp = sum(p['salesPoints'] for p in prods if p['salesPoints'] is not None)
+        tot_tp = sum(p['targetPoints'] for p in prods if p['targetPoints'] is not None)
+        tot_ratio = round((tot_sp / tot_tp) * 100, 2) if tot_tp > 0 else (round((tot_sv / tot_tv) * 100, 2) if tot_tv > 0 else 0.0)
         rep_obj['quarters'][q] = {
             'products': prods,
             'total': {
@@ -157,8 +159,8 @@ for cfg in REPS_CONFIG:
                 'targetUnits': round(tot_tu, 2),
                 'targetValue': round(tot_tv, 2),
                 'ratio': tot_ratio,
-                'salesPoints': round(tot_sv * 2, 2),
-                'targetPoints': round(tot_tv * 2, 2)
+                'salesPoints': round(tot_sp, 2),
+                'targetPoints': round(tot_tp, 2)
             }
         }
         print(f"  Processed {cfg['name']} - {q}: Sales={tot_sv:,.2f} EGP, Target={tot_tv:,.2f} EGP")
