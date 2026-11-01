@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -206,6 +207,231 @@
   #back-btn.visible { display: flex; }
   .back-text-short { display: none; }
   .back-text-full { display: inline; }
+
+  /* ── YEAR-END DEFICIT REPORT BUTTON ── */
+  .btn-deficit-report {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #090c12 0%, #1e293b 100%);
+    color: #ffffff;
+    border: 1.5px solid var(--gold);
+    padding: 8px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(9, 12, 18, 0.25);
+    font-family: inherit; text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-deficit-report:hover {
+    background: #000000;
+    border-color: #fbbf24;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+    color: var(--gold-light);
+  }
+  .report-btn-tag {
+    background: var(--gold); color: #000000;
+    font-size: 11px; font-weight: 800;
+    padding: 2px 8px; border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── DEFICIT REPORT MODAL STYLES ── */
+  #deficitModal.modal-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(9, 12, 18, 0.85);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  #deficitModal.modal-overlay.active {
+    display: flex; animation: fadeIn 0.2s ease-out;
+  }
+  .report-modal-box {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%; max-width: 1100px; max-height: 92vh;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.25s ease-out;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .report-modal-header {
+    background: #090c12; color: #ffffff;
+    padding: 20px 28px;
+    border-bottom: 3px solid var(--gold);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .report-modal-body {
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(92vh - 90px);
+    background: var(--bg);
+  }
+  .report-actions-toolbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .report-action-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+    border: 1px solid transparent;
+  }
+  .report-action-excel {
+    background: #15803d; color: #ffffff;
+  }
+  .report-action-excel:hover {
+    background: #166534; box-shadow: 0 4px 12px rgba(22, 101, 52, 0.35); transform: translateY(-1px);
+  }
+  .report-action-print {
+    background: #1e293b; color: #ffffff; border-color: rgba(255,255,255,0.2);
+  }
+  .report-action-print:hover {
+    background: #334155; transform: translateY(-1px);
+  }
+  .report-action-copy {
+    background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: var(--gold);
+  }
+  .report-action-copy:hover {
+    background: var(--gold); color: #000000; transform: translateY(-1px);
+  }
+  .report-modal-close {
+    background: rgba(255,255,255,0.1); border: none; color: #cbd5e1;
+    width: 34px; height: 34px; border-radius: 50%;
+    font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .report-modal-close:hover {
+    background: #ef4444; color: #ffffff;
+  }
+
+  /* ── REPORT CARDS & TABLES ── */
+  .report-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .report-kpi-card {
+    background: #ffffff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative; overflow: hidden;
+  }
+  .report-kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--gold);
+  }
+  .report-kpi-card.kpi-deficit::before {
+    background: #ef4444;
+  }
+  .report-kpi-card.kpi-surplus::before {
+    background: #22c55e;
+  }
+  .report-kpi-title {
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .report-kpi-val {
+    font-size: 22px; font-weight: 900; color: var(--text-primary);
+    line-height: 1.2; margin-bottom: 4px;
+  }
+  .report-kpi-sub {
+    font-size: 11.5px; color: var(--text-secondary); font-weight: 500;
+  }
+
+  .report-section-title {
+    font-size: 15px; font-weight: 800; color: var(--text-primary);
+    margin: 24px 0 14px; display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .report-table-box {
+    background: #ffffff; border: 1px solid var(--border); border-radius: 14px;
+    overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px;
+  }
+  .report-table {
+    width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;
+  }
+  .report-table th {
+    background: #090c12; color: #ffffff; padding: 12px 16px;
+    font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap; border-bottom: 2px solid var(--gold);
+  }
+  .report-table td {
+    padding: 13px 16px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .report-table tr:last-child td { border-bottom: none; }
+  .report-table tr:hover td { background: #f8fafc; }
+  .report-table tr.total-row td {
+    background: #fef3c7; font-weight: 800; color: #000000;
+    border-top: 2px solid var(--gold); border-bottom: none;
+  }
+
+  .priority-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;
+  }
+  .priority-critical { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .priority-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .priority-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+  .report-insight-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid var(--border); border-left: 4px solid var(--gold);
+    border-radius: 12px; padding: 16px 20px; margin-top: 16px;
+    font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
+  }
+
+  /* ── PRINT MEDIA OPTIMIZATIONS ── */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    #deficitModal, #deficitModal * {
+      visibility: visible;
+    }
+    #deficitModal.modal-overlay {
+      position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important;
+      background: #ffffff !important; backdrop-filter: none !important;
+      padding: 0 !important; display: block !important;
+    }
+    .report-modal-box {
+      box-shadow: none !important; border: none !important;
+      max-height: none !important; overflow: visible !important;
+      width: 100% !important; max-width: 100% !important;
+    }
+    .report-modal-header {
+      background: #090c12 !important; color: #ffffff !important;
+      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    .report-actions-toolbar, .report-modal-close {
+      display: none !important;
+    }
+    .report-modal-body {
+      background: #ffffff !important; padding: 12px !important;
+      max-height: none !important; overflow: visible !important;
+    }
+    .report-table th {
+      background: #090c12 !important; color: #ffffff !important;
+      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    .report-table tr.total-row td {
+      background: #fef3c7 !important; color: #000000 !important;
+      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    .deficit-badge, .priority-tag {
+      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    .report-kpi-card, .report-table-box, .report-insight-box {
+      box-shadow: none !important; border: 1px solid #cbd5e1 !important;
+      page-break-inside: avoid;
+    }
+  }
 
   /* ── MAIN CONTAINER ── */
   #main { padding: 32px 32px; max-width: 1480px; margin: 0 auto; width: 100%; }
@@ -896,6 +1122,13 @@
           <div class="subtitle">Executive sales tracking, quota achievement, and deficit monitoring across all representatives</div>
         </div>
       </div>
+      <div class="team-header-actions">
+        <button class="btn btn-deficit-report" onclick="openDeficitReport('team')" title="Generate Annual Quota Deficit & Gap Analysis Report for Delta Team">
+          <span style="font-size:16px;">📊</span>
+          <span>Team Year-End Deficit Report</span>
+          <span class="report-btn-tag">تقرير عجز الفريق</span>
+        </button>
+      </div>
     </div>
 
     <!-- STAT ROW -->
@@ -914,6 +1147,13 @@
           <div class="rep-profile-name" id="rep-profile-name"></div>
           <div class="rep-profile-note" id="rep-profile-note"></div>
         </div>
+      </div>
+      <div class="rep-header-actions" id="rep-header-actions">
+        <button class="btn btn-deficit-report" onclick="openDeficitReport(currentActiveRepKey)" title="Generate Annual Quota Deficit & Gap Analysis Report">
+          <span style="font-size:16px;">📊</span>
+          <span>Year-End Deficit Report</span>
+          <span class="report-btn-tag">تقرير العجز والمتبقي</span>
+        </button>
       </div>
     </div>
 
@@ -982,6 +1222,43 @@
   </div>
 
 </main>
+
+<!-- ── DEFICIT & GAP-TO-TARGET REPORT MODAL ── -->
+<div class="modal-overlay" id="deficitModal" onclick="if(event.target===this) closeDeficitReport()">
+  <div class="report-modal-box">
+    <div class="report-modal-header">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="title-badge-icon" style="width:44px; height:44px; font-size:20px; border-radius:10px;">Δ</div>
+        <div>
+          <div id="modalReportTitle" style="font-size:17px; font-weight:800; color:#ffffff; letter-spacing:-0.2px;">
+            Year-End Quota Deficit & Gap-to-Target Report 2026
+          </div>
+          <div id="modalReportSubtitle" style="font-size:12px; color:#94a3b8; margin-top:2px;">
+            Detailed breakdown of remaining quota and per-medicine shortage
+          </div>
+        </div>
+      </div>
+      <div class="report-actions-toolbar">
+        <button class="report-action-btn report-action-excel" onclick="downloadDeficitExcel()" title="Download Excel Spreadsheet">
+          <span style="font-size:14px;">📥</span> Download Excel (.xlsx)
+        </button>
+        <button class="report-action-btn report-action-print" onclick="printDeficitReport()" title="Print or Save PDF Report">
+          <span style="font-size:14px;">🖨️</span> Print / PDF
+        </button>
+        <button class="report-action-btn report-action-copy" onclick="copyDeficitSummary()" title="Copy WhatsApp Text Summary">
+          <span style="font-size:14px;">📋</span> Copy WhatsApp
+        </button>
+        <button class="report-modal-close" onclick="closeDeficitReport()" title="Close">&times;</button>
+      </div>
+    </div>
+    <div class="report-modal-body" id="deficitModalBody">
+      <!-- Dynamically generated via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING TOAST NOTIFICATION -->
+<div id="toastNotification" class="save-toast" style="z-index:10001; position:fixed; bottom:28px; right:28px;"></div>
 
 <script>
 /* ── DATA DEFINITIONS ── */
@@ -1178,7 +1455,59 @@ let REPS = [
           "targetPoints": 4041895.02
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 134.65,
+            "salesValue": 31254.99,
+            "targetUnits": 2173.6,
+            "targetValue": 504553.41,
+            "ratio": 6.19,
+            "salesPoints": 62509.97,
+            "targetPoints": 1009106.82
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 145.03,
+            "salesValue": 33665.36,
+            "targetUnits": 424.0,
+            "targetValue": 98422.26,
+            "ratio": 34.21,
+            "salesPoints": 67330.72,
+            "targetPoints": 196844.52
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 80.0,
+            "salesValue": 48260.0,
+            "targetUnits": 1989.5,
+            "targetValue": 1200165.87,
+            "ratio": 4.02,
+            "salesPoints": 96520.0,
+            "targetPoints": 2400331.74
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 126.94,
+            "salesValue": 84999.93,
+            "targetUnits": 750.4,
+            "targetValue": 502467.84,
+            "ratio": 16.92,
+            "salesPoints": 169999.86,
+            "targetPoints": 1004935.68
+          }
+        ],
+        "total": {
+          "salesUnits": 486.62,
+          "salesValue": 198180.28,
+          "targetUnits": 5337.5,
+          "targetValue": 2305609.38,
+          "ratio": 8.6,
+          "salesPoints": 396360.56,
+          "targetPoints": 4611218.76
+        }
+      }
     },
     "note": "Medical Representative — Delta Team (EVA Insulin 2026)"
   },
@@ -1350,7 +1679,59 @@ let REPS = [
           "targetPoints": 4289850.9
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 94.35,
+            "salesValue": 21900.15,
+            "targetUnits": 817.0,
+            "targetValue": 189648.57,
+            "ratio": 11.55,
+            "salesPoints": 43800.31,
+            "targetPoints": 379297.14
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 82.51,
+            "salesValue": 19151.85,
+            "targetUnits": 650.0,
+            "targetValue": 150881.25,
+            "ratio": 12.69,
+            "salesPoints": 38303.69,
+            "targetPoints": 301762.5
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 175.0,
+            "salesValue": 105568.75,
+            "targetUnits": 1983.75,
+            "targetValue": 1196697.18,
+            "ratio": 8.82,
+            "salesPoints": 211137.5,
+            "targetPoints": 2393394.36
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 69.05,
+            "salesValue": 46236.43,
+            "targetUnits": 635.6,
+            "targetValue": 425597.76,
+            "ratio": 10.86,
+            "salesPoints": 92472.86,
+            "targetPoints": 851195.52
+          }
+        ],
+        "total": {
+          "salesUnits": 420.91,
+          "salesValue": 192857.18,
+          "targetUnits": 4086.35,
+          "targetValue": 1962824.76,
+          "ratio": 9.83,
+          "salesPoints": 385714.36,
+          "targetPoints": 3925649.52
+        }
+      }
     },
     "note": "Medical Representative — Delta Team (EVA Insulin 2026)"
   },
@@ -1469,7 +1850,59 @@ let REPS = [
           "targetPoints": 3759900.42
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 406.56,
+            "salesValue": 94374.7,
+            "targetUnits": 1607.4,
+            "targetValue": 373122.54,
+            "ratio": 25.29,
+            "salesPoints": 188749.4,
+            "targetPoints": 746245.08
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 260.83,
+            "salesValue": 60546.61,
+            "targetUnits": 622.0,
+            "targetValue": 144383.61,
+            "ratio": 41.93,
+            "salesPoints": 121093.21,
+            "targetPoints": 288767.22
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 635.0,
+            "salesValue": 383063.75,
+            "targetUnits": 931.5,
+            "targetValue": 561927.36,
+            "ratio": 68.17,
+            "salesPoints": 766127.5,
+            "targetPoints": 1123854.72
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 268.91,
+            "salesValue": 180059.93,
+            "targetUnits": 896.0,
+            "targetValue": 599961.6,
+            "ratio": 30.01,
+            "salesPoints": 360119.86,
+            "targetPoints": 1199923.2
+          }
+        ],
+        "total": {
+          "salesUnits": 1571.3,
+          "salesValue": 718044.99,
+          "targetUnits": 4056.9,
+          "targetValue": 1679395.11,
+          "ratio": 42.76,
+          "salesPoints": 1436089.98,
+          "targetPoints": 3358790.22
+        }
+      }
     }
   },
   {
@@ -1638,7 +2071,59 @@ let REPS = [
           "targetPoints": 2696382.96
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 82.7,
+            "salesValue": 19197.88,
+            "targetUnits": 843.6,
+            "targetValue": 195823.17,
+            "ratio": 9.8,
+            "salesPoints": 38395.76,
+            "targetPoints": 391646.34
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 156.04,
+            "salesValue": 36221.41,
+            "targetUnits": 822.0,
+            "targetValue": 190809.21,
+            "ratio": 18.98,
+            "salesPoints": 72442.82,
+            "targetPoints": 381618.42
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 170.0,
+            "salesValue": 102552.5,
+            "targetUnits": 951.62,
+            "targetValue": 574067.79,
+            "ratio": 17.86,
+            "salesPoints": 205105.0,
+            "targetPoints": 1148135.58
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 90.64,
+            "salesValue": 60695.68,
+            "targetUnits": 838.6,
+            "targetValue": 561526.56,
+            "ratio": 10.81,
+            "salesPoints": 121391.35,
+            "targetPoints": 1123053.12
+          }
+        ],
+        "total": {
+          "salesUnits": 499.38,
+          "salesValue": 218667.47,
+          "targetUnits": 3455.82,
+          "targetValue": 1522226.73,
+          "ratio": 14.36,
+          "salesPoints": 437334.94,
+          "targetPoints": 3044453.46
+        }
+      }
     },
     "note": "Medical Representative — Delta Team (EVA Insulin 2026)"
   },
@@ -1705,7 +2190,59 @@ let REPS = [
           "targetPoints": 7083645.84
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 167.94,
+            "salesValue": 38984.74,
+            "targetUnits": 1223.62,
+            "targetValue": 284031.81,
+            "ratio": 13.73,
+            "salesPoints": 77969.47,
+            "targetPoints": 568063.62
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 94.81,
+            "salesValue": 22008.48,
+            "targetUnits": 312.0,
+            "targetValue": 72423.93,
+            "ratio": 30.39,
+            "salesPoints": 44016.97,
+            "targetPoints": 144847.86
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 819.0,
+            "salesValue": 494061.75,
+            "targetUnits": 6037.5,
+            "targetValue": 3642121.86,
+            "ratio": 13.57,
+            "salesPoints": 988123.5,
+            "targetPoints": 7284243.72
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 208.31,
+            "salesValue": 139483.31,
+            "targetUnits": 786.8,
+            "targetValue": 526841.28,
+            "ratio": 26.48,
+            "salesPoints": 278966.61,
+            "targetPoints": 1053682.56
+          }
+        ],
+        "total": {
+          "salesUnits": 1290.06,
+          "salesValue": 694538.28,
+          "targetUnits": 8359.92,
+          "targetValue": 4525418.88,
+          "ratio": 15.35,
+          "salesPoints": 1389076.56,
+          "targetPoints": 9050837.76
+        }
+      }
     }
   },
   {
@@ -2044,7 +2581,59 @@ let REPS = [
           "targetPoints": 2705901.9
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 142.31,
+            "salesValue": 33034.19,
+            "targetUnits": 1115.31,
+            "targetValue": 258892.35,
+            "ratio": 12.76,
+            "salesPoints": 66068.37,
+            "targetPoints": 517784.7
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 107.13,
+            "salesValue": 24868.94,
+            "targetUnits": 492.0,
+            "targetValue": 114206.97,
+            "ratio": 21.78,
+            "salesPoints": 49737.87,
+            "targetPoints": 228413.94
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 616.53,
+            "salesValue": 371921.72,
+            "targetUnits": 1725.0,
+            "targetValue": 1040606.25,
+            "ratio": 35.74,
+            "salesPoints": 743843.44,
+            "targetPoints": 2081212.5
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 103.97,
+            "salesValue": 69619.14,
+            "targetUnits": 672.0,
+            "targetValue": 449971.2,
+            "ratio": 15.47,
+            "salesPoints": 139238.29,
+            "targetPoints": 899942.4
+          }
+        ],
+        "total": {
+          "salesUnits": 969.94,
+          "salesValue": 499443.99,
+          "targetUnits": 4004.31,
+          "targetValue": 1863676.77,
+          "ratio": 26.8,
+          "salesPoints": 998887.98,
+          "targetPoints": 3727353.54
+        }
+      }
     },
     "note": "Medical Representative — Delta Team (EVA Insulin 2026)"
   },
@@ -2214,7 +2803,59 @@ let REPS = [
           "targetPoints": 4597366.62
         }
       },
-      "Q4": null
+      "Q4": {
+        "products": [
+          {
+            "pid": 1260,
+            "salesUnits": 184.44,
+            "salesValue": 42812.72,
+            "targetUnits": 955.7,
+            "targetValue": 221844.72,
+            "ratio": 19.3,
+            "salesPoints": 85625.43,
+            "targetPoints": 443689.44
+          },
+          {
+            "pid": 1259,
+            "salesUnits": 86.53,
+            "salesValue": 20085.78,
+            "targetUnits": 562.0,
+            "targetValue": 130455.93,
+            "ratio": 15.4,
+            "salesPoints": 40171.56,
+            "targetPoints": 260911.86
+          },
+          {
+            "pid": 1251,
+            "salesUnits": 4779.47,
+            "salesValue": 2883215.28,
+            "targetUnits": 3064.75,
+            "targetValue": 1848810.45,
+            "ratio": 155.95,
+            "salesPoints": 5766430.56,
+            "targetPoints": 3697620.9
+          },
+          {
+            "pid": 1110,
+            "salesUnits": 99.73,
+            "salesValue": 66781.92,
+            "targetUnits": 739.2,
+            "targetValue": 494968.32,
+            "ratio": 13.49,
+            "salesPoints": 133563.83,
+            "targetPoints": 989936.64
+          }
+        ],
+        "total": {
+          "salesUnits": 5150.17,
+          "salesValue": 3012895.7,
+          "targetUnits": 5321.65,
+          "targetValue": 2696079.42,
+          "ratio": 111.75,
+          "salesPoints": 6025791.4,
+          "targetPoints": 5392158.84
+        }
+      }
     },
     "note": "Medical Representative — Delta Team (EVA Insulin 2026)"
   },
@@ -2504,43 +3145,42 @@ function computeRepYTD(rep) {
     };
   });
 
-  const quarters = ['Q1', 'Q2', 'Q3'];
+  const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
   quarters.forEach(q => {
-    const qd = rep.quarters && rep.quarters[q];
+    let qd = rep.quarters && rep.quarters[q];
+    // Check if user has entered/overridden Q4 locally in localStorage
+    if (q === 'Q4') {
+      const q4Local = loadQ4(rep.key);
+      if (q4Local && q4Local.products) {
+        qd = q4Local;
+      }
+    }
     if (qd && qd.products) {
       summary.hasData = true;
       qd.products.forEach(p => {
         const py = summary.productsYTD[p.pid];
         if (py) {
-          if (p.salesUnits !== null)  { py.salesUnits  += p.salesUnits; summary.salesUnits += p.salesUnits; }
-          if (p.targetUnits !== null) { py.targetUnits += p.targetUnits; summary.targetUnits += p.targetUnits; }
-          if (p.salesValue !== null)  { py.salesValue  += p.salesValue; summary.salesValue += p.salesValue; }
-          if (p.targetValue !== null) { py.targetValue += p.targetValue; summary.targetValue += p.targetValue; }
-          if (p.salesPoints !== null) { py.salesPoints += p.salesPoints; summary.salesPoints += p.salesPoints; }
-          if (p.targetPoints !== null){ py.targetPoints+= p.targetPoints; summary.targetPoints += p.targetPoints; }
-          if (p.salesValue !== null || p.targetValue !== null) py.hasData = true;
+          const su = (p.salesUnits !== null && p.salesUnits !== undefined) ? Number(p.salesUnits) : 0;
+          const tu = (p.targetUnits !== null && p.targetUnits !== undefined) ? Number(p.targetUnits) : 0;
+          const sv = (p.salesValue !== null && p.salesValue !== undefined) ? Number(p.salesValue) : 0;
+          const tv = (p.targetValue !== null && p.targetValue !== undefined) ? Number(p.targetValue) : 0;
+          const sp = (p.salesPoints !== null && p.salesPoints !== undefined) ? Number(p.salesPoints) : (sv * 2);
+          const tp = (p.targetPoints !== null && p.targetPoints !== undefined) ? Number(p.targetPoints) : (tv * 2);
+
+          py.salesUnits  += su; summary.salesUnits += su;
+          py.targetUnits += tu; summary.targetUnits += tu;
+          py.salesValue  += sv; summary.salesValue += sv;
+          py.targetValue += tv; summary.targetValue += tv;
+          py.salesPoints += sp; summary.salesPoints += sp;
+          py.targetPoints+= tp; summary.targetPoints += tp;
+
+          if (p.salesValue !== null || p.targetValue !== null || p.salesUnits !== null || p.targetUnits !== null) {
+            py.hasData = true;
+          }
         }
       });
     }
   });
-
-  // Include Q4 if entered
-  const q4 = loadQ4(rep.key);
-  if (q4 && q4.products) {
-    summary.hasData = true;
-    q4.products.forEach(p => {
-      const py = summary.productsYTD[p.pid];
-      if (py) {
-        if (p.salesUnits)  { py.salesUnits  += p.salesUnits; summary.salesUnits += p.salesUnits; }
-        if (p.targetUnits) { py.targetUnits += p.targetUnits; summary.targetUnits += p.targetUnits; }
-        if (p.salesValue)  { py.salesValue  += p.salesValue; summary.salesValue += p.salesValue; }
-        if (p.targetValue) { py.targetValue += p.targetValue; summary.targetValue += p.targetValue; }
-        if (p.salesPoints) { py.salesPoints += p.salesPoints; summary.salesPoints += p.salesPoints; }
-        if (p.targetPoints){ py.targetPoints+= p.targetPoints; summary.targetPoints += p.targetPoints; }
-        if (p.salesValue || p.targetValue) py.hasData = true;
-      }
-    });
-  }
 
   if (!summary.hasData) return null;
 
@@ -3002,6 +3642,8 @@ function showRep(repKey, targetTabId = null) {
   if (currentUser && currentUser.repKey) {
     repKey = currentUser.repKey;
   }
+
+  currentActiveRepKey = repKey;
 
   const rep = REPS.find(r => r.key === repKey);
   if (!rep || rep.noData) return;
@@ -3708,6 +4350,7 @@ function showHome() {
     return;
   }
 
+  currentActiveRepKey = 'team';
   destroyCharts();
   document.getElementById('view-rep').classList.remove('active');
   document.getElementById('view-home').classList.add('active');
@@ -3722,6 +4365,763 @@ function handleBrandClick() {
     showHome();
   }
 }
+
+/* ── DEFICIT & GAP-TO-TARGET REPORT SUITE ── */
+let currentActiveRepKey = 'team';
+let currentReportScope = 'team';
+
+function computeTeamDeficit() {
+  const team = {
+    salesUnits: 0, targetUnits: 0, deficitUnits: 0,
+    salesValue: 0, targetValue: 0, deficitValue: 0,
+    salesPoints: 0, targetPoints: 0, deficitPoints: 0,
+    ratio: 0,
+    products: {},
+    reps: []
+  };
+
+  PRODUCTS.forEach(p => {
+    team.products[p.id] = {
+      pid: p.id,
+      name: p.name,
+      price: p.price,
+      salesUnits: 0, targetUnits: 0, deficitUnits: 0,
+      salesValue: 0, targetValue: 0, deficitValue: 0,
+      salesPoints: 0, targetPoints: 0, deficitPoints: 0,
+      ratio: 0
+    };
+  });
+
+  REPS.forEach(r => {
+    if (r.noData) return;
+    const ytd = computeRepYTD(r);
+    if (!ytd) return;
+
+    team.salesUnits += ytd.salesUnits;
+    team.targetUnits += ytd.targetUnits;
+    team.salesValue += ytd.salesValue;
+    team.targetValue += ytd.targetValue;
+    team.salesPoints += ytd.salesPoints;
+    team.targetPoints += ytd.targetPoints;
+
+    PRODUCTS.forEach(p => {
+      const py = ytd.productsYTD[p.id];
+      if (py) {
+        team.products[p.id].salesUnits += py.salesUnits;
+        team.products[p.id].targetUnits += py.targetUnits;
+        team.products[p.id].salesValue += py.salesValue;
+        team.products[p.id].targetValue += py.targetValue;
+        team.products[p.id].salesPoints += py.salesPoints;
+        team.products[p.id].targetPoints += py.targetPoints;
+      }
+    });
+
+    team.reps.push({
+      key: r.key,
+      name: r.name,
+      note: r.note,
+      salesUnits: ytd.salesUnits,
+      targetUnits: ytd.targetUnits,
+      deficitUnits: ytd.deficitUnits,
+      salesValue: ytd.salesValue,
+      targetValue: ytd.targetValue,
+      deficitValue: ytd.deficitValue,
+      ratio: ytd.ratio
+    });
+  });
+
+  team.deficitUnits = team.targetUnits - team.salesUnits;
+  team.deficitValue = team.targetValue - team.salesValue;
+  team.deficitPoints = team.targetPoints - team.salesPoints;
+  team.ratio = team.targetValue > 0 ? (team.salesValue / team.targetValue) * 100 : 0;
+
+  PRODUCTS.forEach(p => {
+    const prod = team.products[p.id];
+    prod.deficitUnits = prod.targetUnits - prod.salesUnits;
+    prod.deficitValue = prod.targetValue - prod.salesValue;
+    prod.ratio = prod.targetValue > 0 ? (prod.salesValue / prod.targetValue) * 100 : 0;
+  });
+
+  return team;
+}
+
+function computeSingleRepDeficit(repKey) {
+  const rep = REPS.find(r => r.key === repKey);
+  if (!rep || rep.noData) return null;
+  const ytd = computeRepYTD(rep);
+  if (!ytd) return null;
+
+  const data = {
+    rep: rep,
+    salesUnits: ytd.salesUnits,
+    targetUnits: ytd.targetUnits,
+    deficitUnits: ytd.deficitUnits,
+    salesValue: ytd.salesValue,
+    targetValue: ytd.targetValue,
+    deficitValue: ytd.deficitValue,
+    salesPoints: ytd.salesPoints,
+    targetPoints: ytd.targetPoints,
+    deficitPoints: ytd.deficitPoints,
+    ratio: ytd.ratio,
+    products: []
+  };
+
+  PRODUCTS.forEach(p => {
+    const py = ytd.productsYTD[p.id];
+    data.products.push({
+      pid: p.id,
+      name: p.name,
+      price: p.price,
+      salesUnits: py ? py.salesUnits : 0,
+      targetUnits: py ? py.targetUnits : 0,
+      deficitUnits: py ? py.deficitUnits : 0,
+      salesValue: py ? py.salesValue : 0,
+      targetValue: py ? py.targetValue : 0,
+      deficitValue: py ? py.deficitValue : 0,
+      ratio: py ? py.ratio : 0
+    });
+  });
+
+  return data;
+}
+
+function openDeficitReport(targetType) {
+  targetType = targetType || currentActiveRepKey || 'team';
+  if (currentUser && currentUser.repKey) {
+    targetType = currentUser.repKey;
+  }
+  currentReportScope = targetType;
+
+  const isTeam = targetType === 'team';
+  const modal = document.getElementById('deficitModal');
+  const titleEl = document.getElementById('modalReportTitle');
+  const subEl = document.getElementById('modalReportSubtitle');
+  const bodyEl = document.getElementById('deficitModalBody');
+
+  if (!modal || !bodyEl) return;
+
+  if (isTeam) {
+    titleEl.textContent = 'Delta Team — Year-End Quota Deficit & Gap Analysis Report 2026';
+    subEl.textContent = 'Overall team quota gap, net financial deficit, and per-medicine shortage across all Delta territories';
+
+    const d = computeTeamDeficit();
+    const valClass = d.deficitValue > 0 ? 'kpi-deficit' : 'kpi-surplus';
+    const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
+
+    let html = `
+      <!-- KPI CARDS -->
+      <div class="report-kpi-grid">
+        <div class="report-kpi-card">
+          <div class="report-kpi-title">
+            <span>Annual Quota (Value)</span>
+            <span>💰</span>
+          </div>
+          <div class="report-kpi-val">${fmt(d.salesValue)} <span style="font-size:13px; color:var(--gold);">EGP</span></div>
+          <div class="report-kpi-sub">Target: ${fmt(d.targetValue)} EGP (${fmtPct(d.ratio)} achieved)</div>
+        </div>
+
+        <div class="report-kpi-card ${valClass}">
+          <div class="report-kpi-title">
+            <span>Net Value Deficit / Surplus</span>
+            <span>${d.deficitValue > 0 ? '📉' : '🏆'}</span>
+          </div>
+          <div class="report-kpi-val" style="color:${d.deficitValue > 0 ? '#ef4444' : '#22c55e'};">
+            ${d.deficitValue > 0 ? '-' + fmt(d.deficitValue) : '+' + fmt(Math.abs(d.deficitValue))} <span style="font-size:13px;">EGP</span>
+          </div>
+          <div class="report-kpi-sub">${d.deficitValue > 0 ? 'Remaining financial gap to 100% quota' : 'Aggregate financial quota exceeded!'}</div>
+        </div>
+
+        <div class="report-kpi-card ${d.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus'}">
+          <div class="report-kpi-title">
+            <span>Physical Units Deficit</span>
+            <span>📦</span>
+          </div>
+          <div class="report-kpi-val" style="color:${d.deficitUnits > 0 ? '#ef4444' : '#22c55e'};">
+            ${d.deficitUnits > 0 ? '-' + fmt(d.deficitUnits) : '+' + fmt(Math.abs(d.deficitUnits))} <span style="font-size:13px;">units</span>
+          </div>
+          <div class="report-kpi-sub">Sold: ${fmt(d.salesUnits)} u | Target: ${fmt(d.targetUnits)} u</div>
+        </div>
+
+        <div class="report-kpi-card">
+          <div class="report-kpi-title">
+            <span>Sales Points Deficit</span>
+            <span>⭐</span>
+          </div>
+          <div class="report-kpi-val">${d.deficitPoints > 0 ? '-' + fmt(d.deficitPoints) : '+' + fmt(Math.abs(d.deficitPoints))} <span style="font-size:13px;">pts</span></div>
+          <div class="report-kpi-sub">Points: ${fmt(d.salesPoints)} pts / Target: ${fmt(d.targetPoints)} pts</div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: PER-MEDICINE SHORTAGE BREAKDOWN TABLE -->
+      <div class="report-section-title">
+        <span>💊 Per-Medicine Shortage & Deficit Breakdown (النقص في كل دوا)</span>
+        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Evaluated against EVA Insulin official list prices</span>
+      </div>
+
+      <div class="report-table-box">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Medicine / Insulin Product</th>
+              <th>Code</th>
+              <th>Unit Price</th>
+              <th>Target Units</th>
+              <th>Actual Units</th>
+              <th>Unit Deficit (Shortage)</th>
+              <th>Target Value</th>
+              <th>Actual Sales</th>
+              <th>Value Deficit</th>
+              <th>Fulfillment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    PRODUCTS.forEach(p => {
+      const prod = d.products[p.id];
+      const isDeficit = prod.deficitUnits > 0;
+      const statusBadge = isDeficit
+        ? (prod.ratio < 70 
+            ? `<span class="priority-tag priority-critical">⚠️ High Deficit (-${fmt(prod.deficitUnits)} u)</span>`
+            : `<span class="priority-tag priority-warning">📉 Deficit (-${fmt(prod.deficitUnits)} u)</span>`)
+        : `<span class="priority-tag priority-success">✅ Met (+${fmt(Math.abs(prod.deficitUnits))} u)</span>`;
+
+      html += `
+        <tr>
+          <td><strong>${prod.name}</strong></td>
+          <td><span style="font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">#${prod.pid}</span></td>
+          <td>${fmt(prod.price)} EGP</td>
+          <td>${fmt(prod.targetUnits)}</td>
+          <td><strong>${fmt(prod.salesUnits)}</strong></td>
+          <td>${renderDeficitUnit(prod.targetUnits, prod.salesUnits)}</td>
+          <td>${fmt(prod.targetValue)} EGP</td>
+          <td><strong>${fmt(prod.salesValue)}</strong> EGP</td>
+          <td>${renderDeficitVal(prod.targetValue, prod.salesValue)}</td>
+          <td>
+            <div style="font-weight:800; color:${prod.ratio >= 100 ? '#16a34a' : prod.ratio >= 70 ? '#d97706' : '#dc2626'};">
+              ${fmtPct(prod.ratio)}
+            </div>
+          </td>
+          <td>${statusBadge}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+          <tr class="total-row">
+            <td colspan="3">TOTAL (ALL 4 INSULIN PRODUCTS)</td>
+            <td>${fmt(d.targetUnits)}</td>
+            <td>${fmt(d.salesUnits)}</td>
+            <td>${renderDeficitUnit(d.targetUnits, d.salesUnits)}</td>
+            <td>${fmt(d.targetValue)} EGP</td>
+            <td>${fmt(d.salesValue)} EGP</td>
+            <td>${renderDeficitVal(d.targetValue, d.salesValue)}</td>
+            <td style="color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
+            <td>${d.deficitValue > 0 ? '<span class="priority-tag priority-warning">Net Deficit</span>' : '<span class="priority-tag priority-success">Surplus</span>'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 2: REPRESENTATIVES QUOTA BREAKDOWN -->
+    <div class="report-section-title">
+      <span>👥 Representatives Quota Fulfillment & Deficit Breakdown</span>
+      <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Individual contributor deficit breakdown</span>
+    </div>
+
+    <div class="report-table-box">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Representative</th>
+            <th>Territory</th>
+            <th>Target Units</th>
+            <th>Actual Units</th>
+            <th>Unit Deficit</th>
+            <th>Target Value</th>
+            <th>Actual Sales</th>
+            <th>Value Deficit</th>
+            <th>Fulfillment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    d.reps.forEach(r => {
+      html += `
+        <tr>
+          <td><strong>${r.name}</strong></td>
+          <td><span style="font-size:12px; color:var(--text-secondary);">${r.note}</span></td>
+          <td>${fmt(r.targetUnits)}</td>
+          <td><strong>${fmt(r.salesUnits)}</strong></td>
+          <td>${renderDeficitUnit(r.targetUnits, r.salesUnits)}</td>
+          <td>${fmt(r.targetValue)} EGP</td>
+          <td><strong>${fmt(r.salesValue)}</strong> EGP</td>
+          <td>${renderDeficitVal(r.targetValue, r.salesValue)}</td>
+          <td>
+            <div style="font-weight:800; color:${r.ratio >= 100 ? '#16a34a' : r.ratio >= 70 ? '#d97706' : '#dc2626'};">
+              ${fmtPct(r.ratio)}
+            </div>
+          </td>
+          <td>
+            <button onclick="openDeficitReport('${r.key}')" style="background:#090c12; color:#fbbf24; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="View Rep Deficit Report">
+              View Rep ↗
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `
+          <tr class="total-row">
+            <td colspan="2">DELTA TEAM TOTAL</td>
+            <td>${fmt(d.targetUnits)}</td>
+            <td>${fmt(d.salesUnits)}</td>
+            <td>${renderDeficitUnit(d.targetUnits, d.salesUnits)}</td>
+            <td>${fmt(d.targetValue)} EGP</td>
+            <td>${fmt(d.salesValue)} EGP</td>
+            <td>${renderDeficitVal(d.targetValue, d.salesValue)}</td>
+            <td style="color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
+            <td>-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ACTIONABLE INSIGHTS BOX -->
+    <div class="report-insight-box">
+      <strong>💡 Strategic Focus & Shortage Driver (تحليل وسد العجز):</strong><br>
+      The primary shortage driver for Delta Team is <strong>${topDeficit.name}</strong> with a total deficit gap of <strong>${fmt(topDeficit.deficitUnits)} physical units</strong> (equivalent to <strong>${fmt(topDeficit.deficitValue)} EGP</strong> remaining).
+      Targeting pharmacy stocking and tender fulfillment for this key SKU will eliminate ${d.deficitValue > 0 ? ((topDeficit.deficitValue / d.deficitValue) * 100).toFixed(1) : 0}% of the team's entire financial quota deficit.
+    </div>
+    `;
+
+    bodyEl.innerHTML = html;
+
+  } else {
+    // SINGLE REP SCOPE
+    const repData = computeSingleRepDeficit(targetType);
+    if (!repData) return;
+    const rep = repData.rep;
+
+    titleEl.textContent = `${rep.name} — Year-End Quota Deficit & Shortage Report 2026`;
+    subEl.textContent = `Territory: ${rep.note} | Personal quota gap, net financial deficit, and per-medicine shortage`;
+
+    const valClass = repData.deficitValue > 0 ? 'kpi-deficit' : 'kpi-surplus';
+    const topDeficit = repData.products.reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
+
+    let html = `
+      <!-- KPI CARDS -->
+      <div class="report-kpi-grid">
+        <div class="report-kpi-card">
+          <div class="report-kpi-title">
+            <span>Annual Quota (Value)</span>
+            <span>💰</span>
+          </div>
+          <div class="report-kpi-val">${fmt(repData.salesValue)} <span style="font-size:13px; color:var(--gold);">EGP</span></div>
+          <div class="report-kpi-sub">Target: ${fmt(repData.targetValue)} EGP (${fmtPct(repData.ratio)} achieved)</div>
+        </div>
+
+        <div class="report-kpi-card ${valClass}">
+          <div class="report-kpi-title">
+            <span>Net Value Deficit / Surplus</span>
+            <span>${repData.deficitValue > 0 ? '📉' : '🏆'}</span>
+          </div>
+          <div class="report-kpi-val" style="color:${repData.deficitValue > 0 ? '#ef4444' : '#22c55e'};">
+            ${repData.deficitValue > 0 ? '-' + fmt(repData.deficitValue) : '+' + fmt(Math.abs(repData.deficitValue))} <span style="font-size:13px;">EGP</span>
+          </div>
+          <div class="report-kpi-sub">${repData.deficitValue > 0 ? 'Remaining financial gap to 100% quota' : 'Personal annual quota surpassed!'}</div>
+        </div>
+
+        <div class="report-kpi-card ${repData.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus'}">
+          <div class="report-kpi-title">
+            <span>Physical Units Deficit</span>
+            <span>📦</span>
+          </div>
+          <div class="report-kpi-val" style="color:${repData.deficitUnits > 0 ? '#ef4444' : '#22c55e'};">
+            ${repData.deficitUnits > 0 ? '-' + fmt(repData.deficitUnits) : '+' + fmt(Math.abs(repData.deficitUnits))} <span style="font-size:13px;">units</span>
+          </div>
+          <div class="report-kpi-sub">Sold: ${fmt(repData.salesUnits)} u | Target: ${fmt(repData.targetUnits)} u</div>
+        </div>
+
+        <div class="report-kpi-card">
+          <div class="report-kpi-title">
+            <span>Sales Points Deficit</span>
+            <span>⭐</span>
+          </div>
+          <div class="report-kpi-val">${repData.deficitPoints > 0 ? '-' + fmt(repData.deficitPoints) : '+' + fmt(Math.abs(repData.deficitPoints))} <span style="font-size:13px;">pts</span></div>
+          <div class="report-kpi-sub">Points: ${fmt(repData.salesPoints)} pts / Target: ${fmt(repData.targetPoints)} pts</div>
+        </div>
+      </div>
+
+      <!-- SECTION: PER-MEDICINE SHORTAGE BREAKDOWN TABLE -->
+      <div class="report-section-title">
+        <span>💊 Per-Medicine Shortage & Deficit Breakdown (النقص في كل دوا)</span>
+        ${currentUser && !currentUser.repKey ? `<button onclick="openDeficitReport('team')" style="background:#f1f5f9; border:1px solid var(--border); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">← Back to Team Report</button>` : ''}
+      </div>
+
+      <div class="report-table-box">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Medicine / Insulin Product</th>
+              <th>Code</th>
+              <th>Unit Price</th>
+              <th>Target Units</th>
+              <th>Actual Units</th>
+              <th>Unit Deficit (Shortage)</th>
+              <th>Target Value</th>
+              <th>Actual Sales</th>
+              <th>Value Deficit</th>
+              <th>Fulfillment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    repData.products.forEach(prod => {
+      const isDeficit = prod.deficitUnits > 0;
+      const statusBadge = isDeficit
+        ? (prod.ratio < 70 
+            ? `<span class="priority-tag priority-critical">⚠️ High Deficit (-${fmt(prod.deficitUnits)} u)</span>`
+            : `<span class="priority-tag priority-warning">📉 Deficit (-${fmt(prod.deficitUnits)} u)</span>`)
+        : `<span class="priority-tag priority-success">✅ Met (+${fmt(Math.abs(prod.deficitUnits))} u)</span>`;
+
+      html += `
+        <tr>
+          <td><strong>${prod.name}</strong></td>
+          <td><span style="font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:700;">#${prod.pid}</span></td>
+          <td>${fmt(prod.price)} EGP</td>
+          <td>${fmt(prod.targetUnits)}</td>
+          <td><strong>${fmt(prod.salesUnits)}</strong></td>
+          <td>${renderDeficitUnit(prod.targetUnits, prod.salesUnits)}</td>
+          <td>${fmt(prod.targetValue)} EGP</td>
+          <td><strong>${fmt(prod.salesValue)}</strong> EGP</td>
+          <td>${renderDeficitVal(prod.targetValue, prod.salesValue)}</td>
+          <td>
+            <div style="font-weight:800; color:${prod.ratio >= 100 ? '#16a34a' : prod.ratio >= 70 ? '#d97706' : '#dc2626'};">
+              ${fmtPct(prod.ratio)}
+            </div>
+          </td>
+          <td>${statusBadge}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+          <tr class="total-row">
+            <td colspan="3">TOTAL ANNUAL QUOTA</td>
+            <td>${fmt(repData.targetUnits)}</td>
+            <td>${fmt(repData.salesUnits)}</td>
+            <td>${renderDeficitUnit(repData.targetUnits, repData.salesUnits)}</td>
+            <td>${fmt(repData.targetValue)} EGP</td>
+            <td>${fmt(repData.salesValue)} EGP</td>
+            <td>${renderDeficitVal(repData.targetValue, repData.salesValue)}</td>
+            <td style="color:${repData.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(repData.ratio)}</td>
+            <td>${repData.deficitValue > 0 ? '<span class="priority-tag priority-warning">Net Deficit</span>' : '<span class="priority-tag priority-success">Surplus</span>'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ACTIONABLE INSIGHTS BOX -->
+    <div class="report-insight-box">
+      <strong>💡 Personalized Shortage Insights (سد عجز التارجت):</strong><br>
+      ${repData.deficitValue > 0 
+        ? `To achieve 100% of your annual quota, your primary focus should be <strong>${topDeficit.name}</strong> where you currently have a deficit of <strong>${fmt(topDeficit.deficitUnits)} units</strong> (remaining value: <strong>${fmt(topDeficit.deficitValue)} EGP</strong>). Closing this gap will achieve ${((topDeficit.deficitValue / repData.deficitValue) * 100).toFixed(1)}% of your remaining quota!`
+        : `Outstanding work! You have exceeded your overall annual quota by <strong>+${fmt(Math.abs(repData.deficitValue))} EGP</strong>.`}
+    </div>
+    `;
+
+    bodyEl.innerHTML = html;
+  }
+
+  modal.classList.add('active');
+}
+
+function closeDeficitReport() {
+  const modal = document.getElementById('deficitModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function printDeficitReport() {
+  window.print();
+}
+
+function downloadDeficitExcel(targetType) {
+  targetType = targetType || currentReportScope || 'team';
+  if (currentUser && currentUser.repKey) targetType = currentUser.repKey;
+
+  const isTeam = targetType === 'team';
+  const wb = XLSX.utils.book_new();
+
+  if (isTeam) {
+    const teamData = computeTeamDeficit();
+    
+    // Sheet 1: Medicine Deficit Analysis
+    const medRows = [
+      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+      ["ANNUAL QUOTA DEFICIT & PER-MEDICINE SHORTAGE REPORT 2026"],
+      ["Scope: Delta Team Aggregate", "", "", "", "Generated: " + new Date().toLocaleString()],
+      [],
+      ["--- EXECUTIVE KPI SUMMARY ---"],
+      ["Metric", "Target Quota", "Actual Achieved", "Remaining Deficit / Shortage", "Fulfillment Rate %"],
+      ["Sales Value (EGP)", teamData.targetValue, teamData.salesValue, teamData.deficitValue, (teamData.ratio || 0).toFixed(2) + "%"],
+      ["Physical Units", teamData.targetUnits, teamData.salesUnits, teamData.deficitUnits, (teamData.targetUnits > 0 ? (teamData.salesUnits / teamData.targetUnits * 100).toFixed(2) : "0") + "%"],
+      ["Sales Points", teamData.targetPoints, teamData.salesPoints, teamData.deficitPoints, (teamData.targetPoints > 0 ? (teamData.salesPoints / teamData.targetPoints * 100).toFixed(2) : "0") + "%"],
+      [],
+      ["--- PER-MEDICINE SHORTAGE & DEFICIT BREAKDOWN ---"],
+      ["Product Code", "Medicine Name", "Unit Price (EGP)", "Target Units", "Actual Sales Units", "Unit Deficit (Shortage)", "Target Value (EGP)", "Actual Sales Value (EGP)", "Value Deficit (EGP)", "Fulfillment %", "Status"]
+    ];
+
+    PRODUCTS.forEach(p => {
+      const prod = teamData.products[p.id];
+      const status = prod.deficitUnits > 0 ? (prod.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+      medRows.push([
+        prod.pid,
+        prod.name,
+        prod.price,
+        prod.targetUnits,
+        prod.salesUnits,
+        prod.deficitUnits,
+        prod.targetValue,
+        prod.salesValue,
+        prod.deficitValue,
+        (prod.ratio || 0).toFixed(2) + "%",
+        status
+      ]);
+    });
+
+    medRows.push([
+      "TOTAL",
+      "ALL 4 INSULIN PRODUCTS",
+      "-",
+      teamData.targetUnits,
+      teamData.salesUnits,
+      teamData.deficitUnits,
+      teamData.targetValue,
+      teamData.salesValue,
+      teamData.deficitValue,
+      (teamData.ratio || 0).toFixed(2) + "%",
+      teamData.deficitValue > 0 ? "Deficit" : "Surplus"
+    ]);
+
+    const wsMed = XLSX.utils.aoa_to_sheet(medRows);
+    XLSX.utils.book_append_sheet(wb, wsMed, "Product Deficit Analysis");
+
+    // Sheet 2: Reps Breakdown
+    const repRows = [
+      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+      ["REPRESENTATIVE QUOTA FULFILLMENT & DEFICIT BREAKDOWN 2026"],
+      ["Generated: " + new Date().toLocaleString()],
+      [],
+      ["Representative", "Territory / Area", "Target Units", "Actual Units Sold", "Unit Deficit", "Target Value (EGP)", "Actual Sales (EGP)", "Value Deficit (EGP)", "Fulfillment %", "Status"]
+    ];
+
+    teamData.reps.forEach(r => {
+      const status = r.deficitValue > 0 ? (r.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+      repRows.push([
+        r.name,
+        r.note,
+        r.targetUnits,
+        r.salesUnits,
+        r.deficitUnits,
+        r.targetValue,
+        r.salesValue,
+        r.deficitValue,
+        (r.ratio || 0).toFixed(2) + "%",
+        status
+      ]);
+    });
+
+    repRows.push([
+      "TOTAL DELTA TEAM",
+      "Aggregate Region",
+      teamData.targetUnits,
+      teamData.salesUnits,
+      teamData.deficitUnits,
+      teamData.targetValue,
+      teamData.salesValue,
+      teamData.deficitValue,
+      (teamData.ratio || 0).toFixed(2) + "%",
+      teamData.deficitValue > 0 ? "Deficit" : "Surplus"
+    ]);
+
+    const wsReps = XLSX.utils.aoa_to_sheet(repRows);
+    XLSX.utils.book_append_sheet(wb, wsReps, "Reps Quota Breakdown");
+
+    XLSX.writeFile(wb, "EVA_Delta_Team_YearEnd_Deficit_Report_2026.xlsx");
+  } else {
+    const repData = computeSingleRepDeficit(targetType);
+    if (!repData) return;
+
+    const rep = repData.rep;
+    const medRows = [
+      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+      ["ANNUAL QUOTA DEFICIT & PER-MEDICINE SHORTAGE REPORT 2026"],
+      ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
+      [],
+      ["--- EXECUTIVE KPI SUMMARY ---"],
+      ["Metric", "Target Quota", "Actual Achieved", "Remaining Deficit / Shortage", "Fulfillment Rate %"],
+      ["Sales Value (EGP)", repData.targetValue, repData.salesValue, repData.deficitValue, (repData.ratio || 0).toFixed(2) + "%"],
+      ["Physical Units", repData.targetUnits, repData.salesUnits, repData.deficitUnits, (repData.targetUnits > 0 ? (repData.salesUnits / repData.targetUnits * 100).toFixed(2) : "0") + "%"],
+      ["Sales Points", repData.targetPoints, repData.salesPoints, repData.deficitPoints, (repData.targetPoints > 0 ? (repData.salesPoints / repData.targetPoints * 100).toFixed(2) : "0") + "%"],
+      [],
+      ["--- PER-MEDICINE SHORTAGE & DEFICIT BREAKDOWN ---"],
+      ["Product Code", "Medicine Name", "Unit Price (EGP)", "Target Units", "Actual Sales Units", "Unit Deficit (Shortage)", "Target Value (EGP)", "Actual Sales Value (EGP)", "Value Deficit (EGP)", "Fulfillment %", "Status"]
+    ];
+
+    repData.products.forEach(prod => {
+      const status = prod.deficitUnits > 0 ? (prod.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+      medRows.push([
+        prod.pid,
+        prod.name,
+        prod.price,
+        prod.targetUnits,
+        prod.salesUnits,
+        prod.deficitUnits,
+        prod.targetValue,
+        prod.salesValue,
+        prod.deficitValue,
+        (prod.ratio || 0).toFixed(2) + "%",
+        status
+      ]);
+    });
+
+    medRows.push([
+      "TOTAL",
+      "ALL 4 INSULIN PRODUCTS",
+      "-",
+      repData.targetUnits,
+      repData.salesUnits,
+      repData.deficitUnits,
+      repData.targetValue,
+      repData.salesValue,
+      repData.deficitValue,
+      (repData.ratio || 0).toFixed(2) + "%",
+      repData.deficitValue > 0 ? "Deficit" : "Surplus"
+    ]);
+
+    const wsRep = XLSX.utils.aoa_to_sheet(medRows);
+    XLSX.utils.book_append_sheet(wb, wsRep, "Deficit & Shortage Analysis");
+
+    const cleanName = rep.name.replace(/[^a-zA-Z0-9]/g, "_");
+    XLSX.writeFile(wb, `EVA_Deficit_Report_${cleanName}_2026.xlsx`);
+  }
+
+  showToast("📊 Excel report downloaded successfully!");
+}
+
+function copyDeficitSummary(targetType) {
+  targetType = targetType || currentReportScope || 'team';
+  if (currentUser && currentUser.repKey) targetType = currentUser.repKey;
+
+  const isTeam = targetType === 'team';
+  let text = '';
+
+  if (isTeam) {
+    const d = computeTeamDeficit();
+    const valDeficitStr = d.deficitValue > 0 ? `عجز (-${fmt(d.deficitValue)} EGP)` : `فائض (+${fmt(Math.abs(d.deficitValue))} EGP)`;
+    const unitDeficitStr = d.deficitUnits > 0 ? `عجز (-${fmt(d.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(d.deficitUnits))} u)`;
+
+    text = `📊 *EVA PHARMA - DELTA TEAM*
+*تقرير العجز والمتبقي لتحقيق التارجت السنوي 2026*
+━━━━━━━━━━━━━━━━━━━━
+🎯 *الموقف الإجمالي لفريق الدلتا (Total Year Quota):*
+• Target Value: ${fmt(d.targetValue)} EGP
+• Actual Sales: ${fmt(d.salesValue)} EGP
+• Remaining Deficit: ${valDeficitStr}
+• Units Deficit: ${unitDeficitStr}
+• Fulfillment Rate: ${fmtPct(d.ratio)}
+
+━━━━━━━━━━━━━━━━━━━━
+💊 *عجز الأدوية بالتفصيل (Per-Medicine Shortage):*
+`;
+
+    PRODUCTS.forEach((p, idx) => {
+      const prod = d.products[p.id];
+      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} وحدة (-${fmt(prod.deficitValue)} ج.م)` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} وحدة)`;
+      text += `${idx + 1}️⃣ *${prod.name}* (كود: ${prod.pid})\n   - الموقف: ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
+    });
+
+    const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
+    if (topDeficit && topDeficit.deficitValue > 0) {
+      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز مطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} وحدة / ${fmt(topDeficit.deficitValue)} ج.م)`;
+    }
+
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`;
+  } else {
+    const repData = computeSingleRepDeficit(targetType);
+    if (!repData) return;
+    const rep = repData.rep;
+    const valDeficitStr = repData.deficitValue > 0 ? `عجز (-${fmt(repData.deficitValue)} EGP)` : `فائض (+${fmt(Math.abs(repData.deficitValue))} EGP)`;
+    const unitDeficitStr = repData.deficitUnits > 0 ? `عجز (-${fmt(repData.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(repData.deficitUnits))} u)`;
+
+    text = `📊 *EVA PHARMA - DELTA TEAM*
+*تقرير العجز والمتبقي لتحقيق التارجت السنوي 2026*
+👤 *المندوب:* ${rep.name} (${rep.note})
+━━━━━━━━━━━━━━━━━━━━
+🎯 *الموقف الإجمالي للتارجت السنوي (Total Year Quota):*
+• Target Value: ${fmt(repData.targetValue)} EGP
+• Actual Sales: ${fmt(repData.salesValue)} EGP
+• Remaining Deficit: ${valDeficitStr}
+• Units Deficit: ${unitDeficitStr}
+• Fulfillment Rate: ${fmtPct(repData.ratio)}
+
+━━━━━━━━━━━━━━━━━━━━
+💊 *عجز الأدوية بالتفصيل (Per-Medicine Shortage):*
+`;
+
+    repData.products.forEach((prod, idx) => {
+      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} وحدة (-${fmt(prod.deficitValue)} ج.م)` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} وحدة)`;
+      text += `${idx + 1}️⃣ *${prod.name}* (كود: ${prod.pid})\n   - الموقف: ${uDef} | تحقيق: ${fmtPct(prod.ratio)}\n`;
+    });
+
+    const topDeficit = repData.products.reduce((max, cur) => cur.deficitValue > max.deficitValue ? cur : max);
+    if (topDeficit && topDeficit.deficitValue > 0) {
+      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز مطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} وحدة / ${fmt(topDeficit.deficitValue)} ج.م)`;
+    }
+
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast("📋 Report summary copied! Ready to paste into WhatsApp.");
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+  showToast("📋 Report summary copied! Ready to paste into WhatsApp.");
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toastNotification');
+  if (!toast) return;
+  toast.innerHTML = `<span>${msg}</span>`;
+  toast.classList.add('visible');
+  setTimeout(() => {
+    toast.classList.remove('visible');
+  }, 3500);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDeficitReport();
+});
 
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {

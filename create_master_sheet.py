@@ -59,7 +59,7 @@ for cell in ws_sales[1]:
 for rep in REPS_DATA:
     if rep.get("noData"):
         continue
-    for q in ["Q1", "Q2", "Q3"]:
+    for q in ["Q1", "Q2", "Q3", "Q4"]:
         qd = rep["quarters"].get(q)
         if not qd or not qd.get("products"):
             continue

@@ -1,8 +1,5 @@
 {
   "status": "success",
-  "timestamp": "2026-10-28T18:02:00Z",
-  "source": "EVA Pharma Delta Team Sales Database",
-  "totalActiveReps": 9,
   "reps": [
     {
       "key": "amany",
@@ -170,7 +167,59 @@
             "targetPoints": 4041895.02
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 134.65,
+              "salesValue": 31254.99,
+              "targetUnits": 2173.6,
+              "targetValue": 504553.41,
+              "ratio": 6.19,
+              "salesPoints": 62509.97,
+              "targetPoints": 1009106.82
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 145.03,
+              "salesValue": 33665.36,
+              "targetUnits": 424.0,
+              "targetValue": 98422.26,
+              "ratio": 34.21,
+              "salesPoints": 67330.72,
+              "targetPoints": 196844.52
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 80.0,
+              "salesValue": 48260.0,
+              "targetUnits": 1989.5,
+              "targetValue": 1200165.87,
+              "ratio": 4.02,
+              "salesPoints": 96520.0,
+              "targetPoints": 2400331.74
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 126.94,
+              "salesValue": 84999.93,
+              "targetUnits": 750.4,
+              "targetValue": 502467.84,
+              "ratio": 16.92,
+              "salesPoints": 169999.86,
+              "targetPoints": 1004935.68
+            }
+          ],
+          "total": {
+            "salesUnits": 486.62,
+            "salesValue": 198180.28,
+            "targetUnits": 5337.5,
+            "targetValue": 2305609.38,
+            "ratio": 8.6,
+            "salesPoints": 396360.56,
+            "targetPoints": 4611218.76
+          }
+        }
       }
     },
     {
@@ -341,7 +390,59 @@
             "targetPoints": 4289850.9
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 94.35,
+              "salesValue": 21900.15,
+              "targetUnits": 817.0,
+              "targetValue": 189648.57,
+              "ratio": 11.55,
+              "salesPoints": 43800.31,
+              "targetPoints": 379297.14
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 82.51,
+              "salesValue": 19151.85,
+              "targetUnits": 650.0,
+              "targetValue": 150881.25,
+              "ratio": 12.69,
+              "salesPoints": 38303.69,
+              "targetPoints": 301762.5
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 175.0,
+              "salesValue": 105568.75,
+              "targetUnits": 1983.75,
+              "targetValue": 1196697.18,
+              "ratio": 8.82,
+              "salesPoints": 211137.5,
+              "targetPoints": 2393394.36
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 69.05,
+              "salesValue": 46236.43,
+              "targetUnits": 635.6,
+              "targetValue": 425597.76,
+              "ratio": 10.86,
+              "salesPoints": 92472.86,
+              "targetPoints": 851195.52
+            }
+          ],
+          "total": {
+            "salesUnits": 420.91,
+            "salesValue": 192857.18,
+            "targetUnits": 4086.35,
+            "targetValue": 1962824.76,
+            "ratio": 9.83,
+            "salesPoints": 385714.36,
+            "targetPoints": 3925649.52
+          }
+        }
       }
     },
     {
@@ -459,7 +560,59 @@
             "targetPoints": 3759900.42
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 406.56,
+              "salesValue": 94374.7,
+              "targetUnits": 1607.4,
+              "targetValue": 373122.54,
+              "ratio": 25.29,
+              "salesPoints": 188749.4,
+              "targetPoints": 746245.08
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 260.83,
+              "salesValue": 60546.61,
+              "targetUnits": 622.0,
+              "targetValue": 144383.61,
+              "ratio": 41.93,
+              "salesPoints": 121093.21,
+              "targetPoints": 288767.22
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 635.0,
+              "salesValue": 383063.75,
+              "targetUnits": 931.5,
+              "targetValue": 561927.36,
+              "ratio": 68.17,
+              "salesPoints": 766127.5,
+              "targetPoints": 1123854.72
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 268.91,
+              "salesValue": 180059.93,
+              "targetUnits": 896.0,
+              "targetValue": 599961.6,
+              "ratio": 30.01,
+              "salesPoints": 360119.86,
+              "targetPoints": 1199923.2
+            }
+          ],
+          "total": {
+            "salesUnits": 1571.3,
+            "salesValue": 718044.99,
+            "targetUnits": 4056.9,
+            "targetValue": 1679395.11,
+            "ratio": 42.76,
+            "salesPoints": 1436089.98,
+            "targetPoints": 3358790.22
+          }
+        }
       }
     },
     {
@@ -628,7 +781,59 @@
             "targetPoints": 2696382.96
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 82.7,
+              "salesValue": 19197.88,
+              "targetUnits": 843.6,
+              "targetValue": 195823.17,
+              "ratio": 9.8,
+              "salesPoints": 38395.76,
+              "targetPoints": 391646.34
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 156.04,
+              "salesValue": 36221.41,
+              "targetUnits": 822.0,
+              "targetValue": 190809.21,
+              "ratio": 18.98,
+              "salesPoints": 72442.82,
+              "targetPoints": 381618.42
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 170.0,
+              "salesValue": 102552.5,
+              "targetUnits": 951.62,
+              "targetValue": 574067.79,
+              "ratio": 17.86,
+              "salesPoints": 205105.0,
+              "targetPoints": 1148135.58
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 90.64,
+              "salesValue": 60695.68,
+              "targetUnits": 838.6,
+              "targetValue": 561526.56,
+              "ratio": 10.81,
+              "salesPoints": 121391.35,
+              "targetPoints": 1123053.12
+            }
+          ],
+          "total": {
+            "salesUnits": 499.38,
+            "salesValue": 218667.47,
+            "targetUnits": 3455.82,
+            "targetValue": 1522226.73,
+            "ratio": 14.36,
+            "salesPoints": 437334.94,
+            "targetPoints": 3044453.46
+          }
+        }
       }
     },
     {
@@ -694,7 +899,59 @@
             "targetPoints": 7083645.84
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 167.94,
+              "salesValue": 38984.74,
+              "targetUnits": 1223.62,
+              "targetValue": 284031.81,
+              "ratio": 13.73,
+              "salesPoints": 77969.47,
+              "targetPoints": 568063.62
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 94.81,
+              "salesValue": 22008.48,
+              "targetUnits": 312.0,
+              "targetValue": 72423.93,
+              "ratio": 30.39,
+              "salesPoints": 44016.97,
+              "targetPoints": 144847.86
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 819.0,
+              "salesValue": 494061.75,
+              "targetUnits": 6037.5,
+              "targetValue": 3642121.86,
+              "ratio": 13.57,
+              "salesPoints": 988123.5,
+              "targetPoints": 7284243.72
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 208.31,
+              "salesValue": 139483.31,
+              "targetUnits": 786.8,
+              "targetValue": 526841.28,
+              "ratio": 26.48,
+              "salesPoints": 278966.61,
+              "targetPoints": 1053682.56
+            }
+          ],
+          "total": {
+            "salesUnits": 1290.06,
+            "salesValue": 694538.28,
+            "targetUnits": 8359.92,
+            "targetValue": 4525418.88,
+            "ratio": 15.35,
+            "salesPoints": 1389076.56,
+            "targetPoints": 9050837.76
+          }
+        }
       }
     },
     {
@@ -1032,7 +1289,59 @@
             "targetPoints": 2705901.9
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 142.31,
+              "salesValue": 33034.19,
+              "targetUnits": 1115.31,
+              "targetValue": 258892.35,
+              "ratio": 12.76,
+              "salesPoints": 66068.37,
+              "targetPoints": 517784.7
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 107.13,
+              "salesValue": 24868.94,
+              "targetUnits": 492.0,
+              "targetValue": 114206.97,
+              "ratio": 21.78,
+              "salesPoints": 49737.87,
+              "targetPoints": 228413.94
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 616.53,
+              "salesValue": 371921.72,
+              "targetUnits": 1725.0,
+              "targetValue": 1040606.25,
+              "ratio": 35.74,
+              "salesPoints": 743843.44,
+              "targetPoints": 2081212.5
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 103.97,
+              "salesValue": 69619.14,
+              "targetUnits": 672.0,
+              "targetValue": 449971.2,
+              "ratio": 15.47,
+              "salesPoints": 139238.29,
+              "targetPoints": 899942.4
+            }
+          ],
+          "total": {
+            "salesUnits": 969.94,
+            "salesValue": 499443.99,
+            "targetUnits": 4004.31,
+            "targetValue": 1863676.77,
+            "ratio": 26.8,
+            "salesPoints": 998887.98,
+            "targetPoints": 3727353.54
+          }
+        }
       }
     },
     {
@@ -1201,7 +1510,59 @@
             "targetPoints": 4597366.62
           }
         },
-        "Q4": null
+        "Q4": {
+          "products": [
+            {
+              "pid": 1260,
+              "salesUnits": 184.44,
+              "salesValue": 42812.72,
+              "targetUnits": 955.7,
+              "targetValue": 221844.72,
+              "ratio": 19.3,
+              "salesPoints": 85625.43,
+              "targetPoints": 443689.44
+            },
+            {
+              "pid": 1259,
+              "salesUnits": 86.53,
+              "salesValue": 20085.78,
+              "targetUnits": 562.0,
+              "targetValue": 130455.93,
+              "ratio": 15.4,
+              "salesPoints": 40171.56,
+              "targetPoints": 260911.86
+            },
+            {
+              "pid": 1251,
+              "salesUnits": 4779.47,
+              "salesValue": 2883215.28,
+              "targetUnits": 3064.75,
+              "targetValue": 1848810.45,
+              "ratio": 155.95,
+              "salesPoints": 5766430.56,
+              "targetPoints": 3697620.9
+            },
+            {
+              "pid": 1110,
+              "salesUnits": 99.73,
+              "salesValue": 66781.92,
+              "targetUnits": 739.2,
+              "targetValue": 494968.32,
+              "ratio": 13.49,
+              "salesPoints": 133563.83,
+              "targetPoints": 989936.64
+            }
+          ],
+          "total": {
+            "salesUnits": 5150.17,
+            "salesValue": 3012895.7,
+            "targetUnits": 5321.65,
+            "targetValue": 2696079.42,
+            "ratio": 111.75,
+            "salesPoints": 6025791.4,
+            "targetPoints": 5392158.84
+          }
+        }
       }
     },
     {
