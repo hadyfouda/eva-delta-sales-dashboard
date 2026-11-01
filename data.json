@@ -1,5 +1,30 @@
 {
-  "status": "success",
+  "products": [
+    {
+      "id": 1260,
+      "code": "OFP-CD-0284.02",
+      "name": "Humaxin Mix 70/30",
+      "fullName": "Humaxin Mix 70/30 5 Carts"
+    },
+    {
+      "id": 1259,
+      "code": "OFP-CD-0284",
+      "name": "Humaxin Rapid",
+      "fullName": "Humaxin Rapid 5 Carts"
+    },
+    {
+      "id": 1251,
+      "code": "OFP-CD-0326.05",
+      "name": "Glargivin UPA",
+      "fullName": "Glargivin 100U/ML 3ML X5CART UPA"
+    },
+    {
+      "id": 1110,
+      "code": "OFP-CD-0326.03",
+      "name": "Glargivin 100IU",
+      "fullName": "GLARGIVIN -100 IU 3 ML 5 CARTRIDGES"
+    }
+  ],
   "reps": [
     {
       "key": "amany",
@@ -57,7 +82,7 @@
             "targetUnits": 4551.5,
             "targetValue": 1574622.78,
             "ratio": 103.67,
-            "salesPoints": 3264770.01,
+            "salesPoints": 3264770.0,
             "targetPoints": 3149245.56
           }
         },
@@ -89,9 +114,9 @@
               "salesValue": null,
               "targetUnits": null,
               "targetValue": null,
-              "ratio": null,
-              "salesPoints": null,
-              "targetPoints": null
+              "ratio": 0.0,
+              "salesPoints": 0.0,
+              "targetPoints": 0.0
             },
             {
               "pid": 1110,
@@ -110,7 +135,7 @@
             "targetUnits": 3376.44,
             "targetValue": 1054753.92,
             "ratio": 41.19,
-            "salesPoints": 868924.45,
+            "salesPoints": 868924.44,
             "targetPoints": 2109507.84
           }
         },
@@ -163,7 +188,7 @@
             "targetUnits": 4397.93,
             "targetValue": 2020947.51,
             "ratio": 130.02,
-            "salesPoints": 5255470.62,
+            "salesPoints": 5255470.64,
             "targetPoints": 4041895.02
           }
         },
@@ -269,8 +294,7 @@
               "targetValue": 196862.4,
               "ratio": 143.12,
               "salesPoints": 563509.66,
-              "targetPoints": 393724.8,
-              "note": "Standard pricing"
+              "targetPoints": 393724.8
             }
           ],
           "total": {
@@ -279,7 +303,7 @@
             "targetUnits": 4085.5,
             "targetValue": 2142838.08,
             "ratio": 118.19,
-            "salesPoints": 5065277.33,
+            "salesPoints": 5065277.3,
             "targetPoints": 4285676.16
           }
         },
@@ -311,15 +335,14 @@
               "salesValue": 6032.5,
               "targetUnits": null,
               "targetValue": null,
-              "ratio": null,
+              "ratio": 100.0,
               "salesPoints": 12065.0,
-              "targetPoints": null,
-              "note": "Sales without quota"
+              "targetPoints": 0.0
             },
             {
               "pid": 1110,
               "salesUnits": 587.11,
-              "salesValue": 393130.8,
+              "salesValue": 393128.86,
               "targetUnits": 454.97,
               "targetValue": 304646.58,
               "ratio": 129.04,
@@ -329,11 +352,11 @@
           ],
           "total": {
             "salesUnits": 1451.15,
-            "salesValue": 597407.22,
+            "salesValue": 597405.28,
             "targetUnits": 2087.21,
             "targetValue": 683534.04,
             "ratio": 87.4,
-            "salesPoints": 1194814.45,
+            "salesPoints": 1194810.56,
             "targetPoints": 1367068.08
           }
         },
@@ -386,7 +409,7 @@
             "targetUnits": 4319.47,
             "targetValue": 2144925.45,
             "ratio": 136.57,
-            "salesPoints": 5858861.48,
+            "salesPoints": 5858861.52,
             "targetPoints": 4289850.9
           }
         },
@@ -451,7 +474,6 @@
       "nameAr": "إبراهيم",
       "av": "av-3",
       "startQ": 2,
-      "note": "Joined the team in Q2 — No Q1 records available",
       "quarters": {
         "Q1": null,
         "Q2": {
@@ -503,7 +525,7 @@
             "targetUnits": 4878.44,
             "targetValue": 2044031.46,
             "ratio": 94.27,
-            "salesPoints": 3853668.44,
+            "salesPoints": 3853668.48,
             "targetPoints": 4088062.92
           }
         },
@@ -556,7 +578,7 @@
             "targetUnits": 4303.92,
             "targetValue": 1879950.21,
             "ratio": 136.94,
-            "salesPoints": 5148651.85,
+            "salesPoints": 5148651.82,
             "targetPoints": 3759900.42
           }
         },
@@ -613,7 +635,8 @@
             "targetPoints": 3358790.22
           }
         }
-      }
+      },
+      "note": "Joined the team in Q2 — No Q1 records available"
     },
     {
       "key": "radwa",
@@ -671,7 +694,7 @@
             "targetUnits": 3258.25,
             "targetValue": 1523462.88,
             "ratio": 107.95,
-            "salesPoints": 3289081.29,
+            "salesPoints": 3289081.28,
             "targetPoints": 3046925.76
           }
         },
@@ -724,7 +747,7 @@
             "targetUnits": 2471.37,
             "targetValue": 890676.81,
             "ratio": 102.49,
-            "salesPoints": 1825622.94,
+            "salesPoints": 1825622.96,
             "targetPoints": 1781353.62
           }
         },
@@ -777,7 +800,7 @@
             "targetUnits": 3074.22,
             "targetValue": 1348191.48,
             "ratio": 125.58,
-            "salesPoints": 3386137.44,
+            "salesPoints": 3386137.42,
             "targetPoints": 2696382.96
           }
         },
@@ -842,7 +865,6 @@
       "nameAr": "حسن",
       "av": "av-5",
       "startQ": 3,
-      "note": "Joined the team in Q3 — No Q1 or Q2 records available",
       "quarters": {
         "Q1": null,
         "Q2": null,
@@ -852,7 +874,7 @@
               "pid": 1260,
               "salesUnits": 631.83,
               "salesValue": 146665.25,
-              "targetUnits": 1177.2,
+              "targetUnits": 1177.22,
               "targetValue": 273261.09,
               "ratio": 53.67,
               "salesPoints": 293330.49,
@@ -870,7 +892,7 @@
             },
             {
               "pid": 1251,
-              "salesUnits": 6737.0,
+              "salesUnits": 6737.5,
               "salesValue": 4064396.87,
               "targetUnits": 4707.02,
               "targetValue": 2839507.14,
@@ -890,9 +912,9 @@
             }
           ],
           "total": {
-            "salesUnits": 8206.06,
+            "salesUnits": 8206.56,
             "salesValue": 4692529.34,
-            "targetUnits": 6673.42,
+            "targetUnits": 6673.44,
             "targetValue": 3541822.92,
             "ratio": 132.49,
             "salesPoints": 9385058.68,
@@ -952,7 +974,8 @@
             "targetPoints": 9050837.76
           }
         }
-      }
+      },
+      "note": "Joined the team in Q3 — No Q1 or Q2 records available"
     },
     {
       "key": "nadeem",
@@ -1063,7 +1086,7 @@
             "targetUnits": 3493.92,
             "targetValue": 1262033.4,
             "ratio": 118.57,
-            "salesPoints": 2992719.51,
+            "salesPoints": 2992719.5,
             "targetPoints": 2524066.8
           }
         },
@@ -1073,7 +1096,7 @@
               "pid": 1260,
               "salesUnits": 2239.69,
               "salesValue": 519892.88,
-              "targetUnits": 1605.6,
+              "targetUnits": 1605.62,
               "targetValue": 372704.73,
               "ratio": 139.49,
               "salesPoints": 1039785.76,
@@ -1113,10 +1136,10 @@
           "total": {
             "salesUnits": 8782.03,
             "salesValue": 4416634.45,
-            "targetUnits": 6846.18,
+            "targetUnits": 6846.2,
             "targetValue": 3333632.85,
             "ratio": 132.49,
-            "salesPoints": 8833268.91,
+            "salesPoints": 8833268.9,
             "targetPoints": 6667265.7
           }
         },
@@ -1147,10 +1170,10 @@
               "salesUnits": 436.35,
               "salesValue": 101289.17,
               "targetUnits": 166.5,
-              "targetValue": 38649.32,
-              "ratio": 262.07,
+              "targetValue": 38648.81,
+              "ratio": 262.08,
               "salesPoints": 202578.34,
-              "targetPoints": 77298.64
+              "targetPoints": 77297.62
             },
             {
               "pid": 1251,
@@ -1177,10 +1200,10 @@
             "salesUnits": 3246.36,
             "salesValue": 1458786.89,
             "targetUnits": 2387.75,
-            "targetValue": 1099123.23,
+            "targetValue": 1099122.74,
             "ratio": 132.72,
-            "salesPoints": 2917573.77,
-            "targetPoints": 2198246.46
+            "salesPoints": 2917573.78,
+            "targetPoints": 2198245.48
           }
         },
         "Q2": {
@@ -1230,10 +1253,10 @@
             "salesUnits": 2479.12,
             "salesValue": 1193923.05,
             "targetUnits": 2778.23,
-            "targetValue": 1033729.02,
+            "targetValue": 1033731.7,
             "ratio": 115.5,
-            "salesPoints": 2387846.08,
-            "targetPoints": 2067458.04
+            "salesPoints": 2387846.1,
+            "targetPoints": 2067463.4
           }
         },
         "Q3": {
@@ -1242,7 +1265,7 @@
               "pid": 1260,
               "salesUnits": 1212.68,
               "salesValue": 281494.76,
-              "targetUnits": 1076.4,
+              "targetUnits": 1076.41,
               "targetValue": 249862.59,
               "ratio": 112.66,
               "salesPoints": 562989.52,
@@ -1282,10 +1305,10 @@
           "total": {
             "salesUnits": 3545.26,
             "salesValue": 1617400.15,
-            "targetUnits": 3090.85,
+            "targetUnits": 3090.86,
             "targetValue": 1352950.95,
             "ratio": 119.55,
-            "salesPoints": 3234800.31,
+            "salesPoints": 3234800.3,
             "targetPoints": 2705901.9
           }
         },
@@ -1409,11 +1432,11 @@
             {
               "pid": 1260,
               "salesUnits": 699.99,
-              "salesValue": 162487.3,
+              "salesValue": 162485.18,
               "targetUnits": 1295.0,
               "targetValue": 300605.76,
               "ratio": 54.05,
-              "salesPoints": 324974.6,
+              "salesPoints": 324970.36,
               "targetPoints": 601211.52
             },
             {
@@ -1439,21 +1462,21 @@
             {
               "pid": 1110,
               "salesUnits": 758.94,
-              "salesValue": 508194.59,
+              "salesValue": 508186.22,
               "targetUnits": 587.4,
               "targetValue": 393323.04,
-              "ratio": 129.21,
+              "ratio": 129.2,
               "salesPoints": 1016389.19,
               "targetPoints": 786646.08
             }
           ],
           "total": {
             "salesUnits": 2552.12,
-            "salesValue": 1152835.77,
+            "salesValue": 1152825.27,
             "targetUnits": 2693.99,
             "targetValue": 1067418.66,
             "ratio": 108.0,
-            "salesPoints": 2305671.54,
+            "salesPoints": 2305650.54,
             "targetPoints": 2134837.32
           }
         },
@@ -1492,7 +1515,7 @@
             {
               "pid": 1110,
               "salesUnits": 667.55,
-              "salesValue": 446994.4,
+              "salesValue": 446991.48,
               "targetUnits": 671.0,
               "targetValue": 449301.6,
               "ratio": 99.49,
@@ -1502,11 +1525,11 @@
           ],
           "total": {
             "salesUnits": 5753.31,
-            "salesValue": 2947993.31,
+            "salesValue": 2947990.38,
             "targetUnits": 4600.44,
             "targetValue": 2298683.31,
             "ratio": 128.25,
-            "salesPoints": 5895986.61,
+            "salesPoints": 5895980.76,
             "targetPoints": 4597366.62
           }
         },
@@ -1621,7 +1644,7 @@
             "targetUnits": 3097.75,
             "targetValue": 1464659.37,
             "ratio": 91.03,
-            "salesPoints": 2666590.69,
+            "salesPoints": 2666590.68,
             "targetPoints": 2929318.74
           }
         },
@@ -1674,7 +1697,7 @@
             "targetUnits": 2569.32,
             "targetValue": 957744.81,
             "ratio": 98.42,
-            "salesPoints": 1885289.81,
+            "salesPoints": 1885289.8,
             "targetPoints": 1915489.62
           }
         },
@@ -1727,7 +1750,7 @@
             "targetUnits": 2946.92,
             "targetValue": 1279566.18,
             "ratio": 123.96,
-            "salesPoints": 3172355.41,
+            "salesPoints": 3172355.42,
             "targetPoints": 2559132.36
           }
         },

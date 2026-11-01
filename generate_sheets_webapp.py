@@ -648,8 +648,6 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     background: #090c12; color: #ffffff; font-weight: 800;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
-  .tab-btn.q4-tab { color: var(--gold-dark); background: var(--gold-light); }
-  .tab-btn.q4-tab.active { background: var(--gold); color: #000000; font-weight: 900; }
   .tab-btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
   .tab-panel { display: none; }
@@ -742,76 +740,12 @@ HTML_CONTENT = r'''<!DOCTYPE html>
   }
   .chart-box { padding: 20px; height: 330px; position: relative; }
 
-  /* ── Q4 FORM ── */
-  .q4-wrapper { padding: 26px; }
-  .q4-alert {
-    background: var(--gold-light); border: 1px solid var(--orange-border); border-radius: 12px;
-    padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
-  }
-  .q4-alert-text { font-size: 13px; color: var(--gold-text); font-weight: 700; }
-  .q4-prod-card {
-    background: #ffffff; border: 1px solid var(--border); border-radius: 14px;
-    margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-  }
-  .q4-prod-header {
-    background: #f8fafc; padding: 13px 20px; font-weight: 800;
-    font-size: 14px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid var(--border);
-  }
-  .q4-inputs-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px; padding: 20px;
-  }
-  .q4-field label {
-    display: block; font-size: 11.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;
-    text-transform: uppercase; letter-spacing: 0.3px;
-  }
-  .q4-field input {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--border-dark);
-    border-radius: 8px; font-family: inherit; font-size: 13.5px;
-    font-weight: 700; color: var(--text-primary); background: #ffffff;
-    transition: all 0.2s;
-  }
-  .q4-field input:focus {
-    outline: none; border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-  }
-  .q4-actions {
-    display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 24px;
-  }
-  .btn {
-    padding: 11px 26px; border-radius: 8px; border: none; cursor: pointer;
-    font-family: inherit; font-size: 13.5px; font-weight: 800;
-    display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-  }
-  .btn-save {
-    background: #090c12; color: var(--gold); border: 2px solid var(--gold);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-  }
-  .btn-save:hover {
-    background: var(--gold); color: #000000; transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
-  }
-  .btn-clear {
-    background: #ffffff; color: var(--red-text); border: 1px solid var(--red-border);
-  }
-  .btn-clear:hover { background: var(--red-bg); }
   .save-toast {
     display: none; padding: 10px 18px; border-radius: 8px; font-size: 13px;
     font-weight: 700; background: var(--green-bg); color: var(--green-text);
     border: 1px solid var(--green-border); align-items: center; gap: 8px;
   }
   .save-toast.visible { display: flex; animation: fadeIn 0.2s; }
-
-  .upload-dropzone {
-    border: 2px dashed var(--gold); border-radius: 14px;
-    background: var(--surface-alt); padding: 32px 20px; text-align: center;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .upload-dropzone:hover, .upload-dropzone.dragover {
-    background: var(--gold-light); border-color: var(--gold-dark);
-    transform: scale(1.01);
-  }
 
   .mobile-table-hint {
     display: none; font-size: 11px; color: var(--text-muted); background: var(--surface-alt);
@@ -1043,27 +977,6 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     }
     table.data-table tbody tr:hover td:first-child {
       background: #f8fafc;
-    }
-
-    /* Q4 FORM ON MOBILE */
-    .q4-wrapper { padding: 14px; }
-    .q4-inputs-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 14px;
-    }
-    .q4-field input {
-      font-size: 16px !important; /* Prevents auto zoom in iOS */
-      padding: 9px 10px;
-    }
-    .q4-actions {
-      flex-direction: column;
-      gap: 10px;
-    }
-    .btn {
-      width: 100%;
-      justify-content: center;
-      min-height: 44px;
     }
   }
 
@@ -1378,14 +1291,12 @@ function renderDeficitPts(targetPts, salesPts) {
   }
 }
 
-/* ── LOCAL STORAGE Q4 ── */
-function getQ4Key(repKey) { return 'eva_delta_q4_' + repKey; }
-function loadQ4(repKey) {
-  try { return JSON.parse(localStorage.getItem(getQ4Key(repKey))); } catch { return null; }
-}
-function saveQ4(repKey, data) {
-  localStorage.setItem(getQ4Key(repKey), JSON.stringify(data));
-}
+// Clean any legacy manual Q4 overrides from localStorage
+try {
+  Object.keys(localStorage).forEach(k => {
+    if (k && k.startsWith('eva_delta_q4_')) localStorage.removeItem(k);
+  });
+} catch(e) {}
 
 /* ── COMPUTE YTD TOTALS FOR REP ── */
 function computeRepYTD(rep) {
@@ -1410,14 +1321,7 @@ function computeRepYTD(rep) {
 
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
   quarters.forEach(q => {
-    let qd = rep.quarters && rep.quarters[q];
-    // Check if user has entered/overridden Q4 locally in localStorage
-    if (q === 'Q4') {
-      const q4Local = loadQ4(rep.key);
-      if (q4Local && q4Local.products) {
-        qd = q4Local;
-      }
-    }
+    const qd = rep.quarters && rep.quarters[q];
     if (qd && qd.products) {
       summary.hasData = true;
       qd.products.forEach(p => {
@@ -1581,17 +1485,14 @@ function renderHome() {
       `;
     } else {
       const ytd = computeRepYTD(rep);
-      const q4saved = loadQ4(rep.key);
       const ratio = ytd ? ytd.ratio : 0;
       const progressWidth = ratio ? Math.min(ratio, 130) / 130 * 100 : 0;
       const progressColor = ratio >= 100 ? 'background:#16a34a;' : ratio >= 70 ? 'background:var(--gold);' : 'background:#dc2626;';
+      const hasQ4 = rep.quarters && rep.quarters['Q4'] && rep.quarters['Q4'].products;
       const badgeClass = (rep.startQ === 2 || rep.startQ === 3) ? 'badge-q2start' : 'badge-active';
-      const badgeText  = rep.startQ === 2 ? 'Joined Q2' : rep.startQ === 3 ? 'Joined Q3' : 'Active (Q1 - Q3)';
+      const badgeText  = rep.startQ === 2 ? 'Joined Q2' : rep.startQ === 3 ? 'Joined Q3' : (hasQ4 ? 'Active (Q1 - Q4)' : 'Active (Q1 - Q3)');
 
       const qPills = ['Q1', 'Q2', 'Q3', 'Q4'].map(q => {
-        if (q === 'Q4') {
-          return q4saved ? `<span class="q-pill entered">Q4: Entered</span>` : `<span class="q-pill missing">Q4: Available</span>`;
-        }
         if (rep.startQ && ((rep.startQ === 2 && q === 'Q1') || (rep.startQ === 3 && (q === 'Q1' || q === 'Q2')))) {
           return `<span class="q-pill missing">${q}: N/A</span>`;
         }
@@ -1736,169 +1637,6 @@ function buildProductsTable(title, sub, productsList, totalData) {
   `;
 }
 
-/* ── BUILD Q4 PANEL ── */
-function buildQ4Form(rep) {
-  const q4saved = loadQ4(rep.key);
-  const prodCards = PRODUCTS.map((prod, idx) => {
-    const saved = q4saved && q4saved.products ? q4saved.products[idx] : null;
-    return `
-      <div class="q4-prod-card">
-        <div class="q4-prod-header">
-          <span>📦 ${prod.name}</span>
-          <span style="font-size:11.5px;color:var(--text-muted);font-family:monospace;font-weight:700;">${prod.code}</span>
-        </div>
-        <div class="q4-inputs-grid">
-          <div class="q4-field">
-            <label>Sales Units</label>
-            <input type="number" step="any" id="q4_su_${idx}_${rep.key}" placeholder="0" value="${saved && saved.salesUnits !== null ? saved.salesUnits : ''}">
-          </div>
-          <div class="q4-field">
-            <label>Sales Value (EGP)</label>
-            <input type="number" step="any" id="q4_sv_${idx}_${rep.key}" placeholder="0.00" value="${saved && saved.salesValue !== null ? saved.salesValue : ''}" oninput="autoPoints(${idx}, '${rep.key}')">
-          </div>
-          <div class="q4-field">
-            <label>Sales Points</label>
-            <input type="number" step="any" id="q4_sp_${idx}_${rep.key}" placeholder="0.00" value="${saved && saved.salesPoints !== null ? saved.salesPoints : ''}">
-          </div>
-          <div class="q4-field">
-            <label>Target Units</label>
-            <input type="number" step="any" id="q4_tu_${idx}_${rep.key}" placeholder="0" value="${saved && saved.targetUnits !== null ? saved.targetUnits : ''}">
-          </div>
-          <div class="q4-field">
-            <label>Target Value (EGP)</label>
-            <input type="number" step="any" id="q4_tv_${idx}_${rep.key}" placeholder="0.00" value="${saved && saved.targetValue !== null ? saved.targetValue : ''}" oninput="autoPoints(${idx}, '${rep.key}')">
-          </div>
-          <div class="q4-field">
-            <label>Target Points</label>
-            <input type="number" step="any" id="q4_tp_${idx}_${rep.key}" placeholder="0.00" value="${saved && saved.targetPoints !== null ? saved.targetPoints : ''}">
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  let savedTableHtml = '';
-  if (q4saved && q4saved.products) {
-    savedTableHtml = buildProductsTable('Current Saved Q4 Records', 'Q4 achievements & deficit review', q4saved.products, q4saved.total);
-  }
-
-  return `
-    <div class="card">
-      <div class="card-header">
-        <h3>✍️ Q4 2026 Data Upload & Entry Portal</h3>
-        <div class="card-header-sub">Each representative can submit their Q4 numbers directly to the Google Sheet</div>
-      </div>
-      <div class="q4-wrapper">
-        <div class="q4-alert">
-          <span style="font-size:22px;">ℹ️</span>
-          <div class="q4-alert-text">
-            Enter Q4 sales units, revenue, and quotas. Deficits/surplus and full-year cumulative YTD metrics will recalculate dynamically upon saving.
-          </div>
-        </div>
-        ${prodCards}
-        <div class="q4-actions">
-          <button class="btn btn-save" id="btnSaveQ4_${rep.key}" onclick="saveQ4Data('${rep.key}')">
-            💾 Save & Sync to Google Sheets
-          </button>
-          <button class="btn btn-clear" onclick="clearQ4Data('${rep.key}')">
-            🗑️ Clear Q4 Records
-          </button>
-          <div class="save-toast" id="toast-${rep.key}">
-            ✅ Q4 data successfully saved and integrated!
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="q4-saved-preview-${rep.key}">${savedTableHtml}</div>
-  `;
-}
-
-function autoPoints(idx, repKey) {
-  const sv = parseFloat(document.getElementById(`q4_sv_${idx}_${repKey}`)?.value);
-  const tv = parseFloat(document.getElementById(`q4_tv_${idx}_${repKey}`)?.value);
-  const spInput = document.getElementById(`q4_sp_${idx}_${repKey}`);
-  const tpInput = document.getElementById(`q4_tp_${idx}_${repKey}`);
-  if (!isNaN(sv) && spInput && !spInput.value) spInput.value = (sv * 2).toFixed(2);
-  if (!isNaN(tv) && tpInput && !tpInput.value) tpInput.value = (tv * 2).toFixed(2);
-}
-
-async function saveQ4Data(repKey) {
-  const saveBtn = document.getElementById(`btnSaveQ4_${repKey}`);
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving...'; }
-
-  const repObj = REPS.find(r => r.key === repKey);
-  const repName = repObj ? repObj.name : repKey;
-
-  const products = PRODUCTS.map((prod, idx) => {
-    const su = parseFloat(document.getElementById(`q4_su_${idx}_${repKey}`)?.value) || 0;
-    const sv = parseFloat(document.getElementById(`q4_sv_${idx}_${repKey}`)?.value) || 0;
-    const sp = parseFloat(document.getElementById(`q4_sp_${idx}_${repKey}`)?.value) || (sv * 2);
-    const tu = parseFloat(document.getElementById(`q4_tu_${idx}_${repKey}`)?.value) || 0;
-    const tv = parseFloat(document.getElementById(`q4_tv_${idx}_${repKey}`)?.value) || 0;
-    const tp = parseFloat(document.getElementById(`q4_tp_${idx}_${repKey}`)?.value) || (tv * 2);
-    const ratio = tv > 0 ? (sv / tv) * 100 : null;
-    return {
-      pid: prod.id,
-      salesUnits: su, salesValue: sv, salesPoints: sp,
-      targetUnits: tu, targetValue: tv, targetPoints: tp,
-      ratio: ratio
-    };
-  });
-
-  const totalSalesUnits  = products.reduce((a, p) => a + p.salesUnits,  0);
-  const totalTargetUnits = products.reduce((a, p) => a + p.targetUnits, 0);
-  const totalSalesValue  = products.reduce((a, p) => a + p.salesValue,  0);
-  const totalTargetValue = products.reduce((a, p) => a + p.targetValue, 0);
-  const totalSalesPoints = products.reduce((a, p) => a + p.salesPoints, 0);
-  const totalTargetPoints= products.reduce((a, p) => a + p.targetPoints,0);
-  const totalRatio = totalTargetValue > 0 ? (totalSalesValue / totalTargetValue) * 100 : null;
-
-  const q4Data = {
-    repKey, repName, quarter: 'Q4',
-    products,
-    total: {
-      salesUnits: totalSalesUnits, targetUnits: totalTargetUnits,
-      salesValue: totalSalesValue, targetValue: totalTargetValue,
-      salesPoints: totalSalesPoints, targetPoints: totalTargetPoints,
-      ratio: totalRatio
-    }
-  };
-
-  // 1. Save locally
-  saveQ4(repKey, q4Data);
-
-  // 2. Sync to Google Sheets if connected
-  const sheetsUrl = getSheetsUrl();
-  if (sheetsUrl) {
-    try {
-      // Use GET with query string fallback for maximum CORS compatibility with Google Apps Script
-      const payloadStr = encodeURIComponent(JSON.stringify(q4Data));
-      const syncUrl = sheetsUrl + (sheetsUrl.includes('?') ? '&' : '?') + 'action=saveQ4&payload=' + payloadStr;
-      await fetch(syncUrl, { mode: 'no-cors' });
-      console.log('Dispatched Q4 save to Google Sheets live backend');
-    } catch (e) {
-      console.warn('Google Sheets cloud sync notice:', e);
-    }
-  }
-
-  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save & Sync to Google Sheets'; }
-
-  const toast = document.getElementById(`toast-${repKey}`);
-  if (toast) {
-    toast.textContent = sheetsUrl ? '✅ Q4 data saved & synced to Google Sheets!' : '✅ Q4 data saved locally!';
-    toast.classList.add('visible');
-    setTimeout(() => toast.classList.remove('visible'), 3500);
-  }
-
-  showRep(repKey, 'tab-Q4');
-}
-
-function clearQ4Data(repKey) {
-  if (!confirm('Are you sure you want to delete all saved Q4 entries for this representative?')) return;
-  localStorage.removeItem(getQ4Key(repKey));
-  showRep(repKey, 'tab-Q4');
-}
-
 /* ── SHOW REP VIEW ── */
 function showRep(repKey, targetTabId = null) {
   // Access Restriction: Representatives can ONLY view their own page
@@ -2024,7 +1762,7 @@ function showRep(repKey, targetTabId = null) {
     { id: 'tab-Q1',  label: 'Quarter 1 (Q1)', q: 'Q1' },
     { id: 'tab-Q2',  label: 'Quarter 2 (Q2)', q: 'Q2' },
     { id: 'tab-Q3',  label: 'Quarter 3 (Q3)', q: 'Q3' },
-    { id: 'tab-Q4',  label: 'Quarter 4 (Q4 Entry)', isQ4: true }
+    { id: 'tab-Q4',  label: 'Quarter 4 (Q4)', q: 'Q4' }
   ];
 
   tabs.forEach(t => {
@@ -2033,7 +1771,7 @@ function showRep(repKey, targetTabId = null) {
       (rep.startQ === 3 && (t.q === 'Q1' || t.q === 'Q2'))
     );
     const btn = document.createElement('button');
-    btn.className = 'tab-btn' + (t.isQ4 ? ' q4-tab' : '') + (isQDisabled ? ' disabled' : '');
+    btn.className = 'tab-btn' + (isQDisabled ? ' disabled' : '');
     btn.innerHTML = isQDisabled ? `${t.q} (Not Joined Yet)` : t.label;
     btn.dataset.tab = t.id;
     if (!isQDisabled) {
@@ -2055,8 +1793,6 @@ function showRep(repKey, targetTabId = null) {
           ytd
         );
       }
-    } else if (t.isQ4) {
-      panel.innerHTML = buildQ4Form(rep);
     } else {
       const qData = rep.quarters && rep.quarters[t.q];
       if (isQDisabled) {
@@ -2067,13 +1803,21 @@ function showRep(repKey, targetTabId = null) {
             <div style="font-size:13px;margin-top:6px;">Official start date was in Quarter ${rep.startQ} (Q${rep.startQ} 2026)</div>
           </div>
         `;
-      } else if (qData) {
+      } else if (qData && qData.products) {
         panel.innerHTML = buildProductsTable(
           `Product Sales & Quota Breakdown — ${t.q} 2026`,
           `Units, revenue in EGP, points, and deficit evaluation for ${t.q}`,
           qData.products,
           qData.total
         );
+      } else {
+        panel.innerHTML = `
+          <div class="card" style="padding:48px;text-align:center;color:var(--text-muted);">
+            <div style="font-size:42px;margin-bottom:12px;">⏳</div>
+            <div style="font-size:17px;font-weight:800;color:var(--text-primary);">${t.q} 2026 Records Pending Upload</div>
+            <div style="font-size:13px;margin-top:6px;">Quarter 4 sales sheets will appear here once officially processed and updated.</div>
+          </div>
+        `;
       }
     }
     panelsContainer.appendChild(panel);
@@ -2155,16 +1899,6 @@ function updateBarChart() {
         name: p.name,
         salesUnits: ytd.productsYTD[p.id]?.salesUnits || 0,
         targetUnits: ytd.productsYTD[p.id]?.targetUnits || 0
-      }));
-    }
-  } else if (qVal === 'Q4') {
-    const q4 = loadQ4(rep.key);
-    if (q4 && q4.products) {
-      prodSource = q4.products.map(p => ({
-        pid: p.pid,
-        name: PRODUCTS.find(pr => pr.id === p.pid)?.name || p.pid,
-        salesUnits: p.salesUnits || 0,
-        targetUnits: p.targetUnits || 0
       }));
     }
   } else {
@@ -2256,18 +1990,8 @@ function updateLineChart() {
   const lineTargetUnits = [];
 
   quartersList.forEach(q => {
-    let qData = null;
-    let labelText = q;
-
-    if (q === 'Q4') {
-      const q4 = loadQ4(rep.key);
-      if (q4) {
-        qData = q4;
-        labelText = 'Q4 (Entered)';
-      }
-    } else {
-      qData = rep.quarters && rep.quarters[q];
-    }
+    const qData = rep.quarters && rep.quarters[q];
+    const labelText = q;
 
     if (rep.startQ && (
       (rep.startQ === 2 && q === 'Q1') ||
