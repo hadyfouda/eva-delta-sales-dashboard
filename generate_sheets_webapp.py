@@ -8,6 +8,8 @@ from data import PRODUCTS, REPS_DATA
 REPS_EN = []
 for r in REPS_DATA:
     rep_copy = dict(r)
+    if "nameAr" in rep_copy:
+        del rep_copy["nameAr"]
     if rep_copy.get("startQ") == 2:
         rep_copy["note"] = "Joined the team in Q2 — No Q1 records available"
     elif rep_copy.get("startQ") == 3:
@@ -1260,7 +1262,7 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         <button class="btn btn-deficit-report" onclick="openDeficitReport('team')" title="Generate Annual Quota Deficit & Gap Analysis Report for Delta Team">
           <span style="font-size:16px;">📊</span>
           <span>Team Year-End Deficit Report</span>
-          <span class="report-btn-tag">تقرير عجز الفريق</span>
+          <span class="report-btn-tag">Units & Quota</span>
         </button>
       </div>
     </div>
@@ -1286,7 +1288,7 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         <button class="btn btn-deficit-report" onclick="openDeficitReport(currentActiveRepKey)" title="Generate Annual Quota Deficit & Gap Analysis Report">
           <span style="font-size:16px;">📊</span>
           <span>Year-End Deficit Report</span>
-          <span class="report-btn-tag">تقرير العجز والمتبقي</span>
+          <span class="report-btn-tag">Units & Quota</span>
         </button>
       </div>
     </div>
@@ -1633,76 +1635,58 @@ function renderHome() {
   const teamNeededPointsQ4_120 = (totalTargetPoints * 1.20) - teamSpQ1Q3;
   const teamRequiredQ4Ratio_120 = teamTpQ4 > 0 ? (teamNeededPointsQ4_120 / teamTpQ4) * 100 : 0;
 
+  let totalTargetUnits = 0;
+  REPS.forEach(r => {
+    const ytd = computeRepYTD(r);
+    if (ytd) {
+      totalTargetUnits += ytd.targetUnits;
+    }
+  });
+  const teamUnitsDeficit = totalTargetUnits - totalUnits;
+
   document.getElementById('team-stat-grid').innerHTML = `
     <div class="stat-card">
       <div class="stat-header">
-        <span class="stat-label">Total Team Sales (YTD)</span>
+        <span class="stat-label">Team Sales Revenue (YTD)</span>
         <span class="stat-icon">💰</span>
       </div>
-      <div class="stat-val">${fmt(totalSales)} <span style="font-size:12px;color:var(--gold-dark);font-weight:700;">EGP</span></div>
-      <div class="stat-sub">Cumulative actual sales revenue</div>
+      <div class="stat-val">${fmt(totalSales)} <span style="font-size:13px;color:var(--gold-dark);font-weight:700;">EGP</span></div>
+      <div class="stat-sub">Target: <strong>${fmt(totalTarget)}</strong> EGP (${renderDeficitVal(totalTarget, totalSales)})</div>
     </div>
     <div class="stat-card">
       <div class="stat-header">
-        <span class="stat-label">Total Team Target (YTD)</span>
-        <span class="stat-icon">🎯</span>
-      </div>
-      <div class="stat-val">${fmt(totalTarget)} <span style="font-size:12px;color:var(--text-muted);font-weight:700;">EGP</span></div>
-      <div class="stat-sub">Assigned annual quota to date</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-header">
-        <span class="stat-label">Net Team Deficit / Surplus</span>
-        <span class="stat-icon">⚖️</span>
-      </div>
-      <div class="stat-val">
-        ${renderDeficitVal(totalTarget, totalSales)}
-      </div>
-      <div class="stat-sub">${teamDeficit <= 0 ? 'Team exceeded aggregate quota' : 'Gap remaining to hit team target'}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-header">
-        <span class="stat-label">Achievement Rate (Points)</span>
+        <span class="stat-label">Points Achievement Rate</span>
         <span class="stat-icon">📈</span>
       </div>
       <div class="stat-val"><span class="ratio-badge ${ratioClass(teamRatio)}" style="font-size:18px;">${fmtPct(teamRatio)}</span></div>
-      <div class="stat-sub">Team points quota fulfillment (Sales vs Target Pts)</div>
+      <div class="stat-sub">Earned: <strong>${fmt(totalPoints)}</strong> / ${fmt(totalTargetPoints)} pts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Net Physical Units Deficit</span>
+        <span class="stat-icon">📦</span>
+      </div>
+      <div class="stat-val" style="color:${teamUnitsDeficit > 0 ? '#ef4444' : '#10b981'}; font-weight:800;">
+        ${teamUnitsDeficit > 0 ? '-' + fmt(teamUnitsDeficit) : '+' + fmt(Math.abs(teamUnitsDeficit))} <span style="font-size:13px;font-weight:600;">units</span>
+      </div>
+      <div class="stat-sub">Sold: <strong>${fmt(totalUnits)}</strong> / ${fmt(totalTargetUnits)} quota units</div>
     </div>
     <div class="stat-card" style="border-left: 4px solid var(--gold); background: linear-gradient(145deg, var(--surface), rgba(245, 158, 11, 0.05));">
       <div class="stat-header">
-        <span class="stat-label">Req. Q4 % for 100% Year</span>
+        <span class="stat-label">Required Q4 Targets</span>
         <span class="stat-icon">🎯</span>
       </div>
-      <div class="stat-val" style="color:var(--gold); font-size:24px; font-weight:800;">
-        ${fmtPct(teamRequiredQ4Ratio)}
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0;">
+        <div>
+          <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">For 100%:</span>
+          <span style="color:var(--gold); font-size:18px; font-weight:800; margin-left:4px;">${fmtPct(teamRequiredQ4Ratio)}</span>
+        </div>
+        <div>
+          <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">For 120%:</span>
+          <span style="color:#10b981; font-size:18px; font-weight:800; margin-left:4px;">${fmtPct(teamRequiredQ4Ratio_120)}</span>
+        </div>
       </div>
-      <div class="stat-sub">Team needs <strong>${fmt(teamNeededPointsQ4)}</strong> pts in Q4 to hit 100% full-year quota</div>
-    </div>
-    <div class="stat-card" style="border-left: 4px solid #10b981; background: linear-gradient(145deg, var(--surface), rgba(16, 185, 129, 0.05));">
-      <div class="stat-header">
-        <span class="stat-label">Req. Q4 % for 120% Year</span>
-        <span class="stat-icon">🚀</span>
-      </div>
-      <div class="stat-val" style="color:#10b981; font-size:24px; font-weight:800;">
-        ${fmtPct(teamRequiredQ4Ratio_120)}
-      </div>
-      <div class="stat-sub">Team needs <strong>${fmt(teamNeededPointsQ4_120)}</strong> pts in Q4 to hit 120% full-year quota</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-header">
-        <span class="stat-label">Total Sales Points</span>
-        <span class="stat-icon">⭐</span>
-      </div>
-      <div class="stat-val">${fmt(totalPoints)}</div>
-      <div class="stat-sub">Points earned by team</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-header">
-        <span class="stat-label">Representatives</span>
-        <span class="stat-icon">👥</span>
-      </div>
-      <div class="stat-val">${REPS.length} Reps</div>
-      <div class="stat-sub">${activeCount} active with uploaded records</div>
+      <div class="stat-sub">Needed: <strong>${fmt(teamNeededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(teamNeededPointsQ4_120)}</strong> pts (120%)</div>
     </div>
   `;
 
@@ -1772,44 +1756,25 @@ function renderHome() {
 
           <div class="rep-card-kpi">
             <div class="kpi-row">
-              <span class="kpi-label">Actual Sales (YTD):</span>
-              <span class="kpi-value">${ytd ? fmt(ytd.salesValue) : '—'} <span style="font-size:11px;color:var(--gold-dark);">EGP</span></span>
+              <span class="kpi-label">Sales Revenue:</span>
+              <span class="kpi-value">${ytd ? fmt(ytd.salesValue) : '—'} <span style="font-size:11px;color:var(--gold-dark);font-weight:600;">EGP</span></span>
             </div>
             <div class="kpi-row">
-              <span class="kpi-label">Target Quota (YTD):</span>
+              <span class="kpi-label">Target Quota:</span>
               <span class="kpi-value">${ytd ? fmt(ytd.targetValue) : '—'} <span style="font-size:11px;color:var(--text-muted);">EGP</span></span>
             </div>
             <div class="kpi-row">
-              <span class="kpi-label">Deficit / Surplus:</span>
-              <span>${ytd ? renderDeficitVal(ytd.targetValue, ytd.salesValue) : '—'}</span>
+              <span class="kpi-label">Physical Units Deficit:</span>
+              <span class="kpi-value" style="font-weight:700; color:${(ytd && (ytd.targetUnits - ytd.salesUnits) > 0) ? '#ef4444' : '#10b981'};">
+                ${ytd ? ((ytd.targetUnits - ytd.salesUnits) > 0 ? '-' + fmt(ytd.targetUnits - ytd.salesUnits) : '+' + fmt(Math.abs(ytd.targetUnits - ytd.salesUnits))) + ' units' : '—'}
+              </span>
             </div>
-            <div class="kpi-row">
-              <span class="kpi-label">Units Sold:</span>
-              <span class="kpi-value">${ytd ? fmt(ytd.salesUnits) : '—'} units</span>
-            </div>
-            <div class="kpi-row" style="background:rgba(245,158,11,0.08); padding:7px 10px; border-radius:8px; margin:6px 0; border:1px solid rgba(245,158,11,0.22); flex-direction:column; gap:4px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <span class="kpi-label" style="font-weight:700; color:var(--text-primary); font-size:11.5px;">🎯 Req. Q4 (100% Year):</span>
-                <span class="kpi-value" style="font-weight:800; font-size:12.5px; color:${ytd && ytd.requiredQ4Ratio > 100 ? '#ef4444' : (ytd && ytd.requiredQ4Ratio > 70 ? 'var(--gold-dark)' : '#16a34a')};">
-                  ${ytd ? fmtPct(ytd.requiredQ4Ratio) : '—'}
-                </span>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; border-top:1px dashed rgba(245,158,11,0.2); padding-top:4px;">
-                <span class="kpi-label" style="font-weight:700; color:#10b981; font-size:11.5px;">🚀 Req. Q4 (120% Year):</span>
-                <span class="kpi-value" style="font-weight:800; font-size:12.5px; color:${ytd && ytd.requiredQ4Ratio_120 > 120 ? '#ef4444' : (ytd && ytd.requiredQ4Ratio_120 > 90 ? '#d97706' : '#10b981')};">
-                  ${ytd ? fmtPct(ytd.requiredQ4Ratio_120) : '—'}
-                </span>
-              </div>
-            </div>
-            <div class="kpi-row-stacked">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span class="kpi-label" style="font-size:11.5px;color:var(--text-primary);font-weight:700;">Unit Deficit / Surplus (Per Product):</span>
-              </div>
-              <div class="prod-unit-grid">
-                ${PRODUCTS.map(pr => {
-                  const p = ytd && ytd.productsYTD ? ytd.productsYTD[pr.id] : null;
-                  return `<div class="prod-unit-item"><span style="color:var(--text-muted);font-weight:600;">${getShortProdName(pr.id)}:</span> ${p ? renderDeficitUnitCompact(p.targetUnits, p.salesUnits) : '—'}</div>`;
-                }).join('')}
+            <div class="kpi-row" style="background:rgba(245,158,11,0.07); padding:8px 12px; border-radius:8px; margin:8px 0; border:1px solid rgba(245,158,11,0.2); justify-content:space-between; align-items:center;">
+              <span class="kpi-label" style="font-weight:700; color:var(--text-primary); font-size:11px; text-transform:uppercase; letter-spacing:0.3px;">Req. Q4 Targets:</span>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span title="Req. Q4 for 100% Year" style="font-size:12px; font-weight:700; color:var(--gold);"><span style="opacity:0.75; font-size:10px; font-weight:600;">100%:</span> ${ytd ? fmtPct(ytd.requiredQ4Ratio) : '—'}</span>
+                <span style="color:var(--border);">|</span>
+                <span title="Req. Q4 for 120% Year" style="font-size:12px; font-weight:700; color:#10b981;"><span style="opacity:0.75; font-size:10px; font-weight:600;">120%:</span> ${ytd ? fmtPct(ytd.requiredQ4Ratio_120) : '—'}</span>
               </div>
             </div>
           </div>
@@ -1944,49 +1909,35 @@ function showRep(repKey, targetTabId = null) {
   const ytd = computeRepYTD(rep);
   const strip = document.getElementById('rep-ytd-strip');
   if (ytd) {
+    const repUnitsGap = ytd.targetUnits - ytd.salesUnits;
     strip.innerHTML = `
       <div class="ytd-item">
-        <div class="ytd-label">Actual Sales (YTD)</div>
-        <div class="ytd-val">${fmt(ytd.salesValue)} <span style="font-size:12px;color:var(--gold);">EGP</span></div>
-        <div class="ytd-unit">${fmt(ytd.salesUnits)} units sold</div>
+        <div class="ytd-label">Sales Revenue (YTD)</div>
+        <div class="ytd-val">${fmt(ytd.salesValue)} <span style="font-size:13px;color:var(--gold);font-weight:700;">EGP</span></div>
+        <div class="ytd-unit">Target: ${fmt(ytd.targetValue)} EGP (${renderDeficitVal(ytd.targetValue, ytd.salesValue)})</div>
       </div>
       <div class="ytd-item">
-        <div class="ytd-label">Quota Target (YTD)</div>
-        <div class="ytd-val">${fmt(ytd.targetValue)} <span style="font-size:12px;color:#94a3b8;">EGP</span></div>
-        <div class="ytd-unit">${fmt(ytd.targetUnits)} units target</div>
-      </div>
-      <div class="ytd-item">
-        <div class="ytd-label">Value Deficit / Surplus</div>
-        <div class="ytd-val">${renderDeficitVal(ytd.targetValue, ytd.salesValue)}</div>
-        <div class="ytd-unit">Net annual financial variance</div>
-      </div>
-      <div class="ytd-item">
-        <div class="ytd-label">Unit Deficit / Surplus</div>
-        <div class="ytd-val">${renderDeficitUnit(ytd.targetUnits, ytd.salesUnits)}</div>
-        <div class="ytd-unit">Net physical units gap</div>
-      </div>
-      <div class="ytd-item">
-        <div class="ytd-label">Sales Points</div>
-        <div class="ytd-val">${fmt(ytd.salesPoints)} pts</div>
-        <div class="ytd-unit">Target: ${fmt(ytd.targetPoints)} pts</div>
-      </div>
-      <div class="ytd-badge-box">
-        <div class="ytd-badge-label">YTD Points Fulfillment</div>
-        <div class="ytd-badge-val" style="color:${ytd.ratio >= 100 ? '#4ade80' : ytd.ratio >= 70 ? '#fbbf24' : '#f87171'};">
-          ${fmtPct(ytd.ratio)}
+        <div class="ytd-label">Points Achievement Rate</div>
+        <div class="ytd-val" style="display:flex; align-items:center; gap:8px;">
+          <span class="ratio-badge ${ratioClass(ytd.ratio)}" style="font-size:18px;">${fmtPct(ytd.ratio)}</span>
         </div>
+        <div class="ytd-unit">Earned: ${fmt(ytd.salesPoints)} / ${fmt(ytd.targetPoints)} pts</div>
       </div>
-      <div class="ytd-badge-box" style="border-left: 2px solid var(--gold); background:rgba(245, 158, 11, 0.06);">
-        <div class="ytd-badge-label">Req Q4 for 100% Year</div>
-        <div class="ytd-badge-val" style="color:${ytd.requiredQ4Ratio > 100 ? '#f87171' : ytd.requiredQ4Ratio > 70 ? '#fbbf24' : '#4ade80'};">
-          ${fmtPct(ytd.requiredQ4Ratio)}
+      <div class="ytd-item">
+        <div class="ytd-label">Physical Units Deficit</div>
+        <div class="ytd-val" style="color:${repUnitsGap > 0 ? '#f87171' : '#4ade80'};">
+          ${repUnitsGap > 0 ? '-' + fmt(repUnitsGap) : '+' + fmt(Math.abs(repUnitsGap))} <span style="font-size:13px;font-weight:600;">units</span>
         </div>
+        <div class="ytd-unit">Sold: ${fmt(ytd.salesUnits)} / ${fmt(ytd.targetUnits)} quota units</div>
       </div>
-      <div class="ytd-badge-box" style="border-left: 2px solid #10b981; background:rgba(16, 185, 129, 0.06);">
-        <div class="ytd-badge-label">Req Q4 for 120% Year</div>
-        <div class="ytd-badge-val" style="color:${ytd.requiredQ4Ratio_120 > 120 ? '#f87171' : ytd.requiredQ4Ratio_120 > 90 ? '#fbbf24' : '#4ade80'};">
-          ${fmtPct(ytd.requiredQ4Ratio_120)}
+      <div class="ytd-item" style="border-left: 2px solid var(--gold); padding-left: 18px; background: rgba(245, 158, 11, 0.05); border-radius: 8px; padding-top: 4px; padding-bottom: 4px;">
+        <div class="ytd-label">Required Q4 Targets</div>
+        <div style="display:flex; gap:14px; align-items:baseline; margin:2px 0;">
+          <div><span style="font-size:11px;color:#94a3b8;font-weight:600;">100%:</span> <strong style="color:var(--gold); font-size:18px;">${fmtPct(ytd.requiredQ4Ratio)}</strong></div>
+          <span style="color:#475569;">|</span>
+          <div><span style="font-size:11px;color:#94a3b8;font-weight:600;">120%:</span> <strong style="color:#34d399; font-size:18px;">${fmtPct(ytd.requiredQ4Ratio_120)}</strong></div>
         </div>
+        <div class="ytd-unit">Needs: ${fmt(ytd.neededPointsQ4)} pts (100%) &bull; ${fmt(ytd.neededPointsQ4_120)} pts (120%)</div>
       </div>
     `;
   }
@@ -2862,7 +2813,7 @@ function openDeficitReport(targetType) {
 
   if (isTeam) {
     titleEl.textContent = 'Delta Team — Annual Unit Deficit & Shortage Report 2026';
-    subEl.textContent = 'تقرير النقص في عدد الوحدات السنوي — النقص في عدد العلب لكل مندوب ولكل دوا';
+    subEl.textContent = 'Annual Physical Units Quota & Deficit Analysis Across Representatives and Products';
 
     const d = computeTeamDeficit();
     const valClass = d.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus';
@@ -2873,70 +2824,51 @@ function openDeficitReport(targetType) {
       <div class="report-kpi-grid">
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Target Quota (Units) | المستهدف</span>
+            <span>Physical Volume Quota</span>
             <span>🎯</span>
           </div>
           <div class="report-kpi-val">${fmt(d.targetUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
-          <div class="report-kpi-sub">Total annual physical quota for Delta territory</div>
-        </div>
-
-        <div class="report-kpi-card">
-          <div class="report-kpi-title">
-            <span>Actual Units Sold | المباع فعلياً</span>
-            <span>📦</span>
-          </div>
-          <div class="report-kpi-val">${fmt(d.salesUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
-          <div class="report-kpi-sub">Cumulative volume sold (YTD 2026)</div>
+          <div class="report-kpi-sub">Sold: <strong>${fmt(d.salesUnits)}</strong> units (${d.targetUnits > 0 ? ((d.salesUnits / d.targetUnits) * 100).toFixed(1) : 0}% volume fulfillment)</div>
         </div>
 
         <div class="report-kpi-card ${valClass}">
           <div class="report-kpi-title">
-            <span>Net Units Deficit | إجمالي النقص</span>
+            <span>Net Units Deficit</span>
             <span>${d.deficitUnits > 0 ? '📉' : '🏆'}</span>
           </div>
           <div class="report-kpi-val" style="color:${d.deficitUnits > 0 ? '#ef4444' : '#22c55e'};">
             ${d.deficitUnits > 0 ? '-' + fmt(d.deficitUnits) : '+' + fmt(Math.abs(d.deficitUnits))} <span style="font-size:13px;">units</span>
           </div>
-          <div class="report-kpi-sub">${d.deficitUnits > 0 ? 'Remaining physical units required to close quota' : 'Annual volume quota surpassed!'}</div>
+          <div class="report-kpi-sub">${d.deficitUnits > 0 ? 'Net physical shortage across all products' : 'Volume quota successfully surpassed!'}</div>
         </div>
 
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Total Achievement | نسبة تحقيق التارجت</span>
+            <span>Points Achievement Rate</span>
             <span>⭐</span>
           </div>
           <div class="report-kpi-val" style="color:${d.ratio >= 100 ? '#22c55e' : d.ratio >= 80 ? '#fbbf24' : '#ef4444'};">
             ${fmtPct(d.ratio)}
           </div>
-          <div class="report-kpi-sub">Points quota fulfillment (${fmt(d.salesPoints)} / ${fmt(d.targetPoints)} pts)</div>
+          <div class="report-kpi-sub">Points earned: <strong>${fmt(d.salesPoints)}</strong> / ${fmt(d.targetPoints)} pts</div>
         </div>
 
-        <div class="report-kpi-card" style="border-left: 3px solid var(--gold);">
+        <div class="report-kpi-card" style="border-left: 3px solid var(--gold); background:linear-gradient(135deg, var(--surface), rgba(245, 158, 11, 0.04));">
           <div class="report-kpi-title">
-            <span>Req. Q4 for 100% Year | المطلوب لـ 100%</span>
-            <span>🎯</span>
-          </div>
-          <div class="report-kpi-val" style="color:${d.requiredQ4Ratio > 100 ? '#ef4444' : (d.requiredQ4Ratio > 70 ? 'var(--gold-dark)' : '#22c55e')};">
-            ${fmtPct(d.requiredQ4Ratio)}
-          </div>
-          <div class="report-kpi-sub">Needs ${fmt(d.neededPointsQ4)} pts in Q4 to hit 100% annual target</div>
-        </div>
-
-        <div class="report-kpi-card" style="border-left: 3px solid #10b981;">
-          <div class="report-kpi-title">
-            <span>Req. Q4 for 120% Year | المطلوب لـ 120%</span>
+            <span>Required Q4 Targets</span>
             <span>🚀</span>
           </div>
-          <div class="report-kpi-val" style="color:${d.requiredQ4Ratio_120 > 120 ? '#ef4444' : (d.requiredQ4Ratio_120 > 90 ? '#d97706' : '#10b981')};">
-            ${fmtPct(d.requiredQ4Ratio_120)}
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0;">
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">100% Target:</span> <span style="color:var(--gold); font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(d.requiredQ4Ratio)}</span></div>
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">120% Target:</span> <span style="color:#10b981; font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(d.requiredQ4Ratio_120)}</span></div>
           </div>
-          <div class="report-kpi-sub">Needs ${fmt(d.neededPointsQ4_120)} pts in Q4 to hit 120% annual target</div>
+          <div class="report-kpi-sub">Needed: <strong>${fmt(d.neededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(d.neededPointsQ4_120)}</strong> pts (120%)</div>
         </div>
       </div>
 
       <!-- SECTION 1: PER-MEDICINE SHORTAGE BREAKDOWN TABLE -->
       <div class="report-section-title">
-        <span>💊 Per-Medicine Shortage Breakdown (النقص في كل دوا على مستوى الفريق)</span>
+        <span>💊 Per-Medicine Shortage Breakdown</span>
         <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Delta Region Aggregate</span>
       </div>
 
@@ -2948,7 +2880,7 @@ function openDeficitReport(targetType) {
               <th>Code</th>
               <th>Target Units</th>
               <th>Actual Units Sold</th>
-              <th>Unit Deficit / Shortage (النقص بالعلب)</th>
+              <th>Unit Deficit / Shortage (Units)</th>
               <th>Points Achievement %</th>
               <th>Status</th>
             </tr>
@@ -2997,7 +2929,7 @@ function openDeficitReport(targetType) {
 
     <!-- SECTION 2: MANAGER MATRIX — UNIT SHORTAGE PER REP FOR EACH DRUG -->
     <div class="report-section-title">
-      <span>👥 Manager's Matrix: Unit Shortage per Representative for Each Medicine (النقص في عدد الوحدات لكل مندوب لكل دوا)</span>
+      <span>👥 Manager's Matrix: Unit Shortage per Representative for Each Medicine</span>
       <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Operational Gap Matrix</span>
     </div>
 
@@ -3011,10 +2943,10 @@ function openDeficitReport(targetType) {
             <th style="text-align:center;">Humaxin Rapid<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1259</span></th>
             <th style="text-align:center;">Glargivin UPA<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1251</span></th>
             <th style="text-align:center;">Glargivin 100IU<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1110</span></th>
-            <th style="text-align:center; background:#1e293b; color:var(--gold);">Total Shortage<br><span style="font-size:10px;font-weight:600;">إجمالي النقص</span></th>
+            <th style="text-align:center; background:#1e293b; color:var(--gold);">Total Shortage<br><span style="font-size:10px;font-weight:600;">(Units)</span></th>
             <th style="text-align:center; min-width:130px;">Total Achievement %<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Sales vs Target Points)</span></th>
-            <th style="text-align:center; min-width:130px; background:#1e293b; color:var(--gold);">Req. Q4 (100% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(المطلوب لـ 100%)</span></th>
-            <th style="text-align:center; min-width:130px; background:#064e3b; color:#34d399;">Req. Q4 (120% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(المطلوب لـ 120%)</span></th>
+            <th style="text-align:center; min-width:130px; background:#1e293b; color:var(--gold);">Req. Q4 (100% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Annual Quota)</span></th>
+            <th style="text-align:center; min-width:130px; background:#064e3b; color:#34d399;">Req. Q4 (120% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Super-Target)</span></th>
             <th style="text-align:center;" class="col-action">Action</th>
           </tr>
         </thead>
@@ -3074,7 +3006,7 @@ function openDeficitReport(targetType) {
 
     <!-- ACTIONABLE INSIGHTS BOX -->
     <div class="report-insight-box">
-      <strong>💡 Manager Strategic Insight (تحليل وسد عجز الوحدات):</strong><br>
+      <strong>💡 Manager Strategic Insight:</strong><br>
       The primary unit shortage driver across Delta Team is <strong>${topDeficit.name}</strong> with a total deficit of <strong>${fmt(topDeficit.deficitUnits)} units</strong> remaining to achieve the annual quota.
       Focusing sales efforts and pharmacy order placements on this SKU will resolve ${d.deficitUnits > 0 ? ((topDeficit.deficitUnits / d.deficitUnits) * 100).toFixed(1) : 0}% of the entire team's volume shortage!
     </div>
@@ -3089,7 +3021,7 @@ function openDeficitReport(targetType) {
     const rep = repData.rep;
 
     titleEl.textContent = `${rep.name} — Annual Unit Deficit & Shortage Report 2026`;
-    subEl.textContent = `Territory: ${rep.note} | النقص في عدد الوحدات لكل دوا لتحقيق التارجت السنوي`;
+    subEl.textContent = `Territory: ${rep.note} | Personal Annual Unit Deficit & Quota Analysis`;
 
     const valClass = repData.deficitUnits > 0 ? 'kpi-deficit' : 'kpi-surplus';
     const topDeficit = repData.products.reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
@@ -3099,25 +3031,16 @@ function openDeficitReport(targetType) {
       <div class="report-kpi-grid">
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Target Quota (Units) | المستهدف</span>
+            <span>Physical Volume Quota</span>
             <span>🎯</span>
           </div>
           <div class="report-kpi-val">${fmt(repData.targetUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
-          <div class="report-kpi-sub">Personal annual quota target</div>
-        </div>
-
-        <div class="report-kpi-card">
-          <div class="report-kpi-title">
-            <span>Actual Units Sold | المباع فعلياً</span>
-            <span>📦</span>
-          </div>
-          <div class="report-kpi-val">${fmt(repData.salesUnits)} <span style="font-size:13px; color:var(--gold);">units</span></div>
-          <div class="report-kpi-sub">Cumulative volume sold (YTD 2026)</div>
+          <div class="report-kpi-sub">Sold: <strong>${fmt(repData.salesUnits)}</strong> units (${repData.targetUnits > 0 ? ((repData.salesUnits / repData.targetUnits) * 100).toFixed(1) : 0}% volume fulfillment)</div>
         </div>
 
         <div class="report-kpi-card ${valClass}">
           <div class="report-kpi-title">
-            <span>Net Units Deficit | إجمالي النقص</span>
+            <span>Net Units Deficit</span>
             <span>${repData.deficitUnits > 0 ? '📉' : '🏆'}</span>
           </div>
           <div class="report-kpi-val" style="color:${repData.deficitUnits > 0 ? '#ef4444' : '#22c55e'};">
@@ -3128,41 +3051,31 @@ function openDeficitReport(targetType) {
 
         <div class="report-kpi-card">
           <div class="report-kpi-title">
-            <span>Total Achievement | نسبة تحقيق التارجت</span>
+            <span>Points Achievement Rate</span>
             <span>⭐</span>
           </div>
           <div class="report-kpi-val" style="color:${repData.ratio >= 100 ? '#22c55e' : repData.ratio >= 80 ? '#fbbf24' : '#ef4444'};">
             ${fmtPct(repData.ratio)}
           </div>
-          <div class="report-kpi-sub">Points quota fulfillment (${fmt(repData.salesPoints)} / ${fmt(repData.targetPoints)} pts)</div>
+          <div class="report-kpi-sub">Points earned: <strong>${fmt(repData.salesPoints)}</strong> / ${fmt(repData.targetPoints)} pts</div>
         </div>
 
-        <div class="report-kpi-card" style="border-left: 3px solid var(--gold);">
+        <div class="report-kpi-card" style="border-left: 3px solid var(--gold); background:linear-gradient(135deg, var(--surface), rgba(245, 158, 11, 0.04));">
           <div class="report-kpi-title">
-            <span>Req. Q4 for 100% Year | المطلوب لـ 100%</span>
-            <span>🎯</span>
-          </div>
-          <div class="report-kpi-val" style="color:${repData.requiredQ4Ratio > 100 ? '#ef4444' : (repData.requiredQ4Ratio > 70 ? 'var(--gold-dark)' : '#22c55e')};">
-            ${fmtPct(repData.requiredQ4Ratio)}
-          </div>
-          <div class="report-kpi-sub">Needs ${fmt(repData.neededPointsQ4)} pts in Q4 to hit 100% annual target</div>
-        </div>
-
-        <div class="report-kpi-card" style="border-left: 3px solid #10b981;">
-          <div class="report-kpi-title">
-            <span>Req. Q4 for 120% Year | المطلوب لـ 120%</span>
+            <span>Required Q4 Targets</span>
             <span>🚀</span>
           </div>
-          <div class="report-kpi-val" style="color:${repData.requiredQ4Ratio_120 > 120 ? '#ef4444' : (repData.requiredQ4Ratio_120 > 90 ? '#d97706' : '#10b981')};">
-            ${fmtPct(repData.requiredQ4Ratio_120)}
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0;">
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">100% Target:</span> <span style="color:var(--gold); font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(repData.requiredQ4Ratio)}</span></div>
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">120% Target:</span> <span style="color:#10b981; font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(repData.requiredQ4Ratio_120)}</span></div>
           </div>
-          <div class="report-kpi-sub">Needs ${fmt(repData.neededPointsQ4_120)} pts in Q4 to hit 120% annual target</div>
+          <div class="report-kpi-sub">Needed: <strong>${fmt(repData.neededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(repData.neededPointsQ4_120)}</strong> pts (120%)</div>
         </div>
       </div>
 
       <!-- SECTION: PER-MEDICINE SHORTAGE BREAKDOWN TABLE -->
       <div class="report-section-title">
-        <span>💊 Per-Medicine Shortage Breakdown (النقص في كل دوا)</span>
+        <span>💊 Per-Medicine Shortage Breakdown</span>
         ${currentUser && !currentUser.repKey ? `<button onclick="openDeficitReport('team')" style="background:#f1f5f9; border:1px solid var(--border); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">← Back to Team Report</button>` : ''}
       </div>
 
@@ -3174,7 +3087,7 @@ function openDeficitReport(targetType) {
               <th>Code</th>
               <th>Target Units</th>
               <th>Actual Units Sold</th>
-              <th>Unit Deficit / Shortage (النقص بالعلب)</th>
+              <th>Unit Deficit / Shortage (Units)</th>
               <th>Points Achievement %</th>
               <th>Status</th>
             </tr>
@@ -3222,7 +3135,7 @@ function openDeficitReport(targetType) {
 
     <!-- ACTIONABLE INSIGHTS BOX -->
     <div class="report-insight-box">
-      <strong>💡 Personalized Shortage Insights (سد عجز التارجت ومستهدفات السنة):</strong><br>
+      <strong>💡 Personalized Shortage Insights:</strong><br>
       To achieve <strong>100%</strong> of your annual quota, you need to achieve <strong>${fmtPct(repData.requiredQ4Ratio)}</strong> of your Q4 target (<strong>${fmt(repData.neededPointsQ4)} pts</strong>).
       To reach <strong>120%</strong> super-achievement, you need <strong>${fmtPct(repData.requiredQ4Ratio_120)}</strong> of Q4 (<strong>${fmt(repData.neededPointsQ4_120)} pts</strong>).
       ${repData.deficitUnits > 0 ? `Your primary product volume focus is <strong>${topDeficit.name}</strong> where you have a shortage of <strong>${fmt(topDeficit.deficitUnits)} units</strong>.` : ''}
@@ -3291,7 +3204,7 @@ function downloadDeficitExcel(targetType) {
     const repRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
       ["MANAGER MATRIX: ANNUAL UNIT SHORTAGE PER REPRESENTATIVE & MEDICINE 2026"],
-      ["تقرير النقص في عدد الوحدات السنوي لكل مندوب ولكل دوا | Generated: " + new Date().toLocaleString()],
+      ["Scope: Delta Region Aggregate | Medical Reps: 9 | Generated: " + new Date().toLocaleString()],
       [],
       [
         "Medical Representative",
@@ -3370,7 +3283,7 @@ function downloadDeficitExcel(targetType) {
     // ── SHEET 2: MEDICINE SHORTAGE BREAKDOWN ──
     const medRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["PER-MEDICINE UNIT SHORTAGE BREAKDOWN 2026 (النقص في كل دوا على مستوى الفريق)"],
+      ["PER-MEDICINE UNIT SHORTAGE BREAKDOWN 2026"],
       ["Scope: Delta Team Aggregate | Total Insulin Products: 4 | Generated: " + new Date().toLocaleString()],
       [],
       [
@@ -3442,7 +3355,7 @@ function downloadDeficitExcel(targetType) {
     // ── SHEET 3: EXECUTIVE KPI SUMMARY ──
     const kpiRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["ANNUAL EXECUTIVE KPI SUMMARY 2026 (ملخص مؤشرات الأداء الإجمالية لفريق الدلتا)"],
+      ["ANNUAL EXECUTIVE KPI SUMMARY 2026"],
       ["Scope: Delta Team Aggregate | Medical Reps: 9 | Generated: " + new Date().toLocaleString()],
       [],
       [
@@ -3454,7 +3367,7 @@ function downloadDeficitExcel(targetType) {
         "Strategic Status"
       ],
       [
-        "Physical Volume (Units / علب)",
+        "Physical Volume (Units)",
         Math.round(teamData.salesUnits).toLocaleString() + " units",
         Math.round(teamData.targetUnits).toLocaleString() + " units",
         fmtTotalDeficitExcel(teamData.deficitUnits),
@@ -3462,7 +3375,7 @@ function downloadDeficitExcel(targetType) {
         teamData.deficitUnits > 0 ? "Volume Shortage" : "Volume Surpassed"
       ],
       [
-        "Achievement Currency (Points / نقاط)",
+        "Achievement Currency (Points)",
         Math.round(teamData.salesPoints).toLocaleString() + " pts",
         Math.round(teamData.targetPoints).toLocaleString() + " pts",
         "-" + Math.round(teamData.deficitPoints).toLocaleString() + " pts",
@@ -3470,7 +3383,7 @@ function downloadDeficitExcel(targetType) {
         teamData.ratio >= 100 ? "Quota Met" : (teamData.ratio >= 80 ? "On Track" : "Action Needed")
       ],
       [
-        "Sales Revenue Value (EGP / جنيه)",
+        "Sales Revenue Value (EGP)",
         Math.round(teamData.salesValue).toLocaleString() + " EGP",
         Math.round(teamData.targetValue).toLocaleString() + " EGP",
         "-" + Math.round(teamData.deficitValue).toLocaleString() + " EGP",
@@ -3528,7 +3441,7 @@ function downloadDeficitExcel(targetType) {
     // Sheet 1: Per-Medicine Shortage Breakdown
     const medRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["PERSONAL ANNUAL UNIT DEFICIT REPORT 2026 (تقرير عجز الوحدات السنوي)"],
+      ["PERSONAL ANNUAL UNIT DEFICIT REPORT 2026"],
       ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
       [],
       [
@@ -3611,7 +3524,7 @@ function downloadDeficitExcel(targetType) {
         "Status"
       ],
       [
-        "Physical Volume (Units / علب)",
+        "Physical Volume (Units)",
         Math.round(repData.salesUnits).toLocaleString() + " units",
         Math.round(repData.targetUnits).toLocaleString() + " units",
         fmtTotalDeficitExcel(repData.deficitUnits),
@@ -3619,7 +3532,7 @@ function downloadDeficitExcel(targetType) {
         repData.deficitUnits > 0 ? "Volume Deficit" : "Volume Surpassed"
       ],
       [
-        "Achievement Currency (Points / نقاط)",
+        "Achievement Currency (Points)",
         Math.round(repData.salesPoints).toLocaleString() + " pts",
         Math.round(repData.targetPoints).toLocaleString() + " pts",
         "-" + Math.round(repData.deficitPoints).toLocaleString() + " pts",
@@ -3627,7 +3540,7 @@ function downloadDeficitExcel(targetType) {
         repData.ratio >= 100 ? "Target Met" : (repData.ratio >= 80 ? "On Track" : "Needs Push")
       ],
       [
-        "Sales Revenue Value (EGP / جنيه)",
+        "Sales Revenue Value (EGP)",
         Math.round(repData.salesValue).toLocaleString() + " EGP",
         Math.round(repData.targetValue).toLocaleString() + " EGP",
         "-" + Math.round(repData.deficitValue).toLocaleString() + " EGP",
@@ -3691,86 +3604,85 @@ function copyDeficitSummary(targetType) {
 
   if (isTeam) {
     const d = computeTeamDeficit();
-    const unitDeficitStr = d.deficitUnits > 0 ? `عجز (-${fmt(d.deficitUnits)} علبة)` : `فائض (+${fmt(Math.abs(d.deficitUnits))} علبة)`;
+    const unitDeficitStr = d.deficitUnits > 0 ? `Deficit (-${fmt(d.deficitUnits)} units)` : `Surplus (+${fmt(Math.abs(d.deficitUnits))} units)`;
 
     text = `📊 *EVA PHARMA - DELTA TEAM*
-*تقرير عجز الوحدات ونسبة تحقيق التارجت بالنقاط 2026*
-*(Annual Quota Unit Shortage & Points Achievement Report)*
+*Annual Unit Deficit & Points Achievement Report 2026*
 ━━━━━━━━━━━━━━━━━━━━
-🎯 *الموقف الإجمالي لفريق الدلتا (Delta Region):*
-• المستهدف بالعلب: ${fmt(d.targetUnits)} علبة
-• المباع فعلياً بالعلب: ${fmt(d.salesUnits)} علبة
-• إجمالي النقص بالعلب: ${unitDeficitStr}
-• نسبة تحقيق التارجت الكلية (بالنقاط): ${fmtPct(d.ratio)}
-  (نقاط المبيعات: ${fmt(d.salesPoints)} pts | تارجت النقاط: ${fmt(d.targetPoints)} pts)
-• المطلوب تحقيقه في Q4 لإغلاق السنة 100%: ${fmtPct(d.requiredQ4Ratio)}
-  (مطلوب ${fmt(d.neededPointsQ4)} نقطة من إجمالي تارجت Q4 البالغ ${fmt(d.targetPointsQ4)} نقطة)
-• المطلوب تحقيقه في Q4 لتحقيق 120% للسنة: ${fmtPct(d.requiredQ4Ratio_120)}
-  (مطلوب ${fmt(d.neededPointsQ4_120)} نقطة من إجمالي تارجت Q4 البالغ ${fmt(d.targetPointsQ4)} نقطة)
+🎯 *Delta Team Overall Status:*
+• Target Quota (Units): ${fmt(d.targetUnits)} units
+• Actual Units Sold: ${fmt(d.salesUnits)} units
+• Net Unit Deficit: ${unitDeficitStr}
+• Total Achievement Rate (Points): ${fmtPct(d.ratio)}
+  (Sales Points: ${fmt(d.salesPoints)} pts | Target Points: ${fmt(d.targetPoints)} pts)
+• Required in Q4 to Hit 100% Annual Quota: ${fmtPct(d.requiredQ4Ratio)}
+  (Needs ${fmt(d.neededPointsQ4)} pts of ${fmt(d.targetPointsQ4)} Q4 target pts)
+• Required in Q4 to Hit 120% Annual Super-Achievement: ${fmtPct(d.requiredQ4Ratio_120)}
+  (Needs ${fmt(d.neededPointsQ4_120)} pts of ${fmt(d.targetPointsQ4)} Q4 target pts)
 
 ━━━━━━━━━━━━━━━━━━━━
-💊 *النقص في كل دوا ونسبة تحقيق النقاط:*
+💊 *Per-Medicine Unit Shortage & Points Achievement:*
 `;
 
     PRODUCTS.forEach((p, idx) => {
       const prod = d.products[p.id];
-      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} علبة` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} علبة)`;
-      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق النقاط: ${fmtPct(prod.ratio)}\n`;
+      const uDef = prod.deficitUnits > 0 ? `Deficit -${fmt(prod.deficitUnits)} units` : `Target Met (+${fmt(Math.abs(prod.deficitUnits))} units)`;
+      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | Points Ach.: ${fmtPct(prod.ratio)}\n`;
     });
 
-    text += `\n━━━━━━━━━━━━━━━━━━━━\n👥 *النقص بالعلب لكل مندوب وتحقيق التارجت بالنقاط (Manager Matrix):*\n`;
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n👥 *Manager's Matrix (Unit Shortage per Rep & Quota Fulfillment):*\n`;
 
     d.reps.forEach(r => {
       const defMix = r.prodDeficits[1260] > 0 ? `-${fmt(r.prodDeficits[1260])}` : `+${fmt(Math.abs(r.prodDeficits[1260]))}`;
       const defRap = r.prodDeficits[1259] > 0 ? `-${fmt(r.prodDeficits[1259])}` : `+${fmt(Math.abs(r.prodDeficits[1259]))}`;
       const defUPA = r.prodDeficits[1251] > 0 ? `-${fmt(r.prodDeficits[1251])}` : `+${fmt(Math.abs(r.prodDeficits[1251]))}`;
       const def100 = r.prodDeficits[1110] > 0 ? `-${fmt(r.prodDeficits[1110])}` : `+${fmt(Math.abs(r.prodDeficits[1110]))}`;
-      const totDef = r.deficitUnits > 0 ? `عجز (-${fmt(r.deficitUnits)} u)` : `فائض (+${fmt(Math.abs(r.deficitUnits))} u)`;
-      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - الإجمالي: ${totDef} | تحقيق: ${fmtPct(r.ratio)} | المطلوب لـ 100%: ${fmtPct(r.requiredQ4Ratio)} | لـ 120%: ${fmtPct(r.requiredQ4Ratio_120)}\n`;
+      const totDef = r.deficitUnits > 0 ? `Deficit (-${fmt(r.deficitUnits)} u)` : `Surplus (+${fmt(Math.abs(r.deficitUnits))} u)`;
+      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - Total: ${totDef} | Ach.: ${fmtPct(r.ratio)} | Req Q4 (100%): ${fmtPct(r.requiredQ4Ratio)} | Req Q4 (120%): ${fmtPct(r.requiredQ4Ratio_120)}\n`;
     });
 
     const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
     if (topDeficit && topDeficit.deficitUnits > 0) {
-      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز بالوحدات المطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} علبة)`;
+      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *Top Priority Deficit SKU:* ${topDeficit.name} (-${fmt(topDeficit.deficitUnits)} units)`;
     }
 
-    text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`;
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 Report Date: ${new Date().toLocaleDateString('en-GB')}`;
   } else {
     const repData = computeSingleRepDeficit(targetType);
     if (!repData) return;
     const rep = repData.rep;
-    const unitDeficitStr = repData.deficitUnits > 0 ? `عجز (-${fmt(repData.deficitUnits)} علبة)` : `فائض (+${fmt(Math.abs(repData.deficitUnits))} علبة)`;
+    const unitDeficitStr = repData.deficitUnits > 0 ? `Deficit (-${fmt(repData.deficitUnits)} units)` : `Surplus (+${fmt(Math.abs(repData.deficitUnits))} units)`;
 
     text = `📊 *EVA PHARMA - DELTA TEAM*
-*تقرير عجز الوحدات ونسبة تحقيق التارجت بالنقاط 2026*
-👤 *المندوب:* ${rep.name} (${rep.note})
+*Personal Unit Deficit & Points Achievement Report 2026*
+👤 *Representative:* ${rep.name} (${rep.note})
 ━━━━━━━━━━━━━━━━━━━━
-🎯 *الموقف الإجمالي للمندوب:*
-• المستهدف بالعلب: ${fmt(repData.targetUnits)} علبة
-• المباع فعلياً بالعلب: ${fmt(repData.salesUnits)} علبة
-• إجمالي النقص بالعلب: ${unitDeficitStr}
-• نسبة تحقيق التارجت الكلية (بالنقاط): ${fmtPct(repData.ratio)}
-  (نقاط المبيعات: ${fmt(repData.salesPoints)} pts | تارجت النقاط: ${fmt(repData.targetPoints)} pts)
-• المطلوب تحقيقه في Q4 لإغلاق السنة 100%: ${fmtPct(repData.requiredQ4Ratio)}
-  (مطلوب ${fmt(repData.neededPointsQ4)} نقطة من إجمالي تارجت Q4 البالغ ${fmt(repData.targetPointsQ4)} نقطة)
-• المطلوب تحقيقه في Q4 لتحقيق 120% للسنة: ${fmtPct(repData.requiredQ4Ratio_120)}
-  (مطلوب ${fmt(repData.neededPointsQ4_120)} نقطة من إجمالي تارجت Q4 البالغ ${fmt(repData.targetPointsQ4)} نقطة)
+🎯 *Personal Overall Performance:*
+• Target Quota (Units): ${fmt(repData.targetUnits)} units
+• Actual Units Sold: ${fmt(repData.salesUnits)} units
+• Net Unit Deficit: ${unitDeficitStr}
+• Total Achievement Rate (Points): ${fmtPct(repData.ratio)}
+  (Sales Points: ${fmt(repData.salesPoints)} pts | Target Points: ${fmt(repData.targetPoints)} pts)
+• Required in Q4 to Hit 100% Annual Quota: ${fmtPct(repData.requiredQ4Ratio)}
+  (Needs ${fmt(repData.neededPointsQ4)} pts of ${fmt(repData.targetPointsQ4)} Q4 target pts)
+• Required in Q4 to Hit 120% Annual Super-Achievement: ${fmtPct(repData.requiredQ4Ratio_120)}
+  (Needs ${fmt(repData.neededPointsQ4_120)} pts of ${fmt(repData.targetPointsQ4)} Q4 target pts)
 
 ━━━━━━━━━━━━━━━━━━━━
-💊 *النقص في كل دوا ونسبة تحقيق النقاط:*
+💊 *Per-Medicine Shortage & Points Achievement:*
 `;
 
     repData.products.forEach((prod, idx) => {
-      const uDef = prod.deficitUnits > 0 ? `عجز ${fmt(prod.deficitUnits)} علبة` : `مكتمل (+${fmt(Math.abs(prod.deficitUnits))} علبة)`;
-      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | تحقيق النقاط: ${fmtPct(prod.ratio)}\n`;
+      const uDef = prod.deficitUnits > 0 ? `Deficit -${fmt(prod.deficitUnits)} units` : `Target Met (+${fmt(Math.abs(prod.deficitUnits))} units)`;
+      text += `${idx + 1}️⃣ *${prod.name}* (#${prod.pid}): ${uDef} | Points Ach.: ${fmtPct(prod.ratio)}\n`;
     });
 
     const topDeficit = repData.products.reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
     if (topDeficit && topDeficit.deficitUnits > 0) {
-      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *أكبر عجز بالوحدات المطلوب تعويضه:* ${topDeficit.name} بعجز (${fmt(topDeficit.deficitUnits)} علبة)`;
+      text += `\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *Top Priority SKU to Focus:* ${topDeficit.name} (-${fmt(topDeficit.deficitUnits)} units)`;
     }
 
-    text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`;
+    text += `\n━━━━━━━━━━━━━━━━━━━━\n📅 Report Date: ${new Date().toLocaleDateString('en-GB')}`;
   }
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
