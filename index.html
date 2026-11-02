@@ -387,49 +387,240 @@
     font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
   }
 
-  /* ── PRINT MEDIA OPTIMIZATIONS ── */
+  /* ── PRINT MEDIA OPTIMIZATIONS (A4 LANDSCAPE) ── */
+  @page {
+    size: A4 landscape;
+    margin: 8mm 10mm;
+  }
+
   @media print {
-    body * {
-      visibility: hidden;
+    html, body {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      font-size: 10px !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
-    #deficitModal, #deficitModal * {
-      visibility: visible;
-    }
-    #deficitModal.modal-overlay {
-      position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important;
-      background: #ffffff !important; backdrop-filter: none !important;
-      padding: 0 !important; display: block !important;
-    }
-    .report-modal-box {
-      box-shadow: none !important; border: none !important;
-      max-height: none !important; overflow: visible !important;
-      width: 100% !important; max-width: 100% !important;
-    }
-    .report-modal-header {
-      background: #090c12 !important; color: #ffffff !important;
-      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-    }
-    .report-actions-toolbar, .report-modal-close {
+
+    /* When printing report, hide everything else */
+    body > *:not(#deficitModal) {
       display: none !important;
     }
+
+    #deficitModal.modal-overlay {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      overflow: visible !important;
+    }
+
+    .report-modal-box {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+
+    .report-modal-header {
+      background: #090c12 !important;
+      color: #ffffff !important;
+      padding: 10px 16px !important;
+      border-radius: 6px !important;
+      margin-bottom: 12px !important;
+      border-bottom: 3px solid #f59e0b !important;
+      page-break-after: avoid !important;
+    }
+
+    .report-actions-toolbar,
+    .report-modal-close,
+    .col-action,
+    .report-section-title button {
+      display: none !important;
+    }
+
     .report-modal-body {
-      background: #ffffff !important; padding: 12px !important;
-      max-height: none !important; overflow: visible !important;
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      padding: 0 !important;
+      background: #ffffff !important;
     }
+
+    /* KPI Grid in single landscape row */
+    .report-kpi-grid {
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 8px !important;
+      margin-bottom: 12px !important;
+      page-break-inside: avoid !important;
+    }
+
+    .report-kpi-card {
+      padding: 8px 10px !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      background: #f8fafc !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+    }
+
+    .report-kpi-title {
+      font-size: 8.5px !important;
+      margin-bottom: 2px !important;
+      color: #475569 !important;
+    }
+
+    .report-kpi-val {
+      font-size: 14px !important;
+      margin-bottom: 2px !important;
+      color: #0f172a !important;
+    }
+
+    .report-kpi-sub {
+      font-size: 8px !important;
+      color: #64748b !important;
+      line-height: 1.2 !important;
+    }
+
+    .report-section-title {
+      font-size: 11.5px !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      margin: 10px 0 6px 0 !important;
+      page-break-after: avoid !important;
+    }
+
+    .report-table-box {
+      display: block !important;
+      width: 100% !important;
+      overflow: visible !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      margin-bottom: 12px !important;
+      box-shadow: none !important;
+      page-break-inside: auto !important;
+    }
+
+    .report-table {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      font-size: 9.5px !important;
+    }
+
+    .report-table thead {
+      display: table-header-group !important;
+    }
+
+    .report-table tr {
+      page-break-inside: avoid !important;
+    }
+
     .report-table th {
-      background: #090c12 !important; color: #ffffff !important;
-      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+      background: #090c12 !important;
+      color: #ffffff !important;
+      padding: 5px 4px !important;
+      font-size: 8.5px !important;
+      font-weight: 800 !important;
+      text-transform: uppercase !important;
+      text-align: center !important;
+      border: 1px solid #334155 !important;
+      white-space: normal !important;
+      min-width: 0 !important;
     }
+
+    .report-table td {
+      padding: 4px 4px !important;
+      font-size: 9px !important;
+      border: 1px solid #cbd5e1 !important;
+      vertical-align: middle !important;
+      line-height: 1.2 !important;
+      min-width: 0 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+
     .report-table tr.total-row td {
-      background: #fef3c7 !important; color: #000000 !important;
-      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+      background: #fef3c7 !important;
+      color: #000000 !important;
+      font-weight: 800 !important;
+      font-size: 9px !important;
+      border-top: 2px solid #d97706 !important;
     }
-    .deficit-badge, .priority-tag {
-      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+
+    /* Specific column widths for Manager Matrix in Print (9 visible columns = 100%) */
+    .matrix-table th:nth-child(1), .matrix-table td:nth-child(1) { width: 14% !important; text-align: left !important; }
+    .matrix-table th:nth-child(2), .matrix-table td:nth-child(2) { width: 12% !important; text-align: left !important; }
+    .matrix-table th:nth-child(3), .matrix-table td:nth-child(3) { width: 9.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(4), .matrix-table td:nth-child(4) { width: 9.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(5), .matrix-table td:nth-child(5) { width: 9.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(6), .matrix-table td:nth-child(6) { width: 9.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(7), .matrix-table td:nth-child(7) { width: 12% !important; text-align: center !important; }
+    .matrix-table th:nth-child(8), .matrix-table td:nth-child(8) { width: 11% !important; text-align: center !important; }
+    .matrix-table th:nth-child(9), .matrix-table td:nth-child(9) { width: 13% !important; text-align: center !important; }
+
+    /* Specific column widths for Medicine Table in Print (7 columns = 100%) */
+    .medicine-table th:nth-child(1), .medicine-table td:nth-child(1) { width: 25% !important; text-align: left !important; }
+    .medicine-table th:nth-child(2), .medicine-table td:nth-child(2) { width: 8% !important; text-align: center !important; }
+    .medicine-table th:nth-child(3), .medicine-table td:nth-child(3) { width: 13% !important; text-align: center !important; }
+    .medicine-table th:nth-child(4), .medicine-table td:nth-child(4) { width: 13% !important; text-align: center !important; }
+    .medicine-table th:nth-child(5), .medicine-table td:nth-child(5) { width: 15% !important; text-align: center !important; }
+    .medicine-table th:nth-child(6), .medicine-table td:nth-child(6) { width: 13% !important; text-align: center !important; }
+    .medicine-table th:nth-child(7), .medicine-table td:nth-child(7) { width: 13% !important; text-align: center !important; }
+
+    .priority-tag {
+      padding: 1px 4px !important;
+      font-size: 8px !important;
+      border-radius: 3px !important;
+      display: inline-block !important;
+      font-weight: 800 !important;
+      white-space: nowrap !important;
     }
-    .report-kpi-card, .report-table-box, .report-insight-box {
-      box-shadow: none !important; border: 1px solid #cbd5e1 !important;
-      page-break-inside: avoid;
+    .priority-critical {
+      background: #fee2e2 !important;
+      color: #991b1b !important;
+      border: 1px solid #fca5a5 !important;
+    }
+    .priority-warning {
+      background: #fef3c7 !important;
+      color: #92400e !important;
+      border: 1px solid #fcd34d !important;
+    }
+    .priority-success {
+      background: #dcfce7 !important;
+      color: #166534 !important;
+      border: 1px solid #86efac !important;
+    }
+
+    .report-insight-box {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      border-left: 4px solid #f59e0b !important;
+      padding: 8px 12px !important;
+      font-size: 9px !important;
+      border-radius: 6px !important;
+      page-break-inside: avoid !important;
+      margin-top: 8px !important;
     }
   }
 
@@ -4531,7 +4722,7 @@ function openDeficitReport(targetType) {
       </div>
 
       <div class="report-table-box">
-        <table class="report-table">
+        <table class="report-table medicine-table">
           <thead>
             <tr>
               <th>Medicine / Insulin Product</th>
@@ -4592,7 +4783,7 @@ function openDeficitReport(targetType) {
     </div>
 
     <div class="report-table-box">
-      <table class="report-table">
+      <table class="report-table matrix-table">
         <thead>
           <tr>
             <th style="min-width:140px;">Medical Rep</th>
@@ -4604,7 +4795,7 @@ function openDeficitReport(targetType) {
             <th style="text-align:center; background:#1e293b; color:var(--gold);">Total Shortage<br><span style="font-size:10px;font-weight:600;">إجمالي النقص</span></th>
             <th style="text-align:center; min-width:130px;">Total Achievement %<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Sales vs Target Points)</span></th>
             <th style="text-align:center; min-width:145px; background:#1e293b; color:var(--gold);">Req. Q4 for 100% Year<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(المطلوب في Q4)</span></th>
-            <th style="text-align:center;">Action</th>
+            <th style="text-align:center;" class="col-action">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -4630,7 +4821,7 @@ function openDeficitReport(targetType) {
               ${fmtPct(r.requiredQ4Ratio)}
             </div>
           </td>
-          <td style="text-align:center;">
+          <td style="text-align:center;" class="col-action">
             <button onclick="openDeficitReport('${r.key}')" style="background:#090c12; color:#fbbf24; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;" title="View Rep Deficit Report">
               View Rep ↗
             </button>
@@ -4649,7 +4840,7 @@ function openDeficitReport(targetType) {
             <td style="text-align:center;">${renderUnitDeficitBadge(d.targetUnits, d.salesUnits)}</td>
             <td style="text-align:center; color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
             <td style="text-align:center; background:rgba(245, 158, 11, 0.08); color:var(--gold-dark); font-size:14px; font-weight:800;">${fmtPct(d.requiredQ4Ratio)}</td>
-            <td style="text-align:center;">-</td>
+            <td style="text-align:center;" class="col-action">-</td>
           </tr>
         </tbody>
       </table>
@@ -4739,7 +4930,7 @@ function openDeficitReport(targetType) {
       </div>
 
       <div class="report-table-box">
-        <table class="report-table">
+        <table class="report-table medicine-table">
           <thead>
             <tr>
               <th>Medicine / Insulin Product</th>
@@ -4813,7 +5004,17 @@ function closeDeficitReport() {
 }
 
 function printDeficitReport() {
-  window.print();
+  const modal = document.getElementById('deficitModal');
+  if (!modal || !modal.classList.contains('active')) {
+    openDeficitReport(currentReportScope || currentActiveRepKey || 'team');
+  }
+  document.body.classList.add('printing-report');
+  window.onafterprint = () => {
+    document.body.classList.remove('printing-report');
+  };
+  setTimeout(() => {
+    window.print();
+  }, 120);
 }
 
 function downloadDeficitExcel(targetType) {
@@ -4823,67 +5024,49 @@ function downloadDeficitExcel(targetType) {
   const isTeam = targetType === 'team';
   const wb = XLSX.utils.book_new();
 
+  function fmtDeficitExcel(diff, isUnit) {
+    if (diff === null || diff === undefined || isNaN(diff)) return "—";
+    const suffix = isUnit ? " u" : "";
+    if (diff > 0.001) {
+      return `-${Math.round(diff).toLocaleString()}${suffix}`;
+    } else if (diff < -0.001) {
+      return `+${Math.round(Math.abs(diff)).toLocaleString()}${suffix} (Surplus)`;
+    } else {
+      return "Met (0)";
+    }
+  }
+
+  function fmtTotalDeficitExcel(diff) {
+    if (diff === null || diff === undefined || isNaN(diff)) return "—";
+    if (diff > 0.001) {
+      return `-${Math.round(diff).toLocaleString()} units`;
+    } else if (diff < -0.001) {
+      return `+${Math.round(Math.abs(diff)).toLocaleString()} surplus`;
+    } else {
+      return "Target Met (0)";
+    }
+  }
+
   if (isTeam) {
     const teamData = computeTeamDeficit();
-    
-    // Sheet 1: Medicine Deficit Analysis (Units Focused)
-    const medRows = [
-      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["ANNUAL QUOTA UNIT SHORTAGE REPORT 2026 (تقرير عجز الوحدات السنوي)"],
-      ["Scope: Delta Team Aggregate", "", "", "Generated: " + new Date().toLocaleString()],
-      [],
-      ["--- EXECUTIVE UNIT KPI SUMMARY ---"],
-      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Total Achievement % (Points)"],
-      ["Physical Units", teamData.targetUnits, teamData.salesUnits, teamData.deficitUnits, (teamData.ratio || 0).toFixed(2) + "%"],
-      [],
-      ["--- PER-MEDICINE UNIT SHORTAGE BREAKDOWN ---"],
-      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Points Achievement %", "Status"]
-    ];
 
-    PRODUCTS.forEach(p => {
-      const prod = teamData.products[p.id];
-      const status = prod.deficitUnits > 0 ? (prod.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
-      medRows.push([
-        prod.pid,
-        prod.name,
-        prod.targetUnits,
-        prod.salesUnits,
-        prod.deficitUnits,
-        (prod.ratio || 0).toFixed(2) + "%",
-        status
-      ]);
-    });
-
-    medRows.push([
-      "TOTAL",
-      "ALL 4 INSULIN PRODUCTS",
-      teamData.targetUnits,
-      teamData.salesUnits,
-      teamData.deficitUnits,
-      (teamData.ratio || 0).toFixed(2) + "%",
-      teamData.deficitUnits > 0 ? "Net Shortage" : "Surplus"
-    ]);
-
-    const wsMed = XLSX.utils.aoa_to_sheet(medRows);
-    XLSX.utils.book_append_sheet(wb, wsMed, "Team Unit Shortage by Medicine");
-
-    // Sheet 2: Manager Matrix - Unit Deficit per Rep for Each Drug
+    // ── SHEET 1: MANAGER MATRIX (UNIT DEFICIT PER REP & MEDICINE) ──
     const repRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["MANAGER MATRIX: UNIT SHORTAGE PER REPRESENTATIVE PER MEDICINE 2026"],
-      ["تقرير النقص في عدد الوحدات لكل مندوب لكل دوا", "", "", "", "", "", "Generated: " + new Date().toLocaleString()],
+      ["MANAGER MATRIX: ANNUAL UNIT SHORTAGE PER REPRESENTATIVE & MEDICINE 2026"],
+      ["تقرير النقص في عدد الوحدات السنوي لكل مندوب ولكل دوا | Generated: " + new Date().toLocaleString()],
       [],
       [
-        "Representative",
+        "Medical Representative",
         "Territory / Area",
-        "Humaxin Mix 70/30 Shortage (Units)",
-        "Humaxin Rapid Shortage (Units)",
-        "Glargivin UPA Shortage (Units)",
-        "Glargivin 100IU Shortage (Units)",
+        "Humaxin Mix 70/30 (Units Deficit)",
+        "Humaxin Rapid (Units Deficit)",
+        "Glargivin UPA (Units Deficit)",
+        "Glargivin 100IU (Units Deficit)",
         "Total Unit Shortage (Units)",
         "Total Achievement % (Points)",
-        "Required Q4 % for 100% Year",
-        "Status"
+        "Req. Q4 % for 100% Year",
+        "Operational Status"
       ]
     ];
 
@@ -4892,11 +5075,11 @@ function downloadDeficitExcel(targetType) {
       repRows.push([
         r.name,
         r.note,
-        r.prodDeficits[1260],
-        r.prodDeficits[1259],
-        r.prodDeficits[1251],
-        r.prodDeficits[1110],
-        r.deficitUnits,
+        fmtDeficitExcel(r.prodDeficits[1260], true),
+        fmtDeficitExcel(r.prodDeficits[1259], true),
+        fmtDeficitExcel(r.prodDeficits[1251], true),
+        fmtDeficitExcel(r.prodDeficits[1110], true),
+        fmtTotalDeficitExcel(r.deficitUnits),
         (r.ratio || 0).toFixed(2) + "%",
         (r.requiredQ4Ratio || 0).toFixed(2) + "%",
         status
@@ -4905,70 +5088,341 @@ function downloadDeficitExcel(targetType) {
 
     repRows.push([
       "DELTA TEAM TOTAL SHORTAGE",
-      "All Territories",
-      teamData.products[1260].deficitUnits,
-      teamData.products[1259].deficitUnits,
-      teamData.products[1251].deficitUnits,
-      teamData.products[1110].deficitUnits,
-      teamData.deficitUnits,
+      "All Territories (9 Reps)",
+      fmtDeficitExcel(teamData.products[1260].deficitUnits, true),
+      fmtDeficitExcel(teamData.products[1259].deficitUnits, true),
+      fmtDeficitExcel(teamData.products[1251].deficitUnits, true),
+      fmtDeficitExcel(teamData.products[1110].deficitUnits, true),
+      fmtTotalDeficitExcel(teamData.deficitUnits),
       (teamData.ratio || 0).toFixed(2) + "%",
       (teamData.requiredQ4Ratio || 0).toFixed(2) + "%",
-      teamData.deficitUnits > 0 ? "Net Shortage" : "Surplus"
+      teamData.deficitUnits > 0 ? "Net Team Deficit" : "Net Team Surplus"
     ]);
 
     const wsReps = XLSX.utils.aoa_to_sheet(repRows);
-    XLSX.utils.book_append_sheet(wb, wsReps, "Manager Matrix - Units Deficit");
+    wsReps['!cols'] = [
+      { wch: 26 }, // Medical Representative
+      { wch: 22 }, // Territory / Area
+      { wch: 28 }, // Humaxin Mix 70/30 (Units Deficit)
+      { wch: 28 }, // Humaxin Rapid (Units Deficit)
+      { wch: 26 }, // Glargivin UPA (Units Deficit)
+      { wch: 26 }, // Glargivin 100IU (Units Deficit)
+      { wch: 28 }, // Total Unit Shortage (Units)
+      { wch: 26 }, // Total Achievement % (Points)
+      { wch: 28 }, // Req. Q4 % for 100% Year
+      { wch: 20 }  // Operational Status
+    ];
+    wsReps['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 9 } }
+    ];
+    wsReps['!rows'] = [
+      { hpt: 26 },
+      { hpt: 22 },
+      { hpt: 18 },
+      { hpt: 10 },
+      { hpt: 28 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsReps, "Manager Matrix - Unit Shortage");
 
-    XLSX.writeFile(wb, "EVA_Delta_Team_Unit_Deficit_Report_2026.xlsx");
-  } else {
-    const repData = computeSingleRepDeficit(targetType);
-    if (!repData) return;
-
-    const rep = repData.rep;
+    // ── SHEET 2: MEDICINE SHORTAGE BREAKDOWN ──
     const medRows = [
       ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
-      ["ANNUAL QUOTA UNIT SHORTAGE REPORT 2026 (تقرير عجز الوحدات السنوي)"],
-      ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
+      ["PER-MEDICINE UNIT SHORTAGE BREAKDOWN 2026 (النقص في كل دوا على مستوى الفريق)"],
+      ["Scope: Delta Team Aggregate | Total Insulin Products: 4 | Generated: " + new Date().toLocaleString()],
       [],
-      ["--- EXECUTIVE UNIT KPI SUMMARY ---"],
-      ["Metric", "Target Quota (Units)", "Actual Sales (Units)", "Net Unit Deficit / Shortage", "Total Achievement % (Points)"],
-      ["Physical Units", repData.targetUnits, repData.salesUnits, repData.deficitUnits, (repData.ratio || 0).toFixed(2) + "%"],
-      [],
-      ["--- PER-MEDICINE UNIT SHORTAGE BREAKDOWN ---"],
-      ["Product Code", "Medicine Name", "Target Units", "Actual Sales Units", "Unit Deficit / Shortage", "Points Achievement %", "Status"]
+      [
+        "Product Code",
+        "Medicine Name",
+        "Target Quota (Units)",
+        "Actual Units Sold",
+        "Net Unit Deficit / Shortage",
+        "Points Achievement %",
+        "Volume Fulfillment %",
+        "Operational Status"
+      ]
     ];
 
-    repData.products.forEach(prod => {
-      const status = prod.deficitUnits > 0 ? (prod.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+    PRODUCTS.forEach(p => {
+      const prod = teamData.products[p.id];
+      const isDeficit = prod.deficitUnits > 0;
+      const status = isDeficit ? (prod.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+      const volPct = prod.targetUnits > 0 ? ((prod.salesUnits / prod.targetUnits) * 100).toFixed(2) + "%" : "0%";
       medRows.push([
-        prod.pid,
+        "#" + prod.pid,
         prod.name,
-        prod.targetUnits,
-        prod.salesUnits,
-        prod.deficitUnits,
+        Math.round(prod.targetUnits).toLocaleString() + " units",
+        Math.round(prod.salesUnits).toLocaleString() + " units",
+        fmtTotalDeficitExcel(prod.deficitUnits),
         (prod.ratio || 0).toFixed(2) + "%",
+        volPct,
         status
       ]);
     });
 
+    const totalVolPct = teamData.targetUnits > 0 ? ((teamData.salesUnits / teamData.targetUnits) * 100).toFixed(2) + "%" : "0%";
     medRows.push([
       "TOTAL",
       "ALL 4 INSULIN PRODUCTS",
-      repData.targetUnits,
-      repData.salesUnits,
-      repData.deficitUnits,
-      (repData.ratio || 0).toFixed(2) + "%",
-      repData.deficitUnits > 0 ? "Net Shortage" : "Surplus"
+      Math.round(teamData.targetUnits).toLocaleString() + " units",
+      Math.round(teamData.salesUnits).toLocaleString() + " units",
+      fmtTotalDeficitExcel(teamData.deficitUnits),
+      (teamData.ratio || 0).toFixed(2) + "%",
+      totalVolPct,
+      teamData.deficitUnits > 0 ? "Net Team Shortage" : "Surplus"
     ]);
 
-    const wsRep = XLSX.utils.aoa_to_sheet(medRows);
-    XLSX.utils.book_append_sheet(wb, wsRep, "Unit Shortage by Medicine");
+    const wsMed = XLSX.utils.aoa_to_sheet(medRows);
+    wsMed['!cols'] = [
+      { wch: 16 }, // Product Code
+      { wch: 38 }, // Medicine Name
+      { wch: 24 }, // Target Quota (Units)
+      { wch: 24 }, // Actual Units Sold
+      { wch: 28 }, // Net Unit Deficit / Shortage
+      { wch: 24 }, // Points Achievement %
+      { wch: 24 }, // Volume Fulfillment %
+      { wch: 22 }  // Operational Status
+    ];
+    wsMed['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }
+    ];
+    wsMed['!rows'] = [
+      { hpt: 26 },
+      { hpt: 22 },
+      { hpt: 18 },
+      { hpt: 10 },
+      { hpt: 28 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsMed, "Team Medicine Breakdown");
+
+    // ── SHEET 3: EXECUTIVE KPI SUMMARY ──
+    const kpiRows = [
+      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+      ["ANNUAL EXECUTIVE KPI SUMMARY 2026 (ملخص مؤشرات الأداء الإجمالية لفريق الدلتا)"],
+      ["Scope: Delta Team Aggregate | Medical Reps: 9 | Generated: " + new Date().toLocaleString()],
+      [],
+      [
+        "Executive KPI Metric",
+        "Actual Achieved YTD",
+        "Target Quota 2026",
+        "Net Deficit / Variance",
+        "Achievement Rate %",
+        "Strategic Status"
+      ],
+      [
+        "Physical Volume (Units / علب)",
+        Math.round(teamData.salesUnits).toLocaleString() + " units",
+        Math.round(teamData.targetUnits).toLocaleString() + " units",
+        fmtTotalDeficitExcel(teamData.deficitUnits),
+        totalVolPct + " (Units)",
+        teamData.deficitUnits > 0 ? "Volume Shortage" : "Volume Surpassed"
+      ],
+      [
+        "Achievement Currency (Points / نقاط)",
+        Math.round(teamData.salesPoints).toLocaleString() + " pts",
+        Math.round(teamData.targetPoints).toLocaleString() + " pts",
+        "-" + Math.round(teamData.deficitPoints).toLocaleString() + " pts",
+        (teamData.ratio || 0).toFixed(2) + "% (Points)",
+        teamData.ratio >= 100 ? "Quota Met" : (teamData.ratio >= 80 ? "On Track" : "Action Needed")
+      ],
+      [
+        "Sales Revenue Value (EGP / جنيه)",
+        Math.round(teamData.salesValue).toLocaleString() + " EGP",
+        Math.round(teamData.targetValue).toLocaleString() + " EGP",
+        "-" + Math.round(teamData.deficitValue).toLocaleString() + " EGP",
+        (teamData.targetValue > 0 ? ((teamData.salesValue / teamData.targetValue) * 100).toFixed(2) : "0") + "% (EGP)",
+        teamData.salesValue >= teamData.targetValue ? "Surpassed" : "Under Target"
+      ],
+      [
+        "Required Q4 Target for 100% Year",
+        Math.round(teamData.neededPointsQ4).toLocaleString() + " pts (Needed in Q4)",
+        Math.round(teamData.targetPointsQ4).toLocaleString() + " pts (Q4 Target Quota)",
+        "Remaining: " + Math.round(teamData.neededPointsQ4).toLocaleString() + " pts",
+        (teamData.requiredQ4Ratio || 0).toFixed(2) + "% Required in Q4",
+        teamData.requiredQ4Ratio > 100 ? "High Deficit" : "Achievable Target"
+      ]
+    ];
+
+    const wsKpi = XLSX.utils.aoa_to_sheet(kpiRows);
+    wsKpi['!cols'] = [
+      { wch: 34 },
+      { wch: 26 },
+      { wch: 26 },
+      { wch: 28 },
+      { wch: 26 },
+      { wch: 24 }
+    ];
+    wsKpi['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } }
+    ];
+    wsKpi['!rows'] = [
+      { hpt: 26 },
+      { hpt: 22 },
+      { hpt: 18 },
+      { hpt: 10 },
+      { hpt: 28 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsKpi, "Executive KPI Summary");
+
+    XLSX.writeFile(wb, "EVA_Delta_Team_Unit_Deficit_Report_2026.xlsx");
+  } else {
+    // SINGLE REP SCOPE
+    const repData = computeSingleRepDeficit(targetType);
+    if (!repData) return;
+    const rep = repData.rep;
+
+    // Sheet 1: Per-Medicine Shortage Breakdown
+    const medRows = [
+      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+      ["PERSONAL ANNUAL UNIT DEFICIT REPORT 2026 (تقرير عجز الوحدات السنوي)"],
+      ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
+      [],
+      [
+        "Product Code",
+        "Medicine Name",
+        "Target Quota (Units)",
+        "Actual Units Sold",
+        "Net Unit Deficit / Shortage",
+        "Points Achievement %",
+        "Volume Fulfillment %",
+        "Operational Status"
+      ]
+    ];
+
+    repData.products.forEach(prod => {
+      const isDeficit = prod.deficitUnits > 0;
+      const status = isDeficit ? (prod.ratio < 70 ? "Critical Deficit" : "Deficit") : "Target Met";
+      const volPct = prod.targetUnits > 0 ? ((prod.salesUnits / prod.targetUnits) * 100).toFixed(2) + "%" : "0%";
+      medRows.push([
+        "#" + prod.pid,
+        prod.name,
+        Math.round(prod.targetUnits).toLocaleString() + " units",
+        Math.round(prod.salesUnits).toLocaleString() + " units",
+        fmtTotalDeficitExcel(prod.deficitUnits),
+        (prod.ratio || 0).toFixed(2) + "%",
+        volPct,
+        status
+      ]);
+    });
+
+    const totalVolPct = repData.targetUnits > 0 ? ((repData.salesUnits / repData.targetUnits) * 100).toFixed(2) + "%" : "0%";
+    medRows.push([
+      "TOTAL",
+      "ALL 4 INSULIN PRODUCTS",
+      Math.round(repData.targetUnits).toLocaleString() + " units",
+      Math.round(repData.salesUnits).toLocaleString() + " units",
+      fmtTotalDeficitExcel(repData.deficitUnits),
+      (repData.ratio || 0).toFixed(2) + "%",
+      totalVolPct,
+      repData.deficitUnits > 0 ? "Net Unit Shortage" : "Surplus"
+    ]);
+
+    const wsMed = XLSX.utils.aoa_to_sheet(medRows);
+    wsMed['!cols'] = [
+      { wch: 16 },
+      { wch: 38 },
+      { wch: 24 },
+      { wch: 24 },
+      { wch: 28 },
+      { wch: 24 },
+      { wch: 24 },
+      { wch: 22 }
+    ];
+    wsMed['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }
+    ];
+    wsMed['!rows'] = [
+      { hpt: 26 },
+      { hpt: 22 },
+      { hpt: 18 },
+      { hpt: 10 },
+      { hpt: 28 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsMed, "Medicine Shortage Breakdown");
+
+    // Sheet 2: Personal KPI Summary
+    const kpiRows = [
+      ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+      ["PERSONAL PERFORMANCE & QUOTA SUMMARY 2026"],
+      ["Representative: " + rep.name, "Territory: " + rep.note, "", "Generated: " + new Date().toLocaleString()],
+      [],
+      [
+        "Performance Metric",
+        "Actual Achieved YTD",
+        "Target Quota 2026",
+        "Net Deficit / Variance",
+        "Achievement Rate %",
+        "Status"
+      ],
+      [
+        "Physical Volume (Units / علب)",
+        Math.round(repData.salesUnits).toLocaleString() + " units",
+        Math.round(repData.targetUnits).toLocaleString() + " units",
+        fmtTotalDeficitExcel(repData.deficitUnits),
+        totalVolPct + " (Units)",
+        repData.deficitUnits > 0 ? "Volume Deficit" : "Volume Surpassed"
+      ],
+      [
+        "Achievement Currency (Points / نقاط)",
+        Math.round(repData.salesPoints).toLocaleString() + " pts",
+        Math.round(repData.targetPoints).toLocaleString() + " pts",
+        "-" + Math.round(repData.deficitPoints).toLocaleString() + " pts",
+        (repData.ratio || 0).toFixed(2) + "% (Points)",
+        repData.ratio >= 100 ? "Target Met" : (repData.ratio >= 80 ? "On Track" : "Needs Push")
+      ],
+      [
+        "Sales Revenue Value (EGP / جنيه)",
+        Math.round(repData.salesValue).toLocaleString() + " EGP",
+        Math.round(repData.targetValue).toLocaleString() + " EGP",
+        "-" + Math.round(repData.deficitValue).toLocaleString() + " EGP",
+        (repData.targetValue > 0 ? ((repData.salesValue / repData.targetValue) * 100).toFixed(2) : "0") + "% (EGP)",
+        repData.salesValue >= repData.targetValue ? "Surpassed" : "Under Target"
+      ],
+      [
+        "Required Q4 Target for 100% Year",
+        Math.round(repData.neededPointsQ4).toLocaleString() + " pts (Needed in Q4)",
+        Math.round(repData.targetPointsQ4).toLocaleString() + " pts (Q4 Target Quota)",
+        "Remaining: " + Math.round(repData.neededPointsQ4).toLocaleString() + " pts",
+        (repData.requiredQ4Ratio || 0).toFixed(2) + "% Required in Q4",
+        repData.requiredQ4Ratio > 100 ? "Critical Deficit" : "Achievable Target"
+      ]
+    ];
+
+    const wsKpi = XLSX.utils.aoa_to_sheet(kpiRows);
+    wsKpi['!cols'] = [
+      { wch: 34 },
+      { wch: 26 },
+      { wch: 26 },
+      { wch: 28 },
+      { wch: 26 },
+      { wch: 24 }
+    ];
+    wsKpi['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } }
+    ];
+    wsKpi['!rows'] = [
+      { hpt: 26 },
+      { hpt: 22 },
+      { hpt: 18 },
+      { hpt: 10 },
+      { hpt: 28 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsKpi, "Personal KPI Summary");
 
     const cleanName = rep.name.replace(/[^a-zA-Z0-9]/g, "_");
     XLSX.writeFile(wb, `EVA_Unit_Deficit_Report_${cleanName}_2026.xlsx`);
   }
 
-  showToast("📊 Excel report downloaded successfully!");
+  showToast("📊 Excel report downloaded with clean, structured formatting!");
 }
 
 function copyDeficitSummary(targetType) {
