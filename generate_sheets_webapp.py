@@ -1768,18 +1768,12 @@ function renderHome() {
 
           <div class="rep-card-kpi">
             <div class="kpi-row">
-              <span class="kpi-label">Sales Revenue:</span>
-              <span class="kpi-value">${ytd ? fmt(ytd.salesValue) : '—'} <span style="font-size:11px;color:var(--gold-dark);font-weight:600;">EGP</span></span>
+              <span class="kpi-label">Sales Points (YTD):</span>
+              <span class="kpi-value">${ytd ? fmt(ytd.salesPoints) : '—'} <span style="font-size:11px;color:var(--gold-dark);font-weight:700;">pts</span></span>
             </div>
             <div class="kpi-row">
-              <span class="kpi-label">Target Quota:</span>
-              <span class="kpi-value">${ytd ? fmt(ytd.targetValue) : '—'} <span style="font-size:11px;color:var(--text-muted);">EGP</span></span>
-            </div>
-            <div class="kpi-row">
-              <span class="kpi-label">Physical Units Deficit:</span>
-              <span class="kpi-value" style="font-weight:700; color:${(ytd && (ytd.targetUnits - ytd.salesUnits) > 0) ? '#ef4444' : '#10b981'};">
-                ${ytd ? ((ytd.targetUnits - ytd.salesUnits) > 0 ? '-' + fmt(ytd.targetUnits - ytd.salesUnits) : '+' + fmt(Math.abs(ytd.targetUnits - ytd.salesUnits))) + ' units' : '—'}
-              </span>
+              <span class="kpi-label">Target Points (YTD):</span>
+              <span class="kpi-value">${ytd ? fmt(ytd.targetPoints) : '—'} <span style="font-size:11px;color:var(--text-muted);font-weight:600;">pts</span></span>
             </div>
             <div class="kpi-row" style="background:rgba(245,158,11,0.07); padding:8px 12px; border-radius:8px; margin:8px 0; border:1px solid rgba(245,158,11,0.2); flex-direction:column; gap:6px;">
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -1788,7 +1782,7 @@ function renderHome() {
                   <span class="ratio-badge ${ratioClass(ytd ? ytd.actualQ4Ratio : 0)}" style="font-size:11.5px; font-weight:800; padding:1px 6px;">
                     ${ytd ? fmtPct(ytd.actualQ4Ratio) : '—'}
                   </span>
-                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">(${ytd ? fmt(ytd.salesValueQ4) + ' EGP' : '—'})</span>
+                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">(${ytd ? fmt(ytd.salesPointsQ4) + ' pts' : '—'})</span>
                 </div>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%; border-top:1px dashed rgba(245,158,11,0.25); padding-top:5px;">
