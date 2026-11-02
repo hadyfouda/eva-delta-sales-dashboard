@@ -3407,10 +3407,16 @@ function computeRepYTD(rep) {
   const tuQ4 = q4Total ? (q4Total.targetUnits || 0) : 0;
   const spQ4 = q4Total ? (q4Total.salesPoints || 0) : 0;
   const suQ4 = q4Total ? (q4Total.salesUnits || 0) : 0;
+  const svQ4 = q4Total ? (q4Total.salesValue || 0) : 0;
 
   summary.salesPointsQ1Q3 = spQ1Q3;
   summary.targetPointsQ4 = tpQ4;
   summary.salesPointsQ4 = spQ4;
+  summary.targetValueQ4 = tvQ4;
+  summary.salesValueQ4 = svQ4;
+  summary.targetUnitsQ4 = tuQ4;
+  summary.salesUnitsQ4 = suQ4;
+  summary.actualQ4Ratio = tpQ4 > 0 ? (spQ4 / tpQ4) * 100 : (tvQ4 > 0 ? (svQ4 / tvQ4) * 100 : 0);
   summary.neededPointsQ4 = summary.targetPoints - spQ1Q3;
   summary.requiredQ4Ratio = tpQ4 > 0 ? (summary.neededPointsQ4 / tpQ4) * 100 : 0;
 
@@ -3441,36 +3447,33 @@ function destroyCharts() {
 function renderHome() {
   destroyCharts();
 
-  let totalSales = 0, totalTarget = 0, totalUnits = 0, totalPoints = 0, totalTargetPoints = 0, activeCount = 0;
-  let teamSpQ1Q3 = 0, teamTpQ4 = 0;
+  let totalSales = 0, totalTarget = 0, totalUnits = 0, totalTargetUnits = 0, totalPoints = 0, totalTargetPoints = 0, activeCount = 0;
+  let teamSpQ1Q3 = 0, teamTpQ4 = 0, teamSpQ4 = 0, teamSvQ4 = 0, teamTvQ4 = 0;
   REPS.forEach(r => {
     const ytd = computeRepYTD(r);
     if (ytd) {
-      totalSales  += ytd.salesValue;
-      totalTarget += ytd.targetValue;
-      totalUnits  += ytd.salesUnits;
-      totalPoints += ytd.salesPoints;
+      totalSales        += ytd.salesValue;
+      totalTarget       += ytd.targetValue;
+      totalUnits        += ytd.salesUnits;
+      totalTargetUnits  += ytd.targetUnits;
+      totalPoints       += ytd.salesPoints;
       totalTargetPoints += ytd.targetPoints;
-      teamSpQ1Q3  += ytd.salesPointsQ1Q3;
-      teamTpQ4    += ytd.targetPointsQ4;
+      teamSpQ1Q3        += ytd.salesPointsQ1Q3;
+      teamTpQ4          += ytd.targetPointsQ4;
+      teamSpQ4          += ytd.salesPointsQ4;
+      teamSvQ4          += ytd.salesValueQ4;
+      teamTvQ4          += ytd.targetValueQ4;
       activeCount++;
     }
   });
   const teamRatio = totalTargetPoints > 0 ? (totalPoints / totalTargetPoints) * 100 : (totalTarget > 0 ? (totalSales / totalTarget) * 100 : 0);
   const teamDeficit = totalTarget - totalSales;
+  const teamUnitsDeficit = totalTargetUnits - totalUnits;
   const teamNeededPointsQ4 = totalTargetPoints - teamSpQ1Q3;
   const teamRequiredQ4Ratio = teamTpQ4 > 0 ? (teamNeededPointsQ4 / teamTpQ4) * 100 : 0;
   const teamNeededPointsQ4_120 = (totalTargetPoints * 1.20) - teamSpQ1Q3;
   const teamRequiredQ4Ratio_120 = teamTpQ4 > 0 ? (teamNeededPointsQ4_120 / teamTpQ4) * 100 : 0;
-
-  let totalTargetUnits = 0;
-  REPS.forEach(r => {
-    const ytd = computeRepYTD(r);
-    if (ytd) {
-      totalTargetUnits += ytd.targetUnits;
-    }
-  });
-  const teamUnitsDeficit = totalTargetUnits - totalUnits;
+  const teamActualQ4Ratio = teamTpQ4 > 0 ? (teamSpQ4 / teamTpQ4) * 100 : (teamTvQ4 > 0 ? (teamSvQ4 / teamTvQ4) * 100 : 0);
 
   document.getElementById('team-stat-grid').innerHTML = `
     <div class="stat-card">
@@ -3501,20 +3504,29 @@ function renderHome() {
     </div>
     <div class="stat-card" style="border-left: 4px solid var(--gold); background: linear-gradient(145deg, var(--surface), rgba(245, 158, 11, 0.05));">
       <div class="stat-header">
-        <span class="stat-label">Required Q4 Targets</span>
+        <span class="stat-label">Q4 Performance & Targets</span>
         <span class="stat-icon">🎯</span>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0;">
-        <div>
-          <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">For 100%:</span>
-          <span style="color:var(--gold); font-size:18px; font-weight:800; margin-left:4px;">${fmtPct(teamRequiredQ4Ratio)}</span>
-        </div>
-        <div>
-          <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">For 120%:</span>
-          <span style="color:#10b981; font-size:18px; font-weight:800; margin-left:4px;">${fmtPct(teamRequiredQ4Ratio_120)}</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:2px 0 6px 0;">
+        <span style="font-size:12px; font-weight:700; color:var(--text-secondary);">Q4 So Far:</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="ratio-badge ${ratioClass(teamActualQ4Ratio)}" style="font-size:13.5px; font-weight:800; padding:2px 8px;">
+            ${fmtPct(teamActualQ4Ratio)}
+          </span>
+          <span style="font-size:11.5px; color:var(--text-muted); font-weight:600;">(${fmt(teamSvQ4)} EGP)</span>
         </div>
       </div>
-      <div class="stat-sub">Needed: <strong>${fmt(teamNeededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(teamNeededPointsQ4_120)}</strong> pts (120%)</div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; padding-top:6px; border-top:1px dashed var(--border);">
+        <div>
+          <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Req. 100%:</span>
+          <span style="color:var(--gold); font-size:16px; font-weight:800; margin-left:3px;">${fmtPct(teamRequiredQ4Ratio)}</span>
+        </div>
+        <div>
+          <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Req. 120%:</span>
+          <span style="color:#10b981; font-size:16px; font-weight:800; margin-left:3px;">${fmtPct(teamRequiredQ4Ratio_120)}</span>
+        </div>
+      </div>
+      <div class="stat-sub" style="margin-top:4px;">Needed in Q4: <strong>${fmt(teamNeededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(teamNeededPointsQ4_120)}</strong> pts (120%)</div>
     </div>
   `;
 
@@ -3597,12 +3609,23 @@ function renderHome() {
                 ${ytd ? ((ytd.targetUnits - ytd.salesUnits) > 0 ? '-' + fmt(ytd.targetUnits - ytd.salesUnits) : '+' + fmt(Math.abs(ytd.targetUnits - ytd.salesUnits))) + ' units' : '—'}
               </span>
             </div>
-            <div class="kpi-row" style="background:rgba(245,158,11,0.07); padding:8px 12px; border-radius:8px; margin:8px 0; border:1px solid rgba(245,158,11,0.2); justify-content:space-between; align-items:center;">
-              <span class="kpi-label" style="font-weight:700; color:var(--text-primary); font-size:11px; text-transform:uppercase; letter-spacing:0.3px;">Req. Q4 Targets:</span>
-              <div style="display:flex; gap:10px; align-items:center;">
-                <span title="Req. Q4 for 100% Year" style="font-size:12px; font-weight:700; color:var(--gold);"><span style="opacity:0.75; font-size:10px; font-weight:600;">100%:</span> ${ytd ? fmtPct(ytd.requiredQ4Ratio) : '—'}</span>
-                <span style="color:var(--border);">|</span>
-                <span title="Req. Q4 for 120% Year" style="font-size:12px; font-weight:700; color:#10b981;"><span style="opacity:0.75; font-size:10px; font-weight:600;">120%:</span> ${ytd ? fmtPct(ytd.requiredQ4Ratio_120) : '—'}</span>
+            <div class="kpi-row" style="background:rgba(245,158,11,0.07); padding:8px 12px; border-radius:8px; margin:8px 0; border:1px solid rgba(245,158,11,0.2); flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <span class="kpi-label" style="font-weight:700; color:var(--text-primary); font-size:11px; text-transform:uppercase; letter-spacing:0.3px;">Q4 So Far:</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span class="ratio-badge ${ratioClass(ytd ? ytd.actualQ4Ratio : 0)}" style="font-size:11.5px; font-weight:800; padding:1px 6px;">
+                    ${ytd ? fmtPct(ytd.actualQ4Ratio) : '—'}
+                  </span>
+                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">(${ytd ? fmt(ytd.salesValueQ4) + ' EGP' : '—'})</span>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; border-top:1px dashed rgba(245,158,11,0.25); padding-top:5px;">
+                <span class="kpi-label" style="font-weight:700; color:var(--text-secondary); font-size:10.5px; text-transform:uppercase;">Req. Targets:</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <span title="Req. Q4 for 100% Year" style="font-size:11.5px; font-weight:700; color:var(--gold);"><span style="opacity:0.75; font-size:10px; font-weight:600;">100%:</span> ${ytd ? fmtPct(ytd.requiredQ4Ratio) : '—'}</span>
+                  <span style="color:var(--border);">|</span>
+                  <span title="Req. Q4 for 120% Year" style="font-size:11.5px; font-weight:700; color:#10b981;"><span style="opacity:0.75; font-size:10px; font-weight:600;">120%:</span> ${ytd ? fmtPct(ytd.requiredQ4Ratio_120) : '—'}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -3759,13 +3782,20 @@ function showRep(repKey, targetTabId = null) {
         <div class="ytd-unit">Sold: ${fmt(ytd.salesUnits)} / ${fmt(ytd.targetUnits)} quota units</div>
       </div>
       <div class="ytd-item" style="border-left: 2px solid var(--gold); padding-left: 18px; background: rgba(245, 158, 11, 0.05); border-radius: 8px; padding-top: 4px; padding-bottom: 4px;">
-        <div class="ytd-label">Required Q4 Targets</div>
-        <div style="display:flex; gap:14px; align-items:baseline; margin:2px 0;">
-          <div><span style="font-size:11px;color:#94a3b8;font-weight:600;">100%:</span> <strong style="color:var(--gold); font-size:18px;">${fmtPct(ytd.requiredQ4Ratio)}</strong></div>
-          <span style="color:#475569;">|</span>
-          <div><span style="font-size:11px;color:#94a3b8;font-weight:600;">120%:</span> <strong style="color:#34d399; font-size:18px;">${fmtPct(ytd.requiredQ4Ratio_120)}</strong></div>
+        <div class="ytd-label">Q4 Performance & Targets</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:1px 0 4px 0;">
+          <span style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Q4 So Far:</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="ratio-badge ${ratioClass(ytd.actualQ4Ratio)}" style="font-size:12.5px; font-weight:800; padding:1px 6px;">${fmtPct(ytd.actualQ4Ratio)}</span>
+            <span style="font-size:11px;color:#cbd5e1;">(${fmt(ytd.salesValueQ4)} EGP)</span>
+          </div>
         </div>
-        <div class="ytd-unit">Needs: ${fmt(ytd.neededPointsQ4)} pts (100%) &bull; ${fmt(ytd.neededPointsQ4_120)} pts (120%)</div>
+        <div style="display:flex; gap:12px; align-items:baseline; margin:2px 0; border-top:1px dashed rgba(255,255,255,0.1); padding-top:4px;">
+          <div><span style="font-size:10.5px;color:#94a3b8;font-weight:600;">Req 100%:</span> <strong style="color:var(--gold); font-size:15px;">${fmtPct(ytd.requiredQ4Ratio)}</strong></div>
+          <span style="color:#475569;">|</span>
+          <div><span style="font-size:10.5px;color:#94a3b8;font-weight:600;">Req 120%:</span> <strong style="color:#34d399; font-size:15px;">${fmtPct(ytd.requiredQ4Ratio_120)}</strong></div>
+        </div>
+        <div class="ytd-unit" style="font-size:11px;">Needs: ${fmt(ytd.neededPointsQ4)} pts (100%) &bull; ${fmt(ytd.neededPointsQ4_120)} pts (120%)</div>
       </div>
     `;
   }
@@ -4521,6 +4551,10 @@ function computeTeamDeficit() {
       targetPoints: ytd.targetPoints,
       deficitPoints: ytd.deficitPoints,
       ratio: ytd.targetPoints > 0 ? (ytd.salesPoints / ytd.targetPoints) * 100 : 0,
+      actualQ4Ratio: ytd.actualQ4Ratio,
+      salesValueQ4: ytd.salesValueQ4,
+      targetValueQ4: ytd.targetValueQ4,
+      salesPointsQ4: ytd.salesPointsQ4,
       requiredQ4Ratio: ytd.requiredQ4Ratio,
       neededPointsQ4: ytd.neededPointsQ4,
       requiredQ4Ratio_120: ytd.requiredQ4Ratio_120,
@@ -4532,16 +4566,23 @@ function computeTeamDeficit() {
     });
   });
 
-  let teamSpQ1Q3 = 0, teamTpQ4 = 0;
+  let teamSpQ1Q3 = 0, teamTpQ4 = 0, teamSpQ4 = 0, teamSvQ4 = 0, teamTvQ4 = 0;
   REPS.forEach(r => {
     const ytd = computeRepYTD(r);
     if (ytd) {
       teamSpQ1Q3 += ytd.salesPointsQ1Q3;
-      teamTpQ4 += ytd.targetPointsQ4;
+      teamTpQ4   += ytd.targetPointsQ4;
+      teamSpQ4   += ytd.salesPointsQ4;
+      teamSvQ4   += ytd.salesValueQ4;
+      teamTvQ4   += ytd.targetValueQ4;
     }
   });
   team.neededPointsQ4 = team.targetPoints - teamSpQ1Q3;
   team.targetPointsQ4 = teamTpQ4;
+  team.salesPointsQ4  = teamSpQ4;
+  team.salesValueQ4   = teamSvQ4;
+  team.targetValueQ4  = teamTvQ4;
+  team.actualQ4Ratio  = teamTpQ4 > 0 ? (teamSpQ4 / teamTpQ4) * 100 : (teamTvQ4 > 0 ? (teamSvQ4 / teamTvQ4) * 100 : 0);
   team.requiredQ4Ratio = teamTpQ4 > 0 ? (team.neededPointsQ4 / teamTpQ4) * 100 : 0;
   team.neededPointsQ4_120 = (team.targetPoints * 1.20) - teamSpQ1Q3;
   team.requiredQ4Ratio_120 = teamTpQ4 > 0 ? (team.neededPointsQ4_120 / teamTpQ4) * 100 : 0;
@@ -4580,6 +4621,10 @@ function computeSingleRepDeficit(repKey) {
     targetPoints: ytd.targetPoints,
     deficitPoints: ytd.deficitPoints,
     ratio: ytd.targetPoints > 0 ? (ytd.salesPoints / ytd.targetPoints) * 100 : 0,
+    actualQ4Ratio: ytd.actualQ4Ratio,
+    salesValueQ4: ytd.salesValueQ4,
+    targetValueQ4: ytd.targetValueQ4,
+    salesPointsQ4: ytd.salesPointsQ4,
     requiredQ4Ratio: ytd.requiredQ4Ratio,
     neededPointsQ4: ytd.neededPointsQ4,
     requiredQ4Ratio_120: ytd.requiredQ4Ratio_120,
@@ -4683,12 +4728,19 @@ function openDeficitReport(targetType) {
 
         <div class="report-kpi-card" style="border-left: 3px solid var(--gold); background:linear-gradient(135deg, var(--surface), rgba(245, 158, 11, 0.04));">
           <div class="report-kpi-title">
-            <span>Required Q4 Targets</span>
+            <span>Q4 Performance & Targets</span>
             <span>🚀</span>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0;">
-            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">100% Target:</span> <span style="color:var(--gold); font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(d.requiredQ4Ratio)}</span></div>
-            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">120% Target:</span> <span style="color:#10b981; font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(d.requiredQ4Ratio_120)}</span></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:2px 0 5px 0;">
+            <span style="font-size:11.5px; font-weight:700; color:var(--text-secondary);">Q4 So Far:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="ratio-badge ${ratioClass(d.actualQ4Ratio)}" style="font-size:13px; font-weight:800; padding:1px 6px;">${fmtPct(d.actualQ4Ratio)}</span>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">(${fmt(d.salesValueQ4)} EGP)</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0; border-top:1px dashed var(--border); padding-top:4px;">
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Req 100%:</span> <span style="color:var(--gold); font-size:16px; font-weight:800; margin-left:3px;">${fmtPct(d.requiredQ4Ratio)}</span></div>
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Req 120%:</span> <span style="color:#10b981; font-size:16px; font-weight:800; margin-left:3px;">${fmtPct(d.requiredQ4Ratio_120)}</span></div>
           </div>
           <div class="report-kpi-sub">Needed: <strong>${fmt(d.neededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(d.neededPointsQ4_120)}</strong> pts (120%)</div>
         </div>
@@ -4772,8 +4824,9 @@ function openDeficitReport(targetType) {
             <th style="text-align:center;">Glargivin UPA<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1251</span></th>
             <th style="text-align:center;">Glargivin 100IU<br><span style="font-size:10px;font-weight:600;opacity:0.8;">#1110</span></th>
             <th style="text-align:center; background:#1e293b; color:var(--gold);">Total Shortage<br><span style="font-size:10px;font-weight:600;">(Units)</span></th>
-            <th style="text-align:center; min-width:130px;">Total Achievement %<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Sales vs Target Points)</span></th>
-            <th style="text-align:center; min-width:130px; background:#1e293b; color:var(--gold);">Req. Q4 (100% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Annual Quota)</span></th>
+            <th style="text-align:center; min-width:120px;">Total Ach. %<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Points)</span></th>
+            <th style="text-align:center; min-width:115px; background:#1e293b; color:#38bdf8;">Q4 So Far %<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Actual Q4 Ach.)</span></th>
+            <th style="text-align:center; min-width:125px; background:#1e293b; color:var(--gold);">Req. Q4 (100% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Annual Quota)</span></th>
             <th style="text-align:center; min-width:130px; background:#064e3b; color:#34d399;">Req. Q4 (120% Year)<br><span style="font-size:10px;font-weight:600;opacity:0.8;">(Super-Target)</span></th>
             <th style="text-align:center;" class="col-action">Action</th>
           </tr>
@@ -4795,6 +4848,12 @@ function openDeficitReport(targetType) {
             <div style="font-weight:800; color:${r.ratio >= 100 ? '#16a34a' : r.ratio >= 70 ? '#d97706' : '#dc2626'};">
               ${fmtPct(r.ratio)}
             </div>
+          </td>
+          <td style="text-align:center; background:rgba(56, 189, 248, 0.04);">
+            <div style="font-weight:800; font-size:13px; color:${r.actualQ4Ratio >= 100 ? '#16a34a' : r.actualQ4Ratio >= 50 ? '#d97706' : '#2563eb'};">
+              ${fmtPct(r.actualQ4Ratio)}
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); font-weight:600;">${fmt(r.salesValueQ4)} EGP</div>
           </td>
           <td style="text-align:center; background:rgba(245, 158, 11, 0.04);">
             <div style="font-weight:800; font-size:13px; color:${r.requiredQ4Ratio > 100 ? '#dc2626' : (r.requiredQ4Ratio > 70 ? '#d97706' : '#16a34a')};">
@@ -4824,6 +4883,9 @@ function openDeficitReport(targetType) {
             <td style="text-align:center;">${renderUnitDeficitBadge(d.products[1110].targetUnits, d.products[1110].salesUnits)}</td>
             <td style="text-align:center;">${renderUnitDeficitBadge(d.targetUnits, d.salesUnits)}</td>
             <td style="text-align:center; color:${d.ratio >= 100 ? '#16a34a' : '#b45309'}; font-size:14px;">${fmtPct(d.ratio)}</td>
+            <td style="text-align:center; background:rgba(56, 189, 248, 0.08); color:#0284c7; font-size:13.5px; font-weight:800;">
+              ${fmtPct(d.actualQ4Ratio)}<br><span style="font-size:10.5px; font-weight:600; opacity:0.9;">(${fmt(d.salesValueQ4)} EGP)</span>
+            </td>
             <td style="text-align:center; background:rgba(245, 158, 11, 0.08); color:var(--gold-dark); font-size:14px; font-weight:800;">${fmtPct(d.requiredQ4Ratio)}</td>
             <td style="text-align:center; background:rgba(16, 185, 129, 0.08); color:#10b981; font-size:14px; font-weight:800;">${fmtPct(d.requiredQ4Ratio_120)}</td>
             <td style="text-align:center;" class="col-action">-</td>
@@ -4890,12 +4952,19 @@ function openDeficitReport(targetType) {
 
         <div class="report-kpi-card" style="border-left: 3px solid var(--gold); background:linear-gradient(135deg, var(--surface), rgba(245, 158, 11, 0.04));">
           <div class="report-kpi-title">
-            <span>Required Q4 Targets</span>
+            <span>Q4 Performance & Targets</span>
             <span>🚀</span>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0;">
-            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">100% Target:</span> <span style="color:var(--gold); font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(repData.requiredQ4Ratio)}</span></div>
-            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">120% Target:</span> <span style="color:#10b981; font-size:17px; font-weight:800; margin-left:4px;">${fmtPct(repData.requiredQ4Ratio_120)}</span></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:2px 0 5px 0;">
+            <span style="font-size:11.5px; font-weight:700; color:var(--text-secondary);">Q4 So Far:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="ratio-badge ${ratioClass(repData.actualQ4Ratio)}" style="font-size:13px; font-weight:800; padding:1px 6px;">${fmtPct(repData.actualQ4Ratio)}</span>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">(${fmt(repData.salesValueQ4)} EGP)</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin:4px 0 6px 0; border-top:1px dashed var(--border); padding-top:4px;">
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Req 100%:</span> <span style="color:var(--gold); font-size:16px; font-weight:800; margin-left:3px;">${fmtPct(repData.requiredQ4Ratio)}</span></div>
+            <div><span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Req 120%:</span> <span style="color:#10b981; font-size:16px; font-weight:800; margin-left:3px;">${fmtPct(repData.requiredQ4Ratio_120)}</span></div>
           </div>
           <div class="report-kpi-sub">Needed: <strong>${fmt(repData.neededPointsQ4)}</strong> pts (100%) &bull; <strong>${fmt(repData.neededPointsQ4_120)}</strong> pts (120%)</div>
         </div>
@@ -5043,6 +5112,7 @@ function downloadDeficitExcel(targetType) {
         "Glargivin 100IU (Units Deficit)",
         "Total Unit Shortage (Units)",
         "Total Achievement % (Points)",
+        "Q4 So Far % (Points)",
         "Req. Q4 % for 100% Year",
         "Req. Q4 % for 120% Year",
         "Operational Status"
@@ -5060,6 +5130,7 @@ function downloadDeficitExcel(targetType) {
         fmtDeficitExcel(r.prodDeficits[1110], true),
         fmtTotalDeficitExcel(r.deficitUnits),
         (r.ratio || 0).toFixed(2) + "%",
+        (r.actualQ4Ratio || 0).toFixed(2) + "% (" + Math.round(r.salesValueQ4 || 0).toLocaleString() + " EGP)",
         (r.requiredQ4Ratio || 0).toFixed(2) + "%",
         (r.requiredQ4Ratio_120 || 0).toFixed(2) + "%",
         status
@@ -5075,6 +5146,7 @@ function downloadDeficitExcel(targetType) {
       fmtDeficitExcel(teamData.products[1110].deficitUnits, true),
       fmtTotalDeficitExcel(teamData.deficitUnits),
       (teamData.ratio || 0).toFixed(2) + "%",
+      (teamData.actualQ4Ratio || 0).toFixed(2) + "% (" + Math.round(teamData.salesValueQ4 || 0).toLocaleString() + " EGP)",
       (teamData.requiredQ4Ratio || 0).toFixed(2) + "%",
       (teamData.requiredQ4Ratio_120 || 0).toFixed(2) + "%",
       teamData.deficitUnits > 0 ? "Net Team Deficit" : "Net Team Surplus"
@@ -5090,14 +5162,15 @@ function downloadDeficitExcel(targetType) {
       { wch: 26 }, // Glargivin 100IU (Units Deficit)
       { wch: 28 }, // Total Unit Shortage (Units)
       { wch: 26 }, // Total Achievement % (Points)
+      { wch: 28 }, // Q4 So Far % (Points)
       { wch: 26 }, // Req. Q4 % for 100% Year
       { wch: 26 }, // Req. Q4 % for 120% Year
       { wch: 20 }  // Operational Status
     ];
     wsReps['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 10 } },
-      { s: { r: 2, c: 0 }, e: { r: 2, c: 10 } }
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 11 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 11 } }
     ];
     wsReps['!rows'] = [
       { hpt: 26 },
@@ -5217,6 +5290,14 @@ function downloadDeficitExcel(targetType) {
         "-" + Math.round(teamData.deficitValue).toLocaleString() + " EGP",
         (teamData.targetValue > 0 ? ((teamData.salesValue / teamData.targetValue) * 100).toFixed(2) : "0") + "% (EGP)",
         teamData.salesValue >= teamData.targetValue ? "Surpassed" : "Under Target"
+      ],
+      [
+        "Q4 Performance Achieved So Far",
+        Math.round(teamData.salesPointsQ4).toLocaleString() + " pts (" + Math.round(teamData.salesValueQ4).toLocaleString() + " EGP)",
+        Math.round(teamData.targetPointsQ4).toLocaleString() + " pts (" + Math.round(teamData.targetValueQ4).toLocaleString() + " EGP)",
+        "-" + Math.round((teamData.targetPointsQ4 - teamData.salesPointsQ4)).toLocaleString() + " pts remaining in Q4",
+        (teamData.actualQ4Ratio || 0).toFixed(2) + "% Achieved in Q4",
+        teamData.actualQ4Ratio >= 100 ? "Q4 Target Met" : "Q4 In Progress"
       ],
       [
         "Required Q4 Target for 100% Year",
@@ -5376,6 +5457,14 @@ function downloadDeficitExcel(targetType) {
         repData.salesValue >= repData.targetValue ? "Surpassed" : "Under Target"
       ],
       [
+        "Q4 Performance Achieved So Far",
+        Math.round(repData.salesPointsQ4).toLocaleString() + " pts (" + Math.round(repData.salesValueQ4).toLocaleString() + " EGP)",
+        Math.round(repData.targetPointsQ4).toLocaleString() + " pts (" + Math.round(repData.targetValueQ4).toLocaleString() + " EGP)",
+        "-" + Math.round((repData.targetPointsQ4 - repData.salesPointsQ4)).toLocaleString() + " pts remaining in Q4",
+        (repData.actualQ4Ratio || 0).toFixed(2) + "% Achieved in Q4",
+        repData.actualQ4Ratio >= 100 ? "Q4 Target Met" : "Q4 In Progress"
+      ],
+      [
         "Required Q4 Target for 100% Year",
         Math.round(repData.neededPointsQ4).toLocaleString() + " pts (Needed in Q4)",
         Math.round(repData.targetPointsQ4).toLocaleString() + " pts (Q4 Target Quota)",
@@ -5443,6 +5532,8 @@ function copyDeficitSummary(targetType) {
 • Net Unit Deficit: ${unitDeficitStr}
 • Total Achievement Rate (Points): ${fmtPct(d.ratio)}
   (Sales Points: ${fmt(d.salesPoints)} pts | Target Points: ${fmt(d.targetPoints)} pts)
+• Q4 Actual Achieved So Far: ${fmtPct(d.actualQ4Ratio)}
+  (Sales: ${fmt(d.salesValueQ4)} EGP | ${fmt(d.salesPointsQ4)} pts of ${fmt(d.targetPointsQ4)} Q4 target pts)
 • Required in Q4 to Hit 100% Annual Quota: ${fmtPct(d.requiredQ4Ratio)}
   (Needs ${fmt(d.neededPointsQ4)} pts of ${fmt(d.targetPointsQ4)} Q4 target pts)
 • Required in Q4 to Hit 120% Annual Super-Achievement: ${fmtPct(d.requiredQ4Ratio_120)}
@@ -5466,7 +5557,7 @@ function copyDeficitSummary(targetType) {
       const defUPA = r.prodDeficits[1251] > 0 ? `-${fmt(r.prodDeficits[1251])}` : `+${fmt(Math.abs(r.prodDeficits[1251]))}`;
       const def100 = r.prodDeficits[1110] > 0 ? `-${fmt(r.prodDeficits[1110])}` : `+${fmt(Math.abs(r.prodDeficits[1110]))}`;
       const totDef = r.deficitUnits > 0 ? `Deficit (-${fmt(r.deficitUnits)} u)` : `Surplus (+${fmt(Math.abs(r.deficitUnits))} u)`;
-      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - Total: ${totDef} | Ach.: ${fmtPct(r.ratio)} | Req Q4 (100%): ${fmtPct(r.requiredQ4Ratio)} | Req Q4 (120%): ${fmtPct(r.requiredQ4Ratio_120)}\n`;
+      text += `• *${r.name}* (${r.note}):\n  - Mix: ${defMix} | Rapid: ${defRap} | UPA: ${defUPA} | 100IU: ${def100}\n  - Total: ${totDef} | YTD Ach: ${fmtPct(r.ratio)} | Q4 So Far: ${fmtPct(r.actualQ4Ratio)} | Req 100%: ${fmtPct(r.requiredQ4Ratio)} | Req 120%: ${fmtPct(r.requiredQ4Ratio_120)}\n`;
     });
 
     const topDeficit = Object.values(d.products).reduce((max, cur) => cur.deficitUnits > max.deficitUnits ? cur : max);
@@ -5491,6 +5582,8 @@ function copyDeficitSummary(targetType) {
 • Net Unit Deficit: ${unitDeficitStr}
 • Total Achievement Rate (Points): ${fmtPct(repData.ratio)}
   (Sales Points: ${fmt(repData.salesPoints)} pts | Target Points: ${fmt(repData.targetPoints)} pts)
+• Q4 Actual Achieved So Far: ${fmtPct(repData.actualQ4Ratio)}
+  (Sales: ${fmt(repData.salesValueQ4)} EGP | ${fmt(repData.salesPointsQ4)} pts of ${fmt(repData.targetPointsQ4)} Q4 target pts)
 • Required in Q4 to Hit 100% Annual Quota: ${fmtPct(repData.requiredQ4Ratio)}
   (Needs ${fmt(repData.neededPointsQ4)} pts of ${fmt(repData.targetPointsQ4)} Q4 target pts)
 • Required in Q4 to Hit 120% Annual Super-Achievement: ${fmtPct(repData.requiredQ4Ratio_120)}
