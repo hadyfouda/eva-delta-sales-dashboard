@@ -1185,6 +1185,148 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     .ytd-strip { grid-template-columns: 1fr !important; }
     .ytd-badge-box { grid-column: span 1 !important; }
   }
+
+  /* ── GLARGIVIN UPA SIMULATOR STYLES ── */
+  .btn-upa-accent {
+    border-color: #f59e0b !important;
+    background: linear-gradient(135deg, #090c12 0%, #1e293b 100%) !important;
+  }
+  .btn-upa-accent:hover {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+  }
+
+  .upa-sim-banner {
+    background: linear-gradient(135deg, #090c12 0%, #1e293b 100%);
+    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    border-radius: 16px;
+    padding: 14px 20px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .upa-sim-banner:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.25);
+  }
+  .upa-sim-banner-left {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .upa-sim-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .upa-sim-title {
+    font-size: 14.5px; font-weight: 800; color: #ffffff;
+  }
+  .upa-sim-desc {
+    font-size: 11.5px; color: #94a3b8; margin-top: 2px;
+  }
+  .upa-sim-banner-right {
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  .upa-sim-pill {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid var(--gold);
+    color: #fbbf24;
+    font-size: 11.5px; font-weight: 800;
+    padding: 5px 12px; border-radius: 20px;
+  }
+
+  /* Modal Specifics */
+  #upaSimModal.modal-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(9, 12, 18, 0.85);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  #upaSimModal.modal-overlay.active {
+    display: flex; animation: fadeIn 0.2s ease-out;
+  }
+  
+  .upa-sim-controls-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .upa-sim-controls-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 22px;
+    align-items: center;
+  }
+  @media (max-width: 860px) {
+    .upa-sim-controls-grid { grid-template-columns: 1fr; }
+  }
+  .upa-slider-row {
+    display: flex; align-items: center; gap: 16px; margin: 12px 0 14px 0;
+  }
+  .upa-slider {
+    flex: 1; height: 8px; border-radius: 4px;
+    background: #e2e8f0; outline: none;
+    -webkit-appearance: none; appearance: none;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+  .upa-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    cursor: pointer;
+  }
+  .upa-input-wrap {
+    display: flex; align-items: center; gap: 6px;
+    background: #f8fafc; border: 1.5px solid var(--gold);
+    padding: 5px 10px; border-radius: 10px;
+  }
+  .upa-input-box {
+    width: 65px; border: none; background: transparent;
+    font-size: 16px; font-weight: 800; color: #090c10;
+    text-align: right; font-family: inherit; outline: none;
+  }
+  .upa-preset-btns {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .upa-preset-btn {
+    background: #f1f5f9; border: 1px solid var(--border);
+    padding: 5px 11px; border-radius: 8px;
+    font-size: 11.5px; font-weight: 700; color: var(--text-secondary);
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .upa-preset-btn:hover {
+    background: var(--gold-light); color: var(--gold-dark); border-color: var(--gold);
+  }
+  .upa-preset-btn.active {
+    background: var(--gold); color: #090c10; border-color: var(--gold); font-weight: 800;
+  }
+
+  .upa-mode-toggle {
+    display: inline-flex; background: #f1f5f9; padding: 4px; border-radius: 10px; border: 1px solid var(--border);
+  }
+  .upa-mode-btn {
+    padding: 6px 13px; border-radius: 8px; border: none; background: transparent;
+    font-size: 11.5px; font-weight: 700; color: var(--text-secondary); cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .upa-mode-btn.active {
+    background: #090c10; color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
 </style>
 </head>
 <body>
@@ -1259,6 +1401,12 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         </div>
       </div>
       <div class="team-header-actions">
+                <button class="btn btn-deficit-report btn-upa-accent" onclick="openUpaSimulator()" title="Simulate Q4 & Full Year Points under Glargivin UPA Line Achievement Scenarios">
+          <span style="font-size:16px;">🎛️</span>
+          <span>Glargivin UPA Simulator</span>
+          <span class="report-btn-tag" style="background:#f59e0b;color:#090c10;">Scenario Tool</span>
+        </button>
+
         <button class="btn btn-deficit-report" onclick="openDeficitReport('team')" title="Generate Annual Quota Deficit & Gap Analysis Report for Delta Team">
           <span style="font-size:16px;">📊</span>
           <span>Team Year-End Deficit Report</span>
@@ -1269,6 +1417,23 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
     <!-- STAT ROW -->
     <div class="stat-grid" id="team-stat-grid"></div>
+
+        <!-- GLARGIVIN UPA SIMULATOR BANNER -->
+    <div class="upa-sim-banner" onclick="openUpaSimulator()">
+      <div class="upa-sim-banner-left">
+        <div class="upa-sim-icon">🎛️</div>
+        <div>
+          <div class="upa-sim-title">Glargivin UPA Q4 Line Adjustment Simulator</div>
+          <div class="upa-sim-desc">Simulate Q4 and Full-Year points achievement across all representatives when Glargivin UPA target is equalized.</div>
+        </div>
+      </div>
+      <div class="upa-sim-banner-right">
+        <span class="upa-sim-pill">Simulate 100% &rarr; Team Reaches 102.0% YTD 🚀</span>
+        <button class="btn btn-primary btn-sm" style="background:var(--gold); color:#090c10; font-weight:800; border:none; padding:7px 14px; border-radius:8px; cursor:pointer;">
+          Open Simulator &rarr;
+        </button>
+      </div>
+    </div>
 
     <!-- REP CARDS -->
     <div class="team-grid" id="team-grid"></div>
@@ -1285,6 +1450,12 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         </div>
       </div>
       <div class="rep-header-actions" id="rep-header-actions">
+                <button class="btn btn-deficit-report btn-upa-accent" onclick="openUpaSimulator(currentActiveRepKey)" title="Simulate Glargivin UPA Achievement for this representative">
+          <span style="font-size:16px;">🎛️</span>
+          <span>UPA Simulator</span>
+          <span class="report-btn-tag" style="background:#f59e0b;color:#090c10;">What-If</span>
+        </button>
+
         <button class="btn btn-deficit-report" onclick="openDeficitReport(currentActiveRepKey)" title="Generate Annual Quota Deficit & Gap Analysis Report">
           <span style="font-size:16px;">📊</span>
           <span>Year-End Deficit Report</span>
@@ -1388,6 +1559,37 @@ HTML_CONTENT = r'''<!DOCTYPE html>
       </div>
     </div>
     <div class="report-modal-body" id="deficitModalBody">
+      <!-- Dynamically generated via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- GLARGIVIN UPA SIMULATOR MODAL -->
+<div class="modal-overlay" id="upaSimModal" onclick="if(event.target===this) closeUpaSimulator()">
+  <div class="report-modal-box" style="max-width: 1220px;">
+    <div class="report-modal-header">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="title-badge-icon" style="width:44px; height:44px; font-size:20px; border-radius:10px; background:linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color:#090c10; font-weight:900;">🎛️</div>
+        <div>
+          <div style="font-size:17px; font-weight:800; color:#ffffff; letter-spacing:-0.2px;">
+            Glargivin UPA Q4 & Year-End Scenario Simulator 2026
+          </div>
+          <div style="font-size:12px; color:#94a3b8; margin-top:2px;">
+            Line Target Equalization & Points Fulfillment Calculator — EVA Insulin Delta Team
+          </div>
+        </div>
+      </div>
+      <div class="report-actions-toolbar">
+        <button class="report-action-btn report-action-excel" onclick="downloadUpaSimExcel()" title="Export Simulation Results to Excel">
+          <span style="font-size:14px;">📥</span> Export Excel (.xlsx)
+        </button>
+        <button class="report-action-btn report-action-print" onclick="printUpaSimReport()" title="Print or Save PDF Report">
+          <span style="font-size:14px;">🖨️</span> Print / PDF
+        </button>
+        <button class="report-modal-close" onclick="closeUpaSimulator()" title="Close">&times;</button>
+      </div>
+    </div>
+    <div class="report-modal-body" id="upaSimModalBody">
       <!-- Dynamically generated via JavaScript -->
     </div>
   </div>
@@ -3815,6 +4017,582 @@ document.addEventListener('DOMContentLoaded', () => {
   
   checkAuthStatus();
 });
+
+/* ── GLARGIVIN UPA SIMULATOR ── */
+let currentUpaSimAchPct = 100.0;
+let currentUpaSimMode = 'target'; // 'target' (target rebalancing) or 'sales' (sales credit)
+let currentUpaRepFilter = 'all';
+
+function openUpaSimulator(repKey) {
+  currentUpaRepFilter = repKey || 'all';
+  const modal = document.getElementById('upaSimModal');
+  if (!modal) return;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  renderUpaSimulator(true);
+}
+
+function closeUpaSimulator() {
+  const modal = document.getElementById('upaSimModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function setUpaScenario(val) {
+  currentUpaSimAchPct = parseFloat(val);
+  renderUpaSimulator(true);
+}
+
+function setUpaMode(mode) {
+  currentUpaSimMode = mode;
+  renderUpaSimulator(true);
+}
+
+function setUpaRepFilter(filter) {
+  currentUpaRepFilter = filter;
+  renderUpaSimulator(false);
+}
+
+function onUpaSliderInput(val) {
+  currentUpaSimAchPct = parseFloat(val);
+  const inputEl = document.getElementById('upaSimInput');
+  if (inputEl) inputEl.value = currentUpaSimAchPct.toFixed(1);
+  renderUpaSimulator(false);
+}
+
+function onUpaNumberInput(val) {
+  let num = parseFloat(val);
+  if (isNaN(num) || num < 0) num = 0;
+  if (num > 300) num = 300;
+  currentUpaSimAchPct = num;
+  const sliderEl = document.getElementById('upaSimSlider');
+  if (sliderEl) sliderEl.value = Math.min(Math.max(currentUpaSimAchPct, 0), 150);
+  renderUpaSimulator(false);
+}
+
+function computeUpaSimulation(achPct, mode) {
+  const X = achPct / 100.0;
+  let team = {
+    origQ4Sp: 0, origQ4Tp: 0,
+    simQ4Sp: 0, simQ4Tp: 0,
+    spQ1Q3: 0, tpQ1Q3: 0,
+    origYtdSp: 0, origYtdTp: 0,
+    simYtdSp: 0, simYtdTp: 0,
+    upaActualSp: 0, upaOrigTp: 0,
+    simUpaTp: 0, simUpaSp: 0,
+  };
+
+  const repsSim = [];
+
+  REPS.forEach(r => {
+    if (r.noData) return;
+    const q4 = r.quarters && r.quarters['Q4'];
+    const q4Prods = q4 && q4.products ? q4.products : [];
+    const upa = q4Prods.find(p => p.pid === 1251);
+    if (!upa) return;
+
+    let origQ4Sp = 0, origQ4Tp = 0;
+    q4Prods.forEach(p => {
+      origQ4Sp += (p.salesPoints !== null && p.salesPoints !== undefined) ? Number(p.salesPoints) : ((p.salesValue || 0) * 2);
+      origQ4Tp += (p.targetPoints !== null && p.targetPoints !== undefined) ? Number(p.targetPoints) : ((p.targetValue || 0) * 2);
+    });
+
+    const upaSp = (upa.salesPoints !== null && upa.salesPoints !== undefined) ? Number(upa.salesPoints) : ((upa.salesValue || 0) * 2);
+    const upaTp = (upa.targetPoints !== null && upa.targetPoints !== undefined) ? Number(upa.targetPoints) : ((upa.targetValue || 0) * 2);
+    const origUpaRatio = upaTp > 0 ? (upaSp / upaTp) * 100 : 0;
+
+    let spQ1Q3 = 0, tpQ1Q3 = 0;
+    ['Q1', 'Q2', 'Q3'].forEach(q => {
+      const qd = r.quarters && r.quarters[q];
+      if (qd && qd.products) {
+        qd.products.forEach(p => {
+          spQ1Q3 += (p.salesPoints !== null && p.salesPoints !== undefined) ? Number(p.salesPoints) : ((p.salesValue || 0) * 2);
+          tpQ1Q3 += (p.targetPoints !== null && p.targetPoints !== undefined) ? Number(p.targetPoints) : ((p.targetValue || 0) * 2);
+        });
+      }
+    });
+
+    const origYtdSp = spQ1Q3 + origQ4Sp;
+    const origYtdTp = tpQ1Q3 + origQ4Tp;
+    const origQ4Ratio = origQ4Tp > 0 ? (origQ4Sp / origQ4Tp) * 100 : 0;
+    const origYtdRatio = origYtdTp > 0 ? (origYtdSp / origYtdTp) * 100 : 0;
+
+    let simUpaTp = 0, simUpaSp = 0;
+    let simQ4Tp = 0, simQ4Sp = 0;
+    let simYtdTp = 0, simYtdSp = 0;
+
+    if (mode === 'target') {
+      simUpaTp = X > 0 ? (upaSp / X) : 0;
+      simUpaSp = upaSp;
+      simQ4Tp = origQ4Tp - upaTp + simUpaTp;
+      simQ4Sp = origQ4Sp;
+      simYtdTp = tpQ1Q3 + simQ4Tp;
+      simYtdSp = origYtdSp;
+    } else { // 'sales'
+      simUpaTp = upaTp;
+      simUpaSp = upaTp * X;
+      simQ4Tp = origQ4Tp;
+      simQ4Sp = origQ4Sp - upaSp + simUpaSp;
+      simYtdTp = origYtdTp;
+      simYtdSp = spQ1Q3 + simQ4Sp;
+    }
+
+    const simQ4Ratio = simQ4Tp > 0 ? (simQ4Sp / simQ4Tp) * 100 : 0;
+    const simYtdRatio = simYtdTp > 0 ? (simYtdSp / simYtdTp) * 100 : 0;
+
+    team.origQ4Sp += origQ4Sp;
+    team.origQ4Tp += origQ4Tp;
+    team.simQ4Sp += simQ4Sp;
+    team.simQ4Tp += simQ4Tp;
+    team.spQ1Q3 += spQ1Q3;
+    team.tpQ1Q3 += tpQ1Q3;
+    team.origYtdSp += origYtdSp;
+    team.origYtdTp += origYtdTp;
+    team.simYtdSp += simYtdSp;
+    team.simYtdTp += simYtdTp;
+    team.upaActualSp += upaSp;
+    team.upaOrigTp += upaTp;
+    team.simUpaTp += simUpaTp;
+    team.simUpaSp += simUpaSp;
+
+    repsSim.push({
+      rep: r,
+      key: r.key,
+      name: r.name,
+      area: r.area || 'Delta Region',
+      upaSp, upaTp, origUpaRatio,
+      simUpaTp, simUpaSp,
+      origQ4Sp, origQ4Tp, origQ4Ratio,
+      simQ4Sp, simQ4Tp, simQ4Ratio,
+      origYtdSp, origYtdTp, origYtdRatio,
+      simYtdSp, simYtdTp, simYtdRatio,
+      q4RatioDiff: simQ4Ratio - origQ4Ratio,
+      ytdRatioDiff: simYtdRatio - origYtdRatio,
+      ptsDiff: (mode === 'target') ? (origQ4Tp - simQ4Tp) : (simQ4Sp - origQ4Sp)
+    });
+  });
+
+  team.origQ4Ratio = team.origQ4Tp > 0 ? (team.origQ4Sp / team.origQ4Tp) * 100 : 0;
+  team.simQ4Ratio = team.simQ4Tp > 0 ? (team.simQ4Sp / team.simQ4Tp) * 100 : 0;
+  team.origYtdRatio = team.origYtdTp > 0 ? (team.origYtdSp / team.origYtdTp) * 100 : 0;
+  team.simYtdRatio = team.simYtdTp > 0 ? (team.simYtdSp / team.simYtdTp) * 100 : 0;
+  team.origUpaRatio = team.upaOrigTp > 0 ? (team.upaActualSp / team.upaOrigTp) * 100 : 0;
+  team.q4RatioDiff = team.simQ4Ratio - team.origQ4Ratio;
+  team.ytdRatioDiff = team.simYtdRatio - team.origYtdRatio;
+  team.ptsDiff = (mode === 'target') ? (team.origQ4Tp - team.simQ4Tp) : (team.simQ4Sp - team.origQ4Sp);
+
+  return { team, reps: repsSim, mode, achPct };
+}
+
+function renderUpaSimulator(rebuildControls = true) {
+  const bodyEl = document.getElementById('upaSimModalBody');
+  if (!bodyEl) return;
+
+  const sim = computeUpaSimulation(currentUpaSimAchPct, currentUpaSimMode);
+  const team = sim.team;
+
+  // Presets definition
+  const presets = [
+    { label: '35.8% (Current)', val: 35.77 },
+    { label: '70%', val: 70 },
+    { label: '80%', val: 80 },
+    { label: '90%', val: 90 },
+    { label: '100% (Quota)', val: 100 },
+    { label: '110%', val: 110 },
+    { label: '120% (Incentive)', val: 120 }
+  ];
+
+  // Milestone checks
+  const is100Met = team.simYtdRatio >= 100;
+  const is120Met = team.simYtdRatio >= 120;
+  const gap100Pts = is100Met ? (team.simYtdSp - team.simYtdTp) : (team.simYtdTp - team.simYtdSp);
+  const target120Pts = team.simYtdTp * 1.20;
+  const gap120Pts = is120Met ? (team.simYtdSp - target120Pts) : (target120Pts - team.simYtdSp);
+
+  let controlsHtml = '';
+  if (rebuildControls || !document.getElementById('upaSimSlider')) {
+    controlsHtml = `
+      <div class="upa-sim-controls-card">
+        <div class="upa-sim-controls-grid">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <span style="font-size:12px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px;">
+                  Glargivin UPA Target Achievement Scenario:
+                </span>
+                <span style="font-size:12px; color:var(--text-secondary); margin-left:6px;">
+                  (Baseline Line Achievement: <strong>35.77%</strong>)
+                </span>
+              </div>
+              <div class="upa-input-wrap">
+                <input type="number" id="upaSimInput" class="upa-input-box" min="0" max="250" step="0.5" value="${sim.achPct.toFixed(1)}" oninput="onUpaNumberInput(this.value)">
+                <span style="font-weight:800; color:var(--gold-dark); font-size:15px;">%</span>
+              </div>
+            </div>
+
+            <div class="upa-slider-row">
+              <span style="font-size:11px; font-weight:700; color:var(--text-muted);">0%</span>
+              <input type="range" id="upaSimSlider" class="upa-slider" min="0" max="150" step="0.5" value="${Math.min(sim.achPct, 150)}" oninput="onUpaSliderInput(this.value)">
+              <span style="font-size:11px; font-weight:700; color:var(--text-muted);">150%</span>
+            </div>
+
+            <div class="upa-preset-btns">
+              <span style="font-size:11px; font-weight:700; color:var(--text-muted); margin-right:4px;">Quick Presets:</span>
+              ${presets.map(p => `
+                <button class="upa-preset-btn ${Math.abs(sim.achPct - p.val) < 0.2 ? 'active' : ''}" onclick="setUpaScenario(${p.val})">
+                  ${p.label}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="border-left:1px solid var(--border); padding-left:22px;">
+            <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; letter-spacing:0.5px;">
+              Equalization Method:
+            </div>
+            <div class="upa-mode-toggle">
+              <button class="upa-mode-btn ${sim.mode === 'target' ? 'active' : ''}" onclick="setUpaMode('target')" title="Target Rebalancing: Target = Actual Sales / Ach%">
+                Target Adjustment
+              </button>
+              <button class="upa-mode-btn ${sim.mode === 'sales' ? 'active' : ''}" onclick="setUpaMode('sales')" title="Sales Credit: Sales Points = Target Points * Ach%">
+                Sales Points Credit
+              </button>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; max-width:240px; line-height:1.4;">
+              ${sim.mode === 'target' 
+                ? '<strong>Target Rebalancing:</strong> Adjusts each representative Glargivin UPA quota so sales / target equals ' + sim.achPct.toFixed(1) + '%.' 
+                : '<strong>Sales Credit:</strong> Keeps targets fixed and credits sales points so fulfillment equals ' + sim.achPct.toFixed(1) + '%.'}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="upaSimDynamicContent"></div>
+    `;
+    bodyEl.innerHTML = controlsHtml;
+  }
+
+  // Dynamic content (KPI Cards, Tables, Insights)
+  const dynamicContainer = document.getElementById('upaSimDynamicContent') || bodyEl;
+  
+  const q4DiffClass = team.q4RatioDiff >= 0 ? '#16a34a' : '#dc2626';
+  const ytdDiffClass = team.ytdRatioDiff >= 0 ? '#16a34a' : '#dc2626';
+
+  let filteredReps = sim.reps;
+  if (currentUpaRepFilter !== 'all') {
+    filteredReps = sim.reps.filter(r => r.key === currentUpaRepFilter);
+  }
+
+  const dynamicHtml = `
+    <!-- KPI SUMMARY CARDS FOR DELTA REGION -->
+    <div class="report-kpi-grid">
+      <div class="report-kpi-card" style="border-left: 4px solid var(--gold);">
+        <div class="report-kpi-title">
+          <span>Simulated Q4 Total Ach %</span>
+          <span>🎯</span>
+        </div>
+        <div class="report-kpi-val" style="display:flex; align-items:baseline; gap:8px;">
+          <span class="ratio-badge ${ratioClass(team.simQ4Ratio)}" style="font-size:22px; font-weight:900;">
+            ${fmtPct(team.simQ4Ratio)}
+          </span>
+          <span style="font-size:12px; font-weight:700; color:${q4DiffClass};">
+            ${team.q4RatioDiff >= 0 ? '+' : ''}${team.q4RatioDiff.toFixed(2)}%
+          </span>
+        </div>
+        <div class="report-kpi-sub">
+          Current Baseline Q4: <strong>${fmtPct(team.origQ4Ratio)}</strong> (${fmt(team.origQ4Sp)} pts)
+        </div>
+      </div>
+
+      <div class="report-kpi-card ${is100Met ? 'kpi-surplus' : 'kpi-deficit'}">
+        <div class="report-kpi-title">
+          <span>Simulated Full-Year (YTD) Ach %</span>
+          <span>${is100Met ? '🏆' : '📈'}</span>
+        </div>
+        <div class="report-kpi-val" style="display:flex; align-items:baseline; gap:8px;">
+          <span class="ratio-badge ${ratioClass(team.simYtdRatio)}" style="font-size:22px; font-weight:900;">
+            ${fmtPct(team.simYtdRatio)}
+          </span>
+          <span style="font-size:12px; font-weight:700; color:${ytdDiffClass};">
+            ${team.ytdRatioDiff >= 0 ? '+' : ''}${team.ytdRatioDiff.toFixed(2)}%
+          </span>
+        </div>
+        <div class="report-kpi-sub">
+          Current Baseline YTD: <strong>${fmtPct(team.origYtdRatio)}</strong> &bull; ${is100Met ? '100% Milestone Achieved!' : 'Below 100%'}
+        </div>
+      </div>
+
+      <div class="report-kpi-card">
+        <div class="report-kpi-title">
+          <span>100% Annual Milestone Status</span>
+          <span>⭐</span>
+        </div>
+        <div class="report-kpi-val" style="color:${is100Met ? '#16a34a' : '#ef4444'}; font-size:20px;">
+          ${is100Met ? 'MET & SURPASSED' : 'REMAINING DEFICIT'}
+        </div>
+        <div class="report-kpi-sub">
+          ${is100Met 
+            ? `Surplus: <strong>+${fmt(gap100Pts)} pts</strong> ahead of quota` 
+            : `Deficit: <strong>-${fmt(gap100Pts)} pts</strong> needed to hit 100%`}
+        </div>
+      </div>
+
+      <div class="report-kpi-card" style="border-left: 4px solid #10b981;">
+        <div class="report-kpi-title">
+          <span>120% Incentive Milestone</span>
+          <span>🚀</span>
+        </div>
+        <div class="report-kpi-val" style="color:${is120Met ? '#10b981' : '#f59e0b'}; font-size:20px;">
+          ${is120Met ? '120% MET!' : 'IN PROGRESS'}
+        </div>
+        <div class="report-kpi-sub">
+          ${is120Met 
+            ? `Incentive surplus: <strong>+${fmt(gap120Pts)} pts</strong>` 
+            : `Gap to 120%: <strong>${fmt(gap120Pts)} pts</strong>`}
+        </div>
+      </div>
+    </div>
+
+    <!-- REPS COMPARISON TABLE -->
+    <div class="report-section-title">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>Representatives Performance Breakdown (Glargivin UPA Equalized at ${sim.achPct.toFixed(1)}%)</span>
+        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">
+          (${filteredReps.length} of ${sim.reps.length} Reps)
+        </span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text-muted);">Filter:</span>
+        <button class="upa-preset-btn ${currentUpaRepFilter === 'all' ? 'active' : ''}" onclick="setUpaRepFilter('all')">All Reps</button>
+        ${sim.reps.map(r => `
+          <button class="upa-preset-btn ${currentUpaRepFilter === r.key ? 'active' : ''}" onclick="setUpaRepFilter('${r.key}')">${r.name}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="report-table-box">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Medical Rep & Area</th>
+            <th style="text-align:right;">UPA Actual Sales</th>
+            <th style="text-align:right;">UPA Target (${sim.mode === 'target' ? 'Adjusted' : 'Quota'})</th>
+            <th style="text-align:center;">Q4 Ach % (توتال كوارتر)</th>
+            <th style="text-align:center;">Full-Year Ach % (توتال سنة)</th>
+            <th style="text-align:right;">YTD Variance</th>
+            <th style="text-align:center;">100% Year Met?</th>
+            <th style="text-align:center;">120% Year Met?</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredReps.map(r => {
+            const r100 = r.simYtdRatio >= 100;
+            const r120 = r.simYtdRatio >= 120;
+            return `
+              <tr>
+                <td>
+                  <div style="font-weight:800; color:var(--text-primary); font-size:13.5px;">${r.name}</div>
+                  <div style="font-size:11px; color:var(--text-muted);">${r.area}</div>
+                </td>
+                <td style="text-align:right; font-weight:700;">
+                  ${fmt(r.upaSp)} <span style="font-size:10.5px; color:var(--gold-dark); font-weight:800;">pts</span>
+                </td>
+                <td style="text-align:right;">
+                  ${sim.mode === 'target' ? `
+                    <div style="font-weight:700; color:var(--text-primary);">${fmt(r.simUpaTp)} pts</div>
+                    <div style="font-size:10.5px; color:var(--text-muted); text-decoration:line-through;">${fmt(r.upaTp)}</div>
+                  ` : `
+                    <div style="font-weight:700; color:var(--text-primary);">${fmt(r.upaTp)} pts</div>
+                    <div style="font-size:10.5px; color:#16a34a; font-weight:700;">+${fmt(r.simUpaSp)} credited</div>
+                  `}
+                </td>
+                <td style="text-align:center;">
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                    <span class="ratio-badge ${ratioClass(r.simQ4Ratio)}" style="font-weight:800; font-size:12px; padding:2px 8px;">
+                      ${fmtPct(r.simQ4Ratio)}
+                    </span>
+                    <span style="font-size:10.5px; color:var(--text-muted);">
+                      was ${fmtPct(r.origQ4Ratio)} (${r.q4RatioDiff >= 0 ? '+' : ''}${r.q4RatioDiff.toFixed(1)}%)
+                    </span>
+                  </div>
+                </td>
+                <td style="text-align:center;">
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                    <span class="ratio-badge ${ratioClass(r.simYtdRatio)}" style="font-weight:800; font-size:12.5px; padding:2px 8px;">
+                      ${fmtPct(r.simYtdRatio)}
+                    </span>
+                    <span style="font-size:10.5px; color:var(--text-muted);">
+                      was ${fmtPct(r.origYtdRatio)} (${r.ytdRatioDiff >= 0 ? '+' : ''}${r.ytdRatioDiff.toFixed(1)}%)
+                    </span>
+                  </div>
+                </td>
+                <td style="text-align:right; font-weight:700; color:${r.ytdRatioDiff >= 0 ? '#16a34a' : '#dc2626'};">
+                  ${r.ytdRatioDiff >= 0 ? '+' : ''}${r.ytdRatioDiff.toFixed(2)}%
+                </td>
+                <td style="text-align:center;">
+                  <span class="priority-tag ${r100 ? 'priority-success' : 'priority-critical'}">
+                    ${r100 ? '✓ YES (MET)' : '✗ ' + fmtPct(r.simYtdRatio)}
+                  </span>
+                </td>
+                <td style="text-align:center;">
+                  <span class="priority-tag ${r120 ? 'priority-success' : 'priority-warning'}">
+                    ${r120 ? '✓ YES (120%)' : '✗ ' + fmtPct(r.simYtdRatio)}
+                  </span>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>
+              <div style="font-weight:900; font-size:14px;">DELTA REGION TEAM (Dr. Sherif)</div>
+              <div style="font-size:11px; font-weight:600; color:#475569;">Grand Aggregate (9 Representatives)</div>
+            </td>
+            <td style="text-align:right; font-weight:900; font-size:13.5px;">
+              ${fmt(team.upaActualSp)} pts
+            </td>
+            <td style="text-align:right; font-weight:900; font-size:13.5px;">
+              ${sim.mode === 'target' ? fmt(team.simUpaTp) + ' pts' : fmt(team.upaOrigTp) + ' pts'}
+            </td>
+            <td style="text-align:center;">
+              <span class="ratio-badge ${ratioClass(team.simQ4Ratio)}" style="font-size:13px; font-weight:900; padding:3px 10px;">
+                ${fmtPct(team.simQ4Ratio)}
+              </span>
+              <div style="font-size:10.5px; font-weight:700; color:#475569;">
+                was ${fmtPct(team.origQ4Ratio)} (${team.q4RatioDiff >= 0 ? '+' : ''}${team.q4RatioDiff.toFixed(2)}%)
+              </div>
+            </td>
+            <td style="text-align:center;">
+              <span class="ratio-badge ${ratioClass(team.simYtdRatio)}" style="font-size:13px; font-weight:900; padding:3px 10px;">
+                ${fmtPct(team.simYtdRatio)}
+              </span>
+              <div style="font-size:10.5px; font-weight:700; color:#475569;">
+                was ${fmtPct(team.origYtdRatio)} (${team.ytdRatioDiff >= 0 ? '+' : ''}${team.ytdRatioDiff.toFixed(2)}%)
+              </div>
+            </td>
+            <td style="text-align:right; font-weight:900; color:${team.ytdRatioDiff >= 0 ? '#166534' : '#991b1b'};">
+              ${team.ytdRatioDiff >= 0 ? '+' : ''}${team.ytdRatioDiff.toFixed(2)}%
+            </td>
+            <td style="text-align:center;">
+              <span class="priority-tag ${is100Met ? 'priority-success' : 'priority-critical'}" style="font-size:12px; font-weight:900;">
+                ${is100Met ? '✓ 100% MET (' + fmtPct(team.simYtdRatio) + ')' : '✗ DEFICIT'}
+              </span>
+            </td>
+            <td style="text-align:center;">
+              <span class="priority-tag ${is120Met ? 'priority-success' : 'priority-warning'}" style="font-size:12px; font-weight:900;">
+                ${is120Met ? '✓ 120% MET' : '✗ ' + fmtPct(team.simYtdRatio)}
+              </span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- EXECUTIVE INSIGHT NOTE -->
+    <div class="report-insight-box">
+      <div style="font-weight:800; color:var(--text-primary); margin-bottom:4px; font-size:13px; display:flex; align-items:center; gap:6px;">
+        <span>💡</span> Institutional Quota Equalization Rationale (Glargivin UPA):
+      </div>
+      <div>
+        Glargivin UPA (Unified Procurement Authority) orders are processed centrally through government hospital tenders and central medical depots. Under EVA Pharma operational guidelines, the individual representative's Glargivin UPA target is calibrated at the end of each fiscal quarter to match the line-wide achievement rate (<strong>${sim.achPct.toFixed(1)}%</strong> in this simulation). This prevents territorial allocation imbalances and ensures equitable commission and quota attainment across the Delta region.
+      </div>
+    </div>
+  `;
+
+  dynamicContainer.innerHTML = dynamicHtml;
+}
+
+function downloadUpaSimExcel() {
+  const sim = computeUpaSimulation(currentUpaSimAchPct, currentUpaSimMode);
+  const wb = XLSX.utils.book_new();
+
+  const modeName = sim.mode === 'target' 
+    ? 'Target Rebalancing (Simulated Target = Actual Sales / Ach%)' 
+    : 'Sales Points Credit (Simulated Sales = Assigned Target * Ach%)';
+
+  const rows = [
+    ["EVA PHARMA - DELTA REGION SALES DASHBOARD"],
+    ["GLARGIVIN UPA LINE ADJUSTMENT SCENARIO SIMULATION 2026"],
+    [`Simulated UPA Achievement: ${sim.achPct.toFixed(1)}% | Equalization Mode: ${modeName}`],
+    ["Generated on: " + new Date().toLocaleString()],
+    [],
+    [
+      "Medical Representative",
+      "Territory / Area",
+      "UPA Actual Sales (pts)",
+      "UPA Original Target (pts)",
+      "UPA Simulated Target (pts)",
+      "Current Q4 Ach %",
+      "Simulated Q4 Ach %",
+      "Q4 Impact (+/- %)",
+      "Current Full-Year Ach %",
+      "Simulated Full-Year Ach %",
+      "Full-Year Impact (+/- %)",
+      "100% Full-Year Target Met?",
+      "120% Full-Year Target Met?"
+    ]
+  ];
+
+  sim.reps.forEach(r => {
+    rows.push([
+      r.name,
+      r.area,
+      Math.round(r.upaSp),
+      Math.round(r.upaTp),
+      Math.round(r.simUpaTp),
+      (r.origQ4Ratio).toFixed(2) + "%",
+      (r.simQ4Ratio).toFixed(2) + "%",
+      (r.q4RatioDiff >= 0 ? "+" : "") + (r.q4RatioDiff).toFixed(2) + "%",
+      (r.origYtdRatio).toFixed(2) + "%",
+      (r.simYtdRatio).toFixed(2) + "%",
+      (r.ytdRatioDiff >= 0 ? "+" : "") + (r.ytdRatioDiff).toFixed(2) + "%",
+      r.simYtdRatio >= 100 ? "YES (Met)" : "NO (Deficit)",
+      r.simYtdRatio >= 120 ? "YES (Met)" : "NO"
+    ]);
+  });
+
+  rows.push([]);
+  rows.push([
+    "DELTA REGION TEAM (Dr. Sherif)",
+    "Delta Region Aggregate",
+    Math.round(sim.team.upaActualSp),
+    Math.round(sim.team.upaOrigTp),
+    Math.round(sim.team.simUpaTp),
+    (sim.team.origQ4Ratio).toFixed(2) + "%",
+    (sim.team.simQ4Ratio).toFixed(2) + "%",
+    (sim.team.q4RatioDiff >= 0 ? "+" : "") + (sim.team.q4RatioDiff).toFixed(2) + "%",
+    (sim.team.origYtdRatio).toFixed(2) + "%",
+    (sim.team.simYtdRatio).toFixed(2) + "%",
+    (sim.team.ytdRatioDiff >= 0 ? "+" : "") + (sim.team.ytdRatioDiff).toFixed(2) + "%",
+    sim.team.simYtdRatio >= 100 ? "YES (Met)" : "NO (Deficit)",
+    sim.team.simYtdRatio >= 120 ? "YES (Met)" : "NO"
+  ]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 22 }, { wch: 22 },
+    { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 22 }, { wch: 22 },
+    { wch: 18 }, { wch: 24 }, { wch: 24 }
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, "UPA_Simulation");
+
+  const fileName = `EVA_Delta_Glargivin_UPA_Sim_${sim.achPct.toFixed(0)}Pct.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  showToast(`📥 Simulation exported to ${fileName}`);
+}
+
+function printUpaSimReport() {
+  window.print();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDeficitReport();
+    closeUpaSimulator();
+  }
+});
+
 </script>
 </body>
 </html>
