@@ -586,22 +586,22 @@
           "products": [
             {
               "pid": 1260,
-              "salesUnits": 406.56,
-              "salesValue": 94374.7,
+              "salesUnits": 406.61,
+              "salesValue": 94385.73,
               "targetUnits": 1607.4,
               "targetValue": 373122.54,
-              "ratio": 25.29,
-              "salesPoints": 188749.4,
+              "ratio": 25.3,
+              "salesPoints": 188771.46,
               "targetPoints": 746245.08
             },
             {
               "pid": 1259,
-              "salesUnits": 260.83,
-              "salesValue": 60546.61,
+              "salesUnits": 387.77,
+              "salesValue": 90011.79,
               "targetUnits": 622.0,
               "targetValue": 144383.61,
-              "ratio": 41.93,
-              "salesPoints": 121093.21,
+              "ratio": 62.34,
+              "salesPoints": 180023.57,
               "targetPoints": 288767.22
             },
             {
@@ -616,22 +616,22 @@
             },
             {
               "pid": 1110,
-              "salesUnits": 268.91,
-              "salesValue": 180059.93,
+              "salesUnits": 305.94,
+              "salesValue": 204860.1,
               "targetUnits": 896.0,
               "targetValue": 599961.6,
-              "ratio": 30.01,
-              "salesPoints": 360119.86,
+              "ratio": 34.15,
+              "salesPoints": 409720.2,
               "targetPoints": 1199923.2
             }
           ],
           "total": {
-            "salesUnits": 1571.3,
-            "salesValue": 718044.99,
+            "salesUnits": 1735.32,
+            "salesValue": 772321.37,
             "targetUnits": 4056.9,
             "targetValue": 1679395.11,
-            "ratio": 42.76,
-            "salesPoints": 1436089.97,
+            "ratio": 45.99,
+            "salesPoints": 1544642.73,
             "targetPoints": 3358790.22
           }
         }
@@ -1147,22 +1147,22 @@
           "products": [
             {
               "pid": 1260,
-              "salesUnits": 127.86,
-              "salesValue": 29680.71,
+              "salesUnits": 128.32,
+              "salesValue": 29785.83,
               "targetUnits": 1664.42,
               "targetValue": 386353.83,
-              "ratio": 7.68,
-              "salesPoints": 59361.42,
+              "ratio": 7.71,
+              "salesPoints": 59571.67,
               "targetPoints": 772707.66
             },
             {
               "pid": 1259,
-              "salesUnits": 58.75,
-              "salesValue": 13636.84,
+              "salesUnits": 876.37,
+              "salesValue": 203429.98,
               "targetUnits": 912.0,
               "targetValue": 211700.73,
-              "ratio": 6.44,
-              "salesPoints": 27273.68,
+              "ratio": 96.09,
+              "salesPoints": 406859.96,
               "targetPoints": 423401.46
             },
             {
@@ -1177,22 +1177,22 @@
             },
             {
               "pid": 1110,
-              "salesUnits": 116.35,
-              "salesValue": 77909.19,
+              "salesUnits": 274.03,
+              "salesValue": 183489.28,
               "targetUnits": 960.4,
               "targetValue": 643083.84,
-              "ratio": 12.11,
-              "salesPoints": 155818.38,
+              "ratio": 28.53,
+              "salesPoints": 366978.57,
               "targetPoints": 1286167.68
             }
           ],
           "total": {
-            "salesUnits": 422.96,
-            "salesValue": 193616.74,
+            "salesUnits": 1398.72,
+            "salesValue": 489095.09,
             "targetUnits": 6894.82,
             "targetValue": 3266851.89,
-            "ratio": 5.93,
-            "salesPoints": 387233.48,
+            "ratio": 14.97,
+            "salesPoints": 978190.2,
             "targetPoints": 6533703.78
           }
         }
@@ -1810,22 +1810,22 @@
           "products": [
             {
               "pid": 1260,
-              "salesUnits": 108.02,
-              "salesValue": 25074.35,
+              "salesUnits": 111.62,
+              "salesValue": 25909.71,
               "targetUnits": 847.4,
               "targetValue": 196705.26,
-              "ratio": 12.75,
-              "salesPoints": 50148.69,
+              "ratio": 13.17,
+              "salesPoints": 51819.42,
               "targetPoints": 393410.52
             },
             {
               "pid": 1259,
-              "salesUnits": 115.75,
-              "salesValue": 26868.77,
+              "salesUnits": 431.23,
+              "salesValue": 100101.11,
               "targetUnits": 732.0,
               "targetValue": 169917.69,
-              "ratio": 15.81,
-              "salesPoints": 53737.54,
+              "ratio": 58.91,
+              "salesPoints": 200202.23,
               "targetPoints": 339835.38
             },
             {
@@ -1840,22 +1840,22 @@
             },
             {
               "pid": 1110,
-              "salesUnits": 99.21,
-              "salesValue": 66430.25,
+              "salesUnits": 176.4,
+              "salesValue": 118119.98,
               "targetUnits": 788.2,
               "targetValue": 527778.72,
-              "ratio": 12.59,
-              "salesPoints": 132860.51,
+              "ratio": 22.38,
+              "salesPoints": 236239.97,
               "targetPoints": 1055557.44
             }
           ],
           "total": {
-            "salesUnits": 452.98,
-            "salesValue": 196795.87,
+            "salesUnits": 849.25,
+            "salesValue": 322553.3,
             "targetUnits": 3365.22,
             "targetValue": 1496218.95,
-            "ratio": 13.15,
-            "salesPoints": 393591.74,
+            "ratio": 21.56,
+            "salesPoints": 645106.62,
             "targetPoints": 2992437.9
           }
         }
