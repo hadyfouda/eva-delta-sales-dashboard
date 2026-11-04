@@ -408,12 +408,26 @@
       print-color-adjust: exact !important;
     }
 
-    /* When printing report, hide everything else */
-    body > *:not(#deficitModal) {
+    /* Hide non-printable elements during report or simulator print */
+    body.printing-report > *:not(#deficitModal),
+    body:has(#deficitModal.active) > *:not(#deficitModal) {
       display: none !important;
     }
 
-    #deficitModal.modal-overlay {
+    body.printing-sim > *:not(#upaSimModal),
+    body:has(#upaSimModal.active) > *:not(#upaSimModal) {
+      display: none !important;
+    }
+
+    /* Fallback if printing main dashboard directly */
+    body:not(.printing-report):not(.printing-sim) > .modal-overlay,
+    body:not(.printing-report):not(.printing-sim) > #toastNotification,
+    body:not(.printing-report):not(.printing-sim) #topbar {
+      display: none !important;
+    }
+
+    #deficitModal.modal-overlay,
+    #upaSimModal.modal-overlay {
       display: block !important;
       position: static !important;
       width: 100% !important;
@@ -473,6 +487,12 @@
       gap: 8px !important;
       margin-bottom: 12px !important;
       page-break-inside: avoid !important;
+    }
+
+    #upaSimModal .report-kpi-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 10px !important;
+      margin-bottom: 14px !important;
     }
 
     .report-kpi-card {
@@ -622,6 +642,198 @@
       border-radius: 6px !important;
       page-break-inside: avoid !important;
       margin-top: 8px !important;
+    }
+    /* ── SIMULATOR PRINT SPECIFIC OPTIMIZATIONS ── */
+    #upaSimModal div[style*="overflow-x:auto"],
+    #upaSimModal div[style*="overflow-x: auto"] {
+      overflow: visible !important;
+    }
+
+    .master-preset-strip,
+    .prod-presets-row,
+    .prod-slider-wrap,
+    #upaEqualizeSlider,
+    .btn-reset-overrides,
+    .rep-unit-edit-btn,
+    .rep-reset-btn,
+    .upa-rep-select,
+    .col-sim-action,
+    .rep-inline-edit-row {
+      display: none !important;
+    }
+
+    .sim-context-bar {
+      background: #0f172a !important;
+      color: #ffffff !important;
+      border: 1px solid #334155 !important;
+      padding: 8px 12px !important;
+      margin-bottom: 12px !important;
+      border-radius: 6px !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      page-break-after: avoid !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .sim-scope-locked-pill {
+      background: rgba(59, 130, 246, 0.25) !important;
+      border: 1px solid #3b82f6 !important;
+      color: #93c5fd !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .sim-scope-select {
+      background: #0f172a !important;
+      color: #ffffff !important;
+      border: 1px solid #3b82f6 !important;
+      font-size: 11px !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .sim-locked-quarters-pill {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border: 1px solid #10b981 !important;
+      color: #059669 !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      font-size: 10px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .comm-deck-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 10px !important;
+      margin-bottom: 14px !important;
+      page-break-inside: avoid !important;
+    }
+
+    .prod-forecast-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 8px !important;
+      padding: 8px 10px !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .prod-baseline-pills {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 5px 6px !important;
+      margin-bottom: 6px !important;
+      font-size: 9px !important;
+    }
+
+    .prod-input-group {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      padding: 4px 6px !important;
+      margin-bottom: 6px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .prod-unit-input {
+      font-size: 14px !important;
+      font-weight: 900 !important;
+      color: #0f172a !important;
+      border: none !important;
+      background: transparent !important;
+    }
+
+    .upa-equalize-card {
+      background: #fffbeb !important;
+      border: 1.5px solid #f59e0b !important;
+      border-radius: 8px !important;
+      padding: 10px 14px !important;
+      margin-bottom: 14px !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .upa-equalize-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px !important;
+    }
+
+    #upaEqualizeInput {
+      font-size: 14px !important;
+      font-weight: 900 !important;
+      color: #b45309 !important;
+      border: none !important;
+      background: transparent !important;
+    }
+
+    .upa-stats-panel {
+      background: #ffffff !important;
+      border: 1px solid #fed7aa !important;
+      border-radius: 6px !important;
+      padding: 8px 10px !important;
+      font-size: 9.5px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #upaSimModal .report-table {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      font-size: 9px !important;
+    }
+
+    #upaSimModal .report-table th {
+      background: #090c12 !important;
+      color: #ffffff !important;
+      padding: 5px 4px !important;
+      font-size: 8px !important;
+      font-weight: 800 !important;
+      border: 1px solid #334155 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #upaSimModal .report-table td {
+      padding: 4px 4px !important;
+      font-size: 8.5px !important;
+      border: 1px solid #cbd5e1 !important;
+      vertical-align: middle !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #upaSimModal .report-table th:nth-child(1), #upaSimModal .report-table td:nth-child(1) { width: 15% !important; text-align: left !important; }
+    #upaSimModal .report-table th:nth-child(2), #upaSimModal .report-table td:nth-child(2) { width: 9% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(3), #upaSimModal .report-table td:nth-child(3) { width: 9% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(4), #upaSimModal .report-table td:nth-child(4) { width: 9% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(5), #upaSimModal .report-table td:nth-child(5) { width: 11% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(6), #upaSimModal .report-table td:nth-child(6) { width: 11% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(7), #upaSimModal .report-table td:nth-child(7) { width: 10% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(8), #upaSimModal .report-table td:nth-child(8) { width: 10% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(9), #upaSimModal .report-table td:nth-child(9) { width: 8% !important; text-align: center !important; }
+    #upaSimModal .report-table th:nth-child(10), #upaSimModal .report-table td:nth-child(10) { width: 8% !important; text-align: center !important; }
+    #upaSimModal .report-table th:nth-child(11), #upaSimModal .report-table td:nth-child(11) { display: none !important; }
+
+    #upaSimModal .report-table tfoot tr td {
+      background: #f1f5f9 !important;
+      font-weight: 800 !important;
+      border-top: 2px solid #94a3b8 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
   }
 
@@ -5755,6 +5967,7 @@ function printDeficitReport() {
     openDeficitReport(currentReportScope || currentActiveRepKey || 'team');
   }
   document.body.classList.add('printing-report');
+  document.body.classList.remove('printing-sim');
   window.onafterprint = () => {
     document.body.classList.remove('printing-report');
   };
@@ -7287,7 +7500,7 @@ function renderUpaSimulator(rebuildControls = true) {
               <th style="text-align:right; min-width:110px;">Forecast YTD %</th>
               <th style="text-align:center; min-width:85px;">100% Year</th>
               <th style="text-align:center; min-width:85px;">120% Year</th>
-              <th style="text-align:center; min-width:70px;">Action</th>
+              <th class="col-sim-action" style="text-align:center; min-width:70px;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -7348,7 +7561,7 @@ function renderUpaSimulator(rebuildControls = true) {
                     <td style="text-align:center;">
                       ${r.is120Met ? '<span style="color:#8b5cf6; font-weight:800; font-size:12px;">✓ 120%</span>' : `<span style="color:#94a3b8; font-size:11px;">✗</span>`}
                     </td>
-                    <td style="text-align:center;">
+                    <td class="col-sim-action" style="text-align:center;">
                       <div style="display:flex; justify-content:center; align-items:center; gap:4px;">
                         <button class="rep-unit-edit-btn" onclick="openRepUnitEditor('${r.key}')" title="Customize commercial units for ${r.name}">
                           ✏️
@@ -7363,7 +7576,7 @@ function renderUpaSimulator(rebuildControls = true) {
                   </tr>
 
                   ${activeEditingRepKey === r.key ? `
-                    <tr style="background:#f1f5f9;">
+                    <tr class="rep-inline-edit-row" style="background:#f1f5f9;">
                       <td colspan="11" style="padding:14px 18px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                           <div style="font-weight:800; color:#0f172a; font-size:13px;">
@@ -7426,7 +7639,7 @@ function renderUpaSimulator(rebuildControls = true) {
                 <td style="text-align:center;">
                   ${sim.team.is120Met ? '<span style="color:#8b5cf6; font-weight:900;">✓ 120% MET</span>' : '<span style="color:#94a3b8;">✗</span>'}
                 </td>
-                <td></td>
+                <td class="col-sim-action"></td>
               </tr>
             </tfoot>
           ` : ''}
@@ -7576,8 +7789,35 @@ function downloadUpaSimExcel() {
 }
 
 function printUpaSimReport() {
-  window.print();
+  const modal = document.getElementById('upaSimModal');
+  if (!modal || !modal.classList.contains('active')) {
+    openUpaSimulator(getEffectiveRepScope());
+  }
+  document.body.classList.add('printing-sim');
+  document.body.classList.remove('printing-report');
+  window.onafterprint = () => {
+    document.body.classList.remove('printing-sim');
+  };
+  setTimeout(() => {
+    window.print();
+  }, 120);
 }
+
+// Global print listeners to handle Ctrl+P or browser menu print smoothly
+window.addEventListener('beforeprint', () => {
+  const simModal = document.getElementById('upaSimModal');
+  const deficitModal = document.getElementById('deficitModal');
+  if (simModal && simModal.classList.contains('active')) {
+    document.body.classList.add('printing-sim');
+    document.body.classList.remove('printing-report');
+  } else if (deficitModal && deficitModal.classList.contains('active')) {
+    document.body.classList.add('printing-report');
+    document.body.classList.remove('printing-sim');
+  }
+});
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-sim', 'printing-report');
+});
 </script>
 </body>
 </html>
