@@ -1785,6 +1785,20 @@
     color: #0f172a;
   }
 
+
+  .sim-scope-locked-pill {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #93c5fd;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
 </style>
 </head>
 <body>
@@ -6391,6 +6405,19 @@ let currentUpaRepFilter = 'all'; // 'all' (Team) or specific repKey
 let repCommCustomUnits = {}; // { [repKey]: { [pid]: number of units } }
 let activeEditingRepKey = null;
 
+// Determine if current user is a representative (strict isolation)
+function isCurrentUserRep() {
+  return !!(currentUser && currentUser.repKey);
+}
+
+// Get effective rep scope key
+function getEffectiveRepScope() {
+  if (currentUser && currentUser.repKey) {
+    return currentUser.repKey;
+  }
+  return currentUpaRepFilter;
+}
+
 // Baseline product stats (Target & Sales) for any scope
 function getProductBaselineStats(scopeKey) {
   const stats = {
@@ -6440,19 +6467,20 @@ function initDefaultCommUnits() {
 
 // Set master commercial preset
 function setCommForecastPreset(type) {
-  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
-  const scopeStats = getProductBaselineStats(currentUpaRepFilter);
+  const effectiveScope = getEffectiveRepScope();
+  const isSingleRep = (effectiveScope && effectiveScope !== 'all');
+  const scopeStats = getProductBaselineStats(effectiveScope);
 
   if (isSingleRep) {
-    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
+    if (!repCommCustomUnits[effectiveScope]) repCommCustomUnits[effectiveScope] = {};
     if (type === 'actual') {
       Object.keys(COMM_PROD_META).forEach(pid => {
-        repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
+        repCommCustomUnits[effectiveScope][pid] = scopeStats[pid].actualUnits;
       });
     } else {
       const pct = parseFloat(type) / 100.0;
       Object.keys(COMM_PROD_META).forEach(pid => {
-        repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
+        repCommCustomUnits[effectiveScope][pid] = scopeStats[pid].targetUnits * pct;
       });
     }
   } else {
@@ -6472,16 +6500,17 @@ function setCommForecastPreset(type) {
 
 // Set commercial product preset chip
 function setCommProductPresetChip(pid, type) {
-  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
-  const scopeStats = getProductBaselineStats(currentUpaRepFilter);
+  const effectiveScope = getEffectiveRepScope();
+  const isSingleRep = (effectiveScope && effectiveScope !== 'all');
+  const scopeStats = getProductBaselineStats(effectiveScope);
 
   if (isSingleRep) {
-    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
+    if (!repCommCustomUnits[effectiveScope]) repCommCustomUnits[effectiveScope] = {};
     if (type === 'actual') {
-      repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
+      repCommCustomUnits[effectiveScope][pid] = scopeStats[pid].actualUnits;
     } else {
       const pct = parseFloat(type) / 100.0;
-      repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
+      repCommCustomUnits[effectiveScope][pid] = scopeStats[pid].targetUnits * pct;
     }
   } else {
     if (type === 'actual') {
@@ -6498,11 +6527,12 @@ function setCommProductPresetChip(pid, type) {
 function onCommProductUnitChange(pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
-  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+  const effectiveScope = getEffectiveRepScope();
+  const isSingleRep = (effectiveScope && effectiveScope !== 'all');
 
   if (isSingleRep) {
-    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
-    repCommCustomUnits[currentUpaRepFilter][pid] = num;
+    if (!repCommCustomUnits[effectiveScope]) repCommCustomUnits[effectiveScope] = {};
+    repCommCustomUnits[effectiveScope][pid] = num;
   } else {
     commForecastUnits[pid] = num;
   }
@@ -6513,11 +6543,12 @@ function onCommProductUnitChange(pid, val) {
 function onCommProductSliderChange(pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
-  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+  const effectiveScope = getEffectiveRepScope();
+  const isSingleRep = (effectiveScope && effectiveScope !== 'all');
 
   if (isSingleRep) {
-    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
-    repCommCustomUnits[currentUpaRepFilter][pid] = num;
+    if (!repCommCustomUnits[effectiveScope]) repCommCustomUnits[effectiveScope] = {};
+    repCommCustomUnits[effectiveScope][pid] = num;
   } else {
     commForecastUnits[pid] = num;
   }
@@ -6538,13 +6569,26 @@ function setUpaEqualizeRate(val) {
   renderUpaSimulator(false);
 }
 
+// Change scope filter (Manager only; Representatives are strictly locked)
 function setUpaRepFilter(filter) {
+  if (isCurrentUserRep()) {
+    currentUpaRepFilter = currentUser.repKey;
+    renderUpaSimulator(true);
+    return;
+  }
   currentUpaRepFilter = filter;
   renderUpaSimulator(true);
 }
 
 function openUpaSimulator(repKey) {
+  // If user is a representative, STRICTLY lock scope to their own territory
+  if (isCurrentUserRep()) {
+    repKey = currentUser.repKey;
+  } else if (!repKey && currentActiveRepKey && currentActiveRepKey !== 'team' && currentActiveRepKey !== 'home') {
+    repKey = currentActiveRepKey;
+  }
   currentUpaRepFilter = repKey || 'all';
+
   if (!commForecastUnits[1260]) {
     initDefaultCommUnits();
   }
@@ -6563,6 +6607,7 @@ function closeUpaSimulator() {
 }
 
 function openRepUnitEditor(repKey) {
+  if (isCurrentUserRep() && repKey !== currentUser.repKey) return;
   activeEditingRepKey = repKey;
   renderUpaSimulator(false);
 }
@@ -6573,6 +6618,7 @@ function closeRepUnitEditor() {
 }
 
 function onRepCustomCommUnitChange(repKey, pid, val) {
+  if (isCurrentUserRep() && repKey !== currentUser.repKey) return;
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
   if (!repCommCustomUnits[repKey]) repCommCustomUnits[repKey] = {};
@@ -6581,19 +6627,21 @@ function onRepCustomCommUnitChange(repKey, pid, val) {
 }
 
 function resetSingleRepUnitOverrides(repKey) {
+  if (isCurrentUserRep() && repKey !== currentUser.repKey) return;
   delete repCommCustomUnits[repKey];
   renderUpaSimulator(true);
 }
 
 function resetAllRepUnitOverrides() {
-  repCommCustomUnits = {};
+  if (isCurrentUserRep()) {
+    delete repCommCustomUnits[currentUser.repKey];
+  } else {
+    repCommCustomUnits = {};
+  }
   renderUpaSimulator(true);
 }
 
-/* ── STRICT MATHEMATICAL ENGINE ──
-   1. Commercial: Target is FIXED, Sales modified via forecast units
-   2. UPA: Sales is FIXED (tender delivered), Target modified via equalization rate
-*/
+/* ── STRICT MATHEMATICAL ENGINE ── */
 function computeSeparatedSimulation(commUnits, upaRatePct, repOverrides) {
   const teamStats = getProductBaselineStats('all');
   commUnits = commUnits || commForecastUnits;
@@ -6824,12 +6872,19 @@ function renderUpaSimulator(rebuildControls = true) {
     initDefaultCommUnits();
   }
 
-  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
-  const activeRep = isSingleRep ? REPS.find(r => r.key === currentUpaRepFilter) : null;
+  // Security & Isolation: Representatives are locked strictly to their own territory
+  const isRepLocked = isCurrentUserRep();
+  if (isRepLocked) {
+    currentUpaRepFilter = currentUser.repKey;
+  }
+
+  const effectiveScope = getEffectiveRepScope();
+  const isSingleRep = (effectiveScope && effectiveScope !== 'all');
+  const activeRep = isSingleRep ? REPS.find(r => r.key === effectiveScope) : null;
   const scopeTitle = isSingleRep ? activeRep.name : 'Delta Region Team';
 
   const sim = computeSeparatedSimulation(commForecastUnits, currentUpaEqualizeRate, repCommCustomUnits);
-  const repSimData = isSingleRep ? sim.reps.find(r => r.key === currentUpaRepFilter) : null;
+  const repSimData = isSingleRep ? sim.reps.find(r => r.key === effectiveScope) : null;
 
   // Active metrics based on scope
   const activeQ4TargetPts = isSingleRep ? repSimData.simQ4Tp : sim.team.simQ4Tp;
@@ -6846,7 +6901,7 @@ function renderUpaSimulator(rebuildControls = true) {
   const activeIs100Met = activeYtdSimRatio >= 100;
   const activeIs120Met = activeYtdSimRatio >= 120;
 
-  const scopeStats = getProductBaselineStats(currentUpaRepFilter);
+  const scopeStats = getProductBaselineStats(effectiveScope);
 
   // UPA scope stats
   const scopeUpaActUnits = scopeStats[UPA_PID].actualUnits;
@@ -6881,22 +6936,35 @@ function renderUpaSimulator(rebuildControls = true) {
   ];
 
   const overrideKeys = Object.keys(repCommCustomUnits);
-  const hasOverrides = overrideKeys.length > 0;
+  const hasOverrides = isSingleRep 
+    ? !!(repCommCustomUnits[effectiveScope] && Object.keys(repCommCustomUnits[effectiveScope]).length > 0)
+    : overrideKeys.length > 0;
   const overrideCount = overrideKeys.length;
 
   let html = `
     <!-- CONTEXT & TARGET CLARIFICATION BAR -->
     <div class="sim-context-bar">
       <div class="sim-context-left">
-        <span class="sim-scope-badge">Current Scope:</span>
-        <select class="sim-scope-select" onchange="setUpaRepFilter(this.value)">
-          <option value="all" ${currentUpaRepFilter === 'all' ? 'selected' : ''}>👥 Entire Delta Team (Team Total Q4 Quota: 44,882 u)</option>
-          ${REPS.filter(r => !r.noData).map(r => `
-            <option value="${r.key}" ${currentUpaRepFilter === r.key ? 'selected' : ''}>
-              👤 ${r.name} (Q4 Quota: ${fmt(r.quarters?.Q4?.total?.targetUnits || 0)} u • ${fmt(r.quarters?.Q4?.total?.targetPoints || 0)} pts)
-            </option>
-          `).join('')}
-        </select>
+        ${isRepLocked ? `
+          <!-- STRICT REPRESENTATIVE LOCK: NO OPTION TO SELECT ANY OTHER SCOPE -->
+          <span class="sim-scope-badge" style="background:rgba(59,130,246,0.25); color:#93c5fd;">Territory Scope:</span>
+          <div class="sim-scope-locked-pill">
+            <span>👤 ${activeRep ? activeRep.name : 'Representative'}</span>
+            <span style="font-size:11px; opacity:0.8;">(${activeRep?.area || 'Delta Region'})</span>
+            <span style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">🔒 Personal Scope</span>
+          </div>
+        ` : `
+          <!-- DISTRICT MANAGER VIEW: FULL ACCESS -->
+          <span class="sim-scope-badge">Current Scope:</span>
+          <select class="sim-scope-select" onchange="setUpaRepFilter(this.value)">
+            <option value="all" ${currentUpaRepFilter === 'all' ? 'selected' : ''}>👥 Entire Delta Team (Team Total Q4 Quota: 44,882 u)</option>
+            ${REPS.filter(r => !r.noData).map(r => `
+              <option value="${r.key}" ${currentUpaRepFilter === r.key ? 'selected' : ''}>
+                👤 ${r.name} (Q4 Quota: ${fmt(r.quarters?.Q4?.total?.targetUnits || 0)} u • ${fmt(r.quarters?.Q4?.total?.targetPoints || 0)} pts)
+              </option>
+            `).join('')}
+          </select>
+        `}
       </div>
 
       <div class="sim-locked-quarters-pill" title="Q1, Q2, and Q3 are fully finalized and cannot be modified.">
@@ -6954,7 +7022,7 @@ function renderUpaSimulator(rebuildControls = true) {
         </div>
         <div class="report-kpi-sub">
           ${activeIs100Met 
-            ? `Surplus: <strong style="color:#10b981;">+${fmt(sim.team.gap100Pts)} pts</strong> ahead of annual quota` 
+            ? `Annual Target Met for <strong>${scopeTitle}</strong>` 
             : `Needs more Q4 volume to close annual quota`}
         </div>
       </div>
@@ -6971,7 +7039,7 @@ function renderUpaSimulator(rebuildControls = true) {
         <div class="report-kpi-sub">
           ${activeIs120Met 
             ? `120% Elite Tier Achieved!` 
-            : `Gap to 120%: <strong>${fmt(Math.max(sim.team.gap120Pts, 0))} pts</strong>`}
+            : `Targeting 120% annual acceleration`}
         </div>
       </div>
     </div>
@@ -6993,7 +7061,7 @@ function renderUpaSimulator(rebuildControls = true) {
 
       <!-- Commercial Quick Presets -->
       <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-        <span style="font-size:11px; font-weight:700; color:#64748b;">Commercial Presets:</span>
+        <span style="font-size:11px; font-weight:700; color:#64748b;">Presets for ${scopeTitle}:</span>
         ${commPresets.map(p => `
           <button class="master-preset-btn" style="padding:3px 8px; font-size:10.5px;" onclick="setCommForecastPreset('${p.val}')">
             ${p.label}
@@ -7011,8 +7079,8 @@ function renderUpaSimulator(rebuildControls = true) {
 
         let curUnits = 0;
         if (isSingleRep) {
-          if (repCommCustomUnits[currentUpaRepFilter] && repCommCustomUnits[currentUpaRepFilter][pid] !== undefined) {
-            curUnits = repCommCustomUnits[currentUpaRepFilter][pid];
+          if (repCommCustomUnits[effectiveScope] && repCommCustomUnits[effectiveScope][pid] !== undefined) {
+            curUnits = repCommCustomUnits[effectiveScope][pid];
           } else {
             const teamTgt = getProductBaselineStats('all')[pid].targetUnits;
             const teamFc = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : teamTgt;
@@ -7179,7 +7247,7 @@ function renderUpaSimulator(rebuildControls = true) {
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
         <div>
           <div style="font-size:14.5px; font-weight:800; color:#0f172a;">
-            Representatives Performance & Q4 Dual Simulation Breakdown
+            ${isRepLocked ? `Performance & Q4 Forecast Summary for ${activeRep?.name}` : 'Representatives Performance & Q4 Dual Simulation Breakdown'}
           </div>
           <div style="font-size:11px; color:#64748b; margin-top:2px;">
             Mix, Rapid & 100IU reflect forecasted sales units. Glargivin UPA reflects equalized target quota at ${currentUpaEqualizeRate.toFixed(1)}%.
@@ -7188,16 +7256,20 @@ function renderUpaSimulator(rebuildControls = true) {
         <div style="display:flex; align-items:center; gap:10px;">
           ${hasOverrides ? `
             <button class="btn-reset-overrides" onclick="resetAllRepUnitOverrides()">
-              Reset All ${overrideCount} Rep Overrides
+              Reset Overrides
             </button>
           ` : ''}
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:11px; font-weight:700; color:#64748b;">Filter:</span>
-            <select class="upa-rep-select" onchange="setUpaRepFilter(this.value)">
-              <option value="all" ${currentUpaRepFilter === 'all' ? 'selected' : ''}>All Reps</option>
-              ${sim.reps.map(r => `<option value="${r.key}" ${currentUpaRepFilter === r.key ? 'selected' : ''}>${r.name}</option>`).join('')}
-            </select>
-          </div>
+
+          <!-- Filter only visible to District Manager; Hidden for Representatives -->
+          ${!isRepLocked ? `
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:11px; font-weight:700; color:#64748b;">Filter:</span>
+              <select class="upa-rep-select" onchange="setUpaRepFilter(this.value)">
+                <option value="all" ${currentUpaRepFilter === 'all' ? 'selected' : ''}>All Reps</option>
+                ${sim.reps.map(r => `<option value="${r.key}" ${currentUpaRepFilter === r.key ? 'selected' : ''}>${r.name}</option>`).join('')}
+              </select>
+            </div>
+          ` : ''}
         </div>
       </div>
 
@@ -7220,7 +7292,7 @@ function renderUpaSimulator(rebuildControls = true) {
           </thead>
           <tbody>
             ${sim.reps
-              .filter(r => currentUpaRepFilter === 'all' || currentUpaRepFilter === r.key)
+              .filter(r => isRepLocked ? (r.key === currentUser.repKey) : (currentUpaRepFilter === 'all' || currentUpaRepFilter === r.key))
               .map(r => {
                 const isOverridden = r.hasOverrides;
                 return `
@@ -7326,36 +7398,38 @@ function renderUpaSimulator(rebuildControls = true) {
                 `;
               }).join('')}
           </tbody>
-          <tfoot>
-            <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
-              <td>
-                <div style="color:#0f172a; font-size:12.5px;">DELTA REGION TEAM</div>
-                <div style="font-size:10px; color:#64748b;">Dr. Sherif (9 Representatives)</div>
-              </td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1260].targetUnits)} u (Tgt)</td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1259].targetUnits)} u (Tgt)</td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1110].targetUnits)} u (Tgt)</td>
-              <td style="text-align:right; font-weight:900; color:#b45309;">${fmt(sim.teamUpaSimTp)} pts (Eq. Tgt)</td>
-              <td style="text-align:right; font-weight:900; color:#0f172a;">${fmt(sim.team.simQ4Sp)}</td>
-              <td style="text-align:right;">
-                <span class="ratio-badge ratio-green" style="font-size:12px;">${sim.team.simQ4Ratio.toFixed(2)}%</span>
-                <div style="font-size:10px; color:#10b981; margin-top:2px;">(+${sim.team.q4RatioDiff.toFixed(2)}%)</div>
-              </td>
-              <td style="text-align:right;">
-                <span class="ratio-badge ${sim.team.simYtdRatio >= 100 ? 'ratio-green' : 'ratio-blue'}" style="font-size:12.5px;">
-                  ${sim.team.simYtdRatio.toFixed(2)}%
-                </span>
-                <div style="font-size:10px; color:#64748b; margin-top:2px;">was ${sim.team.origYtdRatio.toFixed(2)}% (+${sim.team.ytdRatioDiff.toFixed(2)}%)</div>
-              </td>
-              <td style="text-align:center;">
-                ${sim.team.is100Met ? '<span style="color:#10b981; font-weight:900;">✓ 100% MET</span>' : '<span style="color:#f59e0b;">IN PROGRESS</span>'}
-              </td>
-              <td style="text-align:center;">
-                ${sim.team.is120Met ? '<span style="color:#8b5cf6; font-weight:900;">✓ 120% MET</span>' : '<span style="color:#94a3b8;">✗</span>'}
-              </td>
-              <td></td>
-            </tr>
-          </tfoot>
+          ${!isRepLocked && currentUpaRepFilter === 'all' ? `
+            <tfoot>
+              <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
+                <td>
+                  <div style="color:#0f172a; font-size:12.5px;">DELTA REGION TEAM</div>
+                  <div style="font-size:10px; color:#64748b;">Dr. Sherif (9 Representatives)</div>
+                </td>
+                <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1260].targetUnits)} u (Tgt)</td>
+                <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1259].targetUnits)} u (Tgt)</td>
+                <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1110].targetUnits)} u (Tgt)</td>
+                <td style="text-align:right; font-weight:900; color:#b45309;">${fmt(sim.teamUpaSimTp)} pts (Eq. Tgt)</td>
+                <td style="text-align:right; font-weight:900; color:#0f172a;">${fmt(sim.team.simQ4Sp)}</td>
+                <td style="text-align:right;">
+                  <span class="ratio-badge ratio-green" style="font-size:12px;">${sim.team.simQ4Ratio.toFixed(2)}%</span>
+                  <div style="font-size:10px; color:#10b981; margin-top:2px;">(+${sim.team.q4RatioDiff.toFixed(2)}%)</div>
+                </td>
+                <td style="text-align:right;">
+                  <span class="ratio-badge ${sim.team.simYtdRatio >= 100 ? 'ratio-green' : 'ratio-blue'}" style="font-size:12.5px;">
+                    ${sim.team.simYtdRatio.toFixed(2)}%
+                  </span>
+                  <div style="font-size:10px; color:#64748b; margin-top:2px;">was ${sim.team.origYtdRatio.toFixed(2)}% (+${sim.team.ytdRatioDiff.toFixed(2)}%)</div>
+                </td>
+                <td style="text-align:center;">
+                  ${sim.team.is100Met ? '<span style="color:#10b981; font-weight:900;">✓ 100% MET</span>' : '<span style="color:#f59e0b;">IN PROGRESS</span>'}
+                </td>
+                <td style="text-align:center;">
+                  ${sim.team.is120Met ? '<span style="color:#8b5cf6; font-weight:900;">✓ 120% MET</span>' : '<span style="color:#94a3b8;">✗</span>'}
+                </td>
+                <td></td>
+              </tr>
+            </tfoot>
+          ` : ''}
         </table>
       </div>
     </div>
@@ -7382,16 +7456,19 @@ function downloadUpaSimExcel() {
     return;
   }
 
-  const sim = computeSeparatedSimulation(commForecastUnits, currentUpaEqualizeRate, repCommCustomUnits);
-  const team = sim.team;
-  const teamStats = getProductBaselineStats('all');
+  const isRepLocked = isCurrentUserRep();
+  const effectiveScope = getEffectiveRepScope();
+  const isSingleRep = isRepLocked || (effectiveScope && effectiveScope !== 'all');
+  const activeRep = isSingleRep ? REPS.find(r => r.key === effectiveScope) : null;
 
+  const sim = computeSeparatedSimulation(commForecastUnits, currentUpaEqualizeRate, repCommCustomUnits);
+  const scopeStats = getProductBaselineStats(effectiveScope);
   const wb = XLSX.utils.book_new();
 
   // 1. Commercial Forecast Sheet
   const commRows = [
     ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
-    ['PART 1: COMMERCIAL PRODUCTS CLOSING SALES FORECAST (UNITS)'],
+    [`PART 1: COMMERCIAL PRODUCTS CLOSING SALES FORECAST — ${isSingleRep ? activeRep.name : 'DELTA TEAM'}`],
     ['Generated On:', new Date().toLocaleString()],
     ['Notice:', 'Quotas are fixed. Forecast values represent expected physical sales units.'],
     [''],
@@ -7400,8 +7477,21 @@ function downloadUpaSimExcel() {
 
   Object.keys(COMM_PROD_META).forEach(pid => {
     const meta = COMM_PROD_META[pid];
-    const s = teamStats[pid];
-    const fcUnits = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : s.actualUnits;
+    const s = scopeStats[pid];
+    let fcUnits = 0;
+    if (isSingleRep) {
+      if (repCommCustomUnits[effectiveScope] && repCommCustomUnits[effectiveScope][pid] !== undefined) {
+        fcUnits = repCommCustomUnits[effectiveScope][pid];
+      } else {
+        const teamTgt = getProductBaselineStats('all')[pid].targetUnits;
+        const teamFc = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : teamTgt;
+        const ratio = teamTgt > 0 ? (teamFc / teamTgt) : 1.0;
+        fcUnits = Math.max(s.actualUnits, s.targetUnits * ratio);
+      }
+    } else {
+      fcUnits = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : s.actualUnits;
+    }
+
     const fcPoints = fcUnits * meta.ptsPerUnit;
     const fcValue = fcUnits * meta.price;
     const achPct = s.targetUnits > 0 ? (fcUnits / s.targetUnits * 100) : 0;
@@ -7428,22 +7518,21 @@ function downloadUpaSimExcel() {
   // 2. UPA Equalization Sheet
   const upaRows = [
     ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
-    ['PART 2: GLARGIVIN UPA TENDER TARGET EQUALIZATION REPORT'],
+    [`PART 2: GLARGIVIN UPA TENDER TARGET EQUALIZATION REPORT — ${isSingleRep ? activeRep.name : 'DELTA TEAM'}`],
     ['Generated On:', new Date().toLocaleString()],
     ['Notice:', 'Sales are fixed at tender deliveries. Line rate rebalances the Q4 target quota.'],
     [''],
     ['Parameter', 'Units', 'Points', 'Value (EGP)', 'Achievement %'],
-    ['Actual Delivered Tender Sales (Fixed)', teamStats[UPA_PID].actualUnits, sim.teamUpaActSp, sim.teamUpaActSp / 2, (teamStats[UPA_PID].actualPoints / teamStats[UPA_PID].targetPoints * 100)],
-    ['Original Baseline Q4 Quota Target', teamStats[UPA_PID].targetUnits, sim.teamUpaOrigTp, sim.teamUpaOrigTp / 2, '—'],
+    ['Actual Delivered Tender Sales (Fixed)', scopeStats[UPA_PID].actualUnits, scopeStats[UPA_PID].actualPoints, scopeStats[UPA_PID].actualPoints / 2, (scopeStats[UPA_PID].targetPoints > 0 ? (scopeStats[UPA_PID].actualPoints / scopeStats[UPA_PID].targetPoints * 100) : 0)],
+    ['Original Baseline Q4 Quota Target', scopeStats[UPA_PID].targetUnits, scopeStats[UPA_PID].targetPoints, scopeStats[UPA_PID].targetPoints / 2, '—'],
     ['Equalized Line Rate', '', '', '', currentUpaEqualizeRate.toFixed(2) + '%'],
-    ['Equalized Q4 Quota Target', sim.teamUpaSimTargetUnits, sim.teamUpaSimTp, sim.teamUpaSimTp / 2, currentUpaEqualizeRate.toFixed(2) + '%'],
-    ['Target Quota Adjustment (Relief)', teamStats[UPA_PID].targetUnits - sim.teamUpaSimTargetUnits, sim.teamUpaOrigTp - sim.teamUpaSimTp, (sim.teamUpaOrigTp - sim.teamUpaSimTp) / 2, '']
+    ['Equalized Q4 Quota Target', currentUpaEqualizeRate > 0 ? (scopeStats[UPA_PID].actualUnits / (currentUpaEqualizeRate/100)) : scopeStats[UPA_PID].targetUnits, currentUpaEqualizeRate > 0 ? (scopeStats[UPA_PID].actualPoints / (currentUpaEqualizeRate/100)) : scopeStats[UPA_PID].targetPoints, currentUpaEqualizeRate > 0 ? (scopeStats[UPA_PID].actualPoints / (currentUpaEqualizeRate/100) / 2) : (scopeStats[UPA_PID].targetPoints / 2), currentUpaEqualizeRate.toFixed(2) + '%']
   ];
 
   const wsUpa = XLSX.utils.aoa_to_sheet(upaRows);
   XLSX.utils.book_append_sheet(wb, wsUpa, 'UPA Equalization');
 
-  // 3. Reps Combined Sheet
+  // 3. Representatives Sheet (Filtered to single rep if locked)
   const repRows = [
     ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
     ['COMBINED Q4 DUAL SIMULATION & FULL-YEAR PROJECTION BREAKDOWN'],
@@ -7458,7 +7547,9 @@ function downloadUpaSimExcel() {
     ]
   ];
 
-  sim.reps.forEach(r => {
+  const repsToExport = sim.reps.filter(r => isRepLocked ? (r.key === currentUser.repKey) : (currentUpaRepFilter === 'all' || currentUpaRepFilter === r.key));
+
+  repsToExport.forEach(r => {
     repRows.push([
       r.name,
       r.area,
@@ -7477,19 +7568,10 @@ function downloadUpaSimExcel() {
     ]);
   });
 
-  repRows.push(['']);
-  repRows.push([
-    'DELTA REGION TEAM (Dr. Sherif)', 'Grand Aggregate',
-    commForecastUnits[1260], commForecastUnits[1259], commForecastUnits[1110],
-    teamStats[UPA_PID].actualUnits, sim.teamUpaSimTp,
-    team.simQ4Sp, team.simQ4Tp, team.simQ4Ratio,
-    team.origYtdRatio, team.simYtdRatio, team.is100Met ? 'YES' : 'NO', team.is120Met ? 'YES' : 'NO'
-  ]);
-
   const wsReps = XLSX.utils.aoa_to_sheet(repRows);
   XLSX.utils.book_append_sheet(wb, wsReps, 'Reps Dual Simulation');
 
-  const filename = `EVA_Delta_Q4_Dual_Simulation_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const filename = `EVA_Delta_Q4_Simulation_${isSingleRep ? activeRep.name.replace(/\s+/g, '_') : 'Team'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
 
