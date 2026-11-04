@@ -2649,6 +2649,209 @@ HTML_CONTENT = r'''<!DOCTYPE html>
   border-radius: 3px;
 }
 
+
+/* ── DISTRIBUTOR SOURCING & FILTER STYLES ── */
+.cust-dis-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cust-dis-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cust-dis-pill:hover {
+  background: var(--surface-alt);
+  color: var(--text-primary);
+}
+.cust-dis-pill.active {
+  background: #090c10;
+  color: #fbbf24;
+  border-color: #090c10;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+.dis-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.pos-dot { background: #f59e0b; }
+.ibnsina-dot { background: #10b981; }
+.atr-dot { background: #0284c7; }
+.limitless-dot { background: #8b5cf6; }
+.egd-dot { background: #64748b; }
+
+/* Distributor Badges */
+.dis-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.dis-badge-pos {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+}
+.dis-badge-ibnsina {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+.dis-badge-atr {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+}
+.dis-badge-limitless {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
+}
+.dis-badge-egd {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* Distributor Market Share Deck */
+.distributor-deck-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.distributor-deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.top-dis-headline-pill {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.distributor-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.distributor-stat-card {
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.distributor-stat-card:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  background: #ffffff;
+}
+.distributor-stat-card.active-filter {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+.distributor-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.distributor-card-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.distributor-card-share {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+.distributor-bar-wrap {
+  width: 100%;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.distributor-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+.distributor-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* Product Card Distributor Strip */
+.prod-dis-strip {
+  background: rgba(0,0,0,0.02);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.prod-dis-leader {
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.prod-dis-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.prod-dis-mini-chip {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
 /* Print Specific Rules for Customer View */
 @media print {
   body.printing-customer > *:not(#main),
@@ -2941,8 +3144,8 @@ HTML_CONTENT = r'''<!DOCTYPE html>
 
       <!-- TIME HORIZON FILTER -->
       <div class="cust-period-row">
-        <div style="font-size:12px; font-weight:800; color:var(--text-secondary);">
-          Time Horizon Filter:
+        <div style="font-size:12px; font-weight:800; color:var(--text-secondary); display:flex; align-items:center; gap:6px;">
+          <span>📅</span> Time Horizon:
         </div>
         <div class="cust-period-pills">
           <button class="cust-period-pill active" data-period="all" onclick="setCustomerPeriod('all')">Full Year (YTD)</button>
@@ -2950,6 +3153,21 @@ HTML_CONTENT = r'''<!DOCTYPE html>
           <button class="cust-period-pill" data-period="Q2" onclick="setCustomerPeriod('Q2')">Q2 (Apr-Jun)</button>
           <button class="cust-period-pill" data-period="Q3" onclick="setCustomerPeriod('Q3')">Q3 (Jul-Sep)</button>
           <button class="cust-period-pill" data-period="Q4" onclick="setCustomerPeriod('Q4')">Q4 (Oct)</button>
+        </div>
+      </div>
+
+      <!-- DISTRIBUTOR SOURCING FILTER -->
+      <div class="cust-period-row" style="margin-top:10px; padding-top:10px;">
+        <div style="font-size:12px; font-weight:800; color:var(--text-secondary); display:flex; align-items:center; gap:6px;">
+          <span>🚚</span> Distributor Filter:
+        </div>
+        <div class="cust-dis-pills" id="cust-dis-pills">
+          <button class="cust-dis-pill active" data-dis="all" onclick="setCustomerDistributor('all')">All Distributors</button>
+          <button class="cust-dis-pill" data-dis="POS" onclick="setCustomerDistributor('POS')"><span class="dis-dot pos-dot"></span> POS</button>
+          <button class="cust-dis-pill" data-dis="Ibn Sina" onclick="setCustomerDistributor('Ibn Sina')"><span class="dis-dot ibnsina-dot"></span> Ibn Sina</button>
+          <button class="cust-dis-pill" data-dis="ATR" onclick="setCustomerDistributor('ATR')"><span class="dis-dot atr-dot"></span> ATR</button>
+          <button class="cust-dis-pill" data-dis="Limitless UPA" onclick="setCustomerDistributor('Limitless UPA')"><span class="dis-dot limitless-dot"></span> Limitless UPA</button>
+          <button class="cust-dis-pill" data-dis="EGD" onclick="setCustomerDistributor('EGD')"><span class="dis-dot egd-dot"></span> EGD</button>
         </div>
       </div>
     </div>
@@ -2976,6 +3194,23 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         <div class="cust-kpi-value" id="kpi-cust-accounts">0 Outlets</div>
         <div class="cust-kpi-sub" id="kpi-cust-topacc">Top: None</div>
       </div>
+    </div>
+
+    <!-- DISTRIBUTOR SOURCING INTELLIGENCE DECK -->
+    <div class="distributor-deck-card" id="distributorDeckCard">
+      <div class="distributor-deck-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="font-size:20px;">🚚</div>
+          <div>
+            <div style="font-size:14px; font-weight:800; color:var(--text-primary);">Distributor Sourcing & Market Share Analysis (Selected Territory)</div>
+            <div style="font-size:11.5px; color:var(--text-muted);">Shows total volume and which distributors pharmacies and hospitals order from across selected bricks</div>
+          </div>
+        </div>
+        <div id="top-distributor-badge" class="top-dis-headline-pill">
+          🏆 Market Leader: Calculating...
+        </div>
+      </div>
+      <div class="distributor-cards-grid" id="distributorCardsGrid"></div>
     </div>
 
     <!-- THE 4 PRODUCTS 2x2 GRID -->
@@ -6740,7 +6975,24 @@ const CUSTOMER_DATA = __CUSTOMER_DATA_JSON__;
 let selectedBricks = new Set();
 let activeGovFilter = 'all';
 let activeCustomerPeriod = 'all'; // 'all', 'Q1', 'Q2', 'Q3', 'Q4'
+let activeCustomerDis = 'all';    // 'all', 'POS', 'Ibn Sina', 'ATR', 'Limitless UPA', 'EGD'
 let brickSearchQuery = '';
+
+const DISTRIBUTOR_CONFIG = {
+  'POS': { name: 'POS (Pharma Overseas)', dotCls: 'pos-dot', badgeCls: 'dis-badge-pos', color: '#f59e0b', type: 'Retail' },
+  'Ibn Sina': { name: 'Ibn Sina Pharma', dotCls: 'ibnsina-dot', badgeCls: 'dis-badge-ibnsina', color: '#10b981', type: 'Retail' },
+  'ATR': { name: 'ATR (United / Ahram)', dotCls: 'atr-dot', badgeCls: 'dis-badge-atr', color: '#0284c7', type: 'Tender & Retail' },
+  'Limitless UPA': { name: 'Limitless UPA', dotCls: 'limitless-dot', badgeCls: 'dis-badge-limitless', color: '#8b5cf6', type: 'Institutional Tender' },
+  'EGD': { name: 'EGD Pharma', dotCls: 'egd-dot', badgeCls: 'dis-badge-egd', color: '#64748b', type: 'Retail' }
+};
+
+function setCustomerDistributor(dis) {
+  activeCustomerDis = dis || 'all';
+  document.querySelectorAll('.cust-dis-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-dis') === activeCustomerDis);
+  });
+  renderCustomerView();
+}
 
 const PRODUCT_CONFIG = {
   mix: {
@@ -6983,15 +7235,25 @@ function renderCustomerView() {
     scopePill.textContent = `${selectedBricks.size} Brick${selectedBricks.size === 1 ? '' : 's'} Selected`;
   }
 
-  // Aggregate selected bricks data
+  // Active Quarter
   const qIdxMap = { Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
   const targetQ = qIdxMap[activeCustomerPeriod];
 
+  // Aggregation per product
   const prodAgg = {
-    mix: { accounts: {}, totalU: 0, totalV: 0 },
-    rapid: { accounts: {}, totalU: 0, totalV: 0 },
-    glarg_comm: { accounts: {}, totalU: 0, totalV: 0 },
-    glarg_upa: { accounts: {}, totalU: 0, totalV: 0 }
+    mix: { accounts: {}, totalU: 0, totalV: 0, disTotals: {} },
+    rapid: { accounts: {}, totalU: 0, totalV: 0, disTotals: {} },
+    glarg_comm: { accounts: {}, totalU: 0, totalV: 0, disTotals: {} },
+    glarg_upa: { accounts: {}, totalU: 0, totalV: 0, disTotals: {} }
+  };
+
+  // Territory-wide distributor totals (all products combined)
+  const territoryDisStats = {
+    'POS': { units: 0, val: 0, accounts: new Set() },
+    'Ibn Sina': { units: 0, val: 0, accounts: new Set() },
+    'ATR': { units: 0, val: 0, accounts: new Set() },
+    'Limitless UPA': { units: 0, val: 0, accounts: new Set() },
+    'EGD': { units: 0, val: 0, accounts: new Set() }
   };
 
   const allBuyingAccounts = new Set();
@@ -7007,16 +7269,45 @@ function renderCustomerView() {
     Object.keys(prodAgg).forEach(pk => {
       const rawList = bInfo.prods[pk] || [];
       rawList.forEach(item => {
-        // item: [name, code, total_units, total_val, [q1, q2, q3, q4]]
+        // item: [name, code, total_units, total_val, [q1, q2, q3, q4], {dis_name: units}]
         const name = item[0];
         const code = item[1];
-        let units = item[2];
-        let val = item[3];
+        const rawTotalU = item[2];
+        const rawTotalV = item[3];
+        const disMap = item[5] || {};
+
+        // Track territory distributor stats regardless of customer active dis filter
+        Object.entries(disMap).forEach(([dName, dUnits]) => {
+          if (territoryDisStats[dName] && dUnits > 0) {
+            territoryDisStats[dName].units += dUnits;
+            const dVal = rawTotalU > 0 ? (rawTotalV * (dUnits / rawTotalU)) : 0;
+            territoryDisStats[dName].val += dVal;
+            territoryDisStats[dName].accounts.add(name);
+          }
+          // product level distributor totals
+          prodAgg[pk].disTotals[dName] = (prodAgg[pk].disTotals[dName] || 0) + dUnits;
+        });
+
+        // Determine effective units & value based on active filters (Quarter & Distributor)
+        let units = rawTotalU;
+        let val = rawTotalV;
+
+        if (activeCustomerDis !== 'all') {
+          units = disMap[activeCustomerDis] || 0;
+          if (units <= 0) return; // skip account if it doesn't order from filtered distributor
+          val = rawTotalU > 0 ? (rawTotalV * (units / rawTotalU)) : 0;
+        }
 
         if (targetQ !== undefined) {
-          units = (item[4] && item[4][targetQ] !== undefined) ? item[4][targetQ] : 0;
-          // Approximate quarterly value based on unit proportion
-          val = item[2] > 0 ? (val * (units / item[2])) : 0;
+          const qUnits = (item[4] && item[4][targetQ] !== undefined) ? item[4][targetQ] : 0;
+          if (activeCustomerDis !== 'all') {
+            // scale quarterly units by distributor share
+            const disRatio = rawTotalU > 0 ? (units / rawTotalU) : 0;
+            units = qUnits * disRatio;
+          } else {
+            units = qUnits;
+          }
+          val = rawTotalU > 0 ? (rawTotalV * (units / rawTotalU)) : 0;
         }
 
         if (units <= 0) return;
@@ -7027,6 +7318,22 @@ function renderCustomerView() {
           overallTopAcc = { name: name, units: overallAccUnits[name] };
         }
 
+        // Determine Preferred Distributor for this customer in this product
+        let prefDis = 'Unknown';
+        let prefDisU = 0;
+        if (activeCustomerDis !== 'all') {
+          prefDis = activeCustomerDis;
+          prefDisU = units;
+        } else {
+          Object.entries(disMap).forEach(([d, du]) => {
+            if (du > prefDisU) {
+              prefDisU = du;
+              prefDis = d;
+            }
+          });
+        }
+        const prefPct = rawTotalU > 0 ? Math.round((prefDisU / rawTotalU) * 100) : 100;
+
         const accKey = name + '||' + code;
         if (!prodAgg[pk].accounts[accKey]) {
           prodAgg[pk].accounts[accKey] = {
@@ -7034,7 +7341,9 @@ function renderCustomerView() {
             code: code,
             brick: brick,
             units: 0,
-            val: 0
+            val: 0,
+            primaryDis: prefDis,
+            primaryPct: prefPct
           };
         }
         prodAgg[pk].accounts[accKey].units += units;
@@ -7053,7 +7362,7 @@ function renderCustomerView() {
     grandTotalValue += p.totalV;
   });
 
-  // Update KPI Cards
+  // Update Summary KPI Cards
   const kpiScope = document.getElementById('kpi-cust-scope');
   const kpiGovs = document.getElementById('kpi-cust-govs');
   const kpiUnits = document.getElementById('kpi-cust-units');
@@ -7068,6 +7377,9 @@ function renderCustomerView() {
   if (kpiAccs) kpiAccs.textContent = `${allBuyingAccounts.size} Outlets`;
   if (kpiTopAcc) kpiTopAcc.textContent = overallTopAcc.name ? `Top: ${overallTopAcc.name.slice(0, 24)} (${overallTopAcc.units.toLocaleString()} u)` : 'Top: None';
 
+  // Render Distributor Sourcing Deck
+  renderDistributorDeck(territoryDisStats, grandTotalUnits);
+
   // Render 4 Product Cards
   const grid = document.getElementById('custProductsGrid');
   if (!grid) return;
@@ -7077,7 +7389,7 @@ function renderCustomerView() {
       <div style="grid-column:1/-1; background:var(--surface); border:2px dashed var(--border-dark); border-radius:14px; padding:48px 24px; text-align:center;">
         <div style="font-size:36px; margin-bottom:12px;">👈</div>
         <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:6px;">No Bricks Selected</div>
-        <div style="font-size:13px; color:var(--text-muted); max-width:440px; margin:0 auto 16px auto;">Please select one or more of your territory bricks using the selector above to calculate the Top 10 buying accounts.</div>
+        <div style="font-size:13px; color:var(--text-muted); max-width:440px; margin:0 auto 16px auto;">Please select one or more of your territory bricks using the selector above to calculate the Top 10 buying accounts and distributor sourcing.</div>
         <button class="btn btn-primary" onclick="selectAllGovBricks('all')" style="background:#f59e0b; color:#090c10; font-weight:800; border:none;">Select All Delta Bricks</button>
       </div>
     `;
@@ -7091,9 +7403,28 @@ function renderCustomerView() {
     accList.sort((a, b) => b.units - a.units);
     const top10 = accList.slice(0, 10);
 
+    // Calculate distributor breakdown for this product
+    const disList = Object.entries(dataObj.disTotals).filter(([d, u]) => u > 0);
+    disList.sort((a, b) => b[1] - a[1]);
+    const prodDisTotal = disList.reduce((sum, [, u]) => sum + u, 0);
+
+    let disLeaderHtml = '';
+    let disChipsHtml = '';
+    if (disList.length > 0) {
+      const topDis = disList[0];
+      const topDisShare = prodDisTotal > 0 ? (topDis[1] / prodDisTotal * 100).toFixed(1) : 0;
+      disLeaderHtml = `🏆 Top Sourcing: <span style="color:#b45309; margin-left:4px;">${topDis[0]} (${topDisShare}%)</span>`;
+      disChipsHtml = disList.map(([dName, dUnits]) => {
+        const pct = prodDisTotal > 0 ? (dUnits / prodDisTotal * 100).toFixed(1) : 0;
+        return `<span class="prod-dis-mini-chip" title="${dName}: ${Math.round(dUnits).toLocaleString()} units">${dName}: ${pct}%</span>`;
+      }).join('');
+    } else {
+      disLeaderHtml = 'No distributor data';
+    }
+
     let rowsHtml = '';
     if (top10.length === 0) {
-      rowsHtml = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No sales recorded for this product in selected bricks during this period.</td></tr>`;
+      rowsHtml = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">No sales recorded for this product in selected bricks matching current filters.</td></tr>`;
     } else {
       rowsHtml = top10.map((acc, idx) => {
         const rank = idx + 1;
@@ -7104,33 +7435,35 @@ function renderCustomerView() {
 
         const share = dataObj.totalU > 0 ? (acc.units / dataObj.totalU * 100) : 0;
 
+        // Distributor Badge
+        const disCfg = DISTRIBUTOR_CONFIG[acc.primaryDis] || { badgeCls: 'dis-badge-egd' };
+        const disLabel = activeCustomerDis !== 'all' ? acc.primaryDis : `${acc.primaryDis} (${acc.primaryPct}%)`;
+
         return `
           <tr>
-            <td class="center" style="width:36px;">
+            <td class="center" style="width:34px;">
               <span class="rank-badge ${rankCls}">${rank}</span>
             </td>
-            <td style="width:40%;">
+            <td style="width:34%;">
               <div class="cust-name-cell">
                 <div class="cust-name-title" title="${acc.name}">${acc.name}</div>
                 <div class="cust-name-code">Code: ${acc.code || 'N/A'}</div>
               </div>
             </td>
-            <td style="width:24%;">
+            <td style="width:18%;">
               <span class="cust-brick-badge" title="${acc.brick}">${acc.brick}</span>
             </td>
-            <td class="num" style="width:14%; font-weight:800; color:var(--text-primary);">
+            <td class="center" style="width:18%;">
+              <span class="dis-badge ${disCfg.badgeCls}" title="Primary Sourcing: ${acc.primaryDis}">${disLabel}</span>
+            </td>
+            <td class="num" style="width:12%; font-weight:800; color:var(--text-primary);">
               ${Math.round(acc.units).toLocaleString()} <span style="font-size:10px; font-weight:500; color:var(--text-muted);">u</span>
             </td>
-            <td class="num" style="width:20%; font-weight:700; color:var(--text-secondary);">
-              ${Math.round(acc.val).toLocaleString()} <span style="font-size:10px; color:var(--text-muted);">EGP</span>
+            <td class="num" style="width:12%; font-weight:700; color:var(--text-secondary);">
+              ${Math.round(acc.val).toLocaleString()}
             </td>
-            <td class="num" style="width:12%;">
-              <div class="cust-share-cell">
-                <span style="font-size:11px; font-weight:800; color:var(--text-primary);">${share.toFixed(1)}%</span>
-                <div class="cust-share-bar">
-                  <div class="cust-share-fill" style="width:${Math.min(share, 100)}%; background:${cfg.fillColor};"></div>
-                </div>
-              </div>
+            <td class="num" style="width:8%;">
+              <span style="font-size:11px; font-weight:800; color:var(--text-primary);">${share.toFixed(1)}%</span>
             </td>
           </tr>
         `;
@@ -7152,22 +7485,78 @@ function renderCustomerView() {
             <div class="prod-card-metric-sub">EGP ${Math.round(dataObj.totalV).toLocaleString()}</div>
           </div>
         </div>
+
+        <!-- PRODUCT LEVEL DISTRIBUTOR BREAKDOWN STRIP -->
+        <div class="prod-dis-strip">
+          <div class="prod-dis-leader">${disLeaderHtml}</div>
+          <div class="prod-dis-chips">${disChipsHtml}</div>
+        </div>
+
         <div class="cust-table-wrap">
           <table class="cust-table">
             <thead>
               <tr>
-                <th class="center" style="width:36px;">#</th>
-                <th style="width:40%;">Account Name</th>
-                <th style="width:24%;">Brick</th>
-                <th class="num" style="width:14%;">Units</th>
-                <th class="num" style="width:20%;">Value</th>
-                <th class="num" style="width:12%;">Share</th>
+                <th class="center" style="width:34px;">#</th>
+                <th style="width:34%;">Account Name</th>
+                <th style="width:18%;">Brick</th>
+                <th class="center" style="width:18%;">Sourcing Distributor</th>
+                <th class="num" style="width:12%;">Units</th>
+                <th class="num" style="width:12%;">Value (EGP)</th>
+                <th class="num" style="width:8%;">Share</th>
               </tr>
             </thead>
             <tbody>
               ${rowsHtml}
             </tbody>
           </table>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDistributorDeck(disStats, totalUnits) {
+  const container = document.getElementById('distributorCardsGrid');
+  const badge = document.getElementById('top-distributor-badge');
+  if (!container) return;
+
+  const disList = Object.entries(disStats).map(([name, data]) => {
+    return {
+      name,
+      units: data.units,
+      val: data.val,
+      accCount: data.accounts.size,
+      cfg: DISTRIBUTOR_CONFIG[name] || { color: '#64748b', type: 'Distributor' }
+    };
+  });
+  disList.sort((a, b) => b.units - a.units);
+
+  const topDis = disList.find(d => d.units > 0);
+  if (badge) {
+    if (topDis && totalUnits > 0) {
+      const pct = (topDis.units / totalUnits * 100).toFixed(1);
+      badge.innerHTML = `🏆 Market Leader: <strong>${topDis.name}</strong> (${pct}% Territory Share)`;
+    } else {
+      badge.textContent = '🏆 Market Leader: None';
+    }
+  }
+
+  container.innerHTML = disList.map(item => {
+    const share = totalUnits > 0 ? (item.units / totalUnits * 100) : 0;
+    const isFiltered = activeCustomerDis === item.name;
+
+    return `
+      <div class="distributor-stat-card ${isFiltered ? 'active-filter' : ''}" onclick="setCustomerDistributor('${item.name}')" title="Click to filter by ${item.name}">
+        <div class="distributor-card-top">
+          <div class="distributor-card-title">${item.name}</div>
+          <div class="distributor-card-share" style="color:${item.cfg.color};">${share.toFixed(1)}%</div>
+        </div>
+        <div class="distributor-bar-wrap">
+          <div class="distributor-bar-fill" style="width:${Math.min(share, 100)}%; background:${item.cfg.color};"></div>
+        </div>
+        <div class="distributor-card-bottom">
+          <span><strong>${Math.round(item.units).toLocaleString()}</strong> units</span>
+          <span>${item.accCount} Outlets</span>
         </div>
       </div>
     `;
@@ -7188,13 +7577,23 @@ function exportCustomerExcel() {
   const qIdxMap = { Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
   const targetQ = qIdxMap[activeCustomerPeriod];
 
-  // Build rows for each product
+  // Sheet 1: Top 10 Accounts by Product with Sourcing Distributor
   const rows = [];
-  rows.push(['EVA INSULIN — DELTA TEAM PER CUSTOMER SALES REPORT']);
-  rows.push(['Period:', activeCustomerPeriod === 'all' ? 'Full Year (YTD 2026)' : activeCustomerPeriod]);
+  rows.push(['EVA INSULIN — DELTA TEAM PER CUSTOMER & DISTRIBUTOR SALES REPORT']);
+  rows.push(['Period Filter:', activeCustomerPeriod === 'all' ? 'Full Year (YTD 2026)' : activeCustomerPeriod]);
+  rows.push(['Distributor Filter:', activeCustomerDis === 'all' ? 'All Distributors' : activeCustomerDis]);
   rows.push(['Selected Bricks Count:', selectedBricks.size]);
   rows.push(['Selected Bricks:', Array.from(selectedBricks).join(', ')]);
   rows.push([]);
+
+  // Aggregate distributor stats across whole report
+  const disSummaryStats = {
+    'POS': { units: 0, val: 0, accounts: new Set() },
+    'Ibn Sina': { units: 0, val: 0, accounts: new Set() },
+    'ATR': { units: 0, val: 0, accounts: new Set() },
+    'Limitless UPA': { units: 0, val: 0, accounts: new Set() },
+    'EGD': { units: 0, val: 0, accounts: new Set() }
+  };
 
   Object.keys(PRODUCT_CONFIG).forEach(pk => {
     const cfg = PRODUCT_CONFIG[pk];
@@ -7208,16 +7607,48 @@ function exportCustomerExcel() {
       (bInfo.prods[pk] || []).forEach(item => {
         const name = item[0];
         const code = item[1];
-        let units = item[2];
-        let val = item[3];
-        if (targetQ !== undefined) {
-          units = (item[4] && item[4][targetQ] !== undefined) ? item[4][targetQ] : 0;
-          val = item[2] > 0 ? (val * (units / item[2])) : 0;
+        const rawTotalU = item[2];
+        const rawTotalV = item[3];
+        const disMap = item[5] || {};
+
+        Object.entries(disMap).forEach(([d, du]) => {
+          if (disSummaryStats[d] && du > 0) {
+            disSummaryStats[d].units += du;
+            disSummaryStats[d].val += rawTotalU > 0 ? (rawTotalV * (du / rawTotalU)) : 0;
+            disSummaryStats[d].accounts.add(name);
+          }
+        });
+
+        let units = rawTotalU;
+        let val = rawTotalV;
+
+        if (activeCustomerDis !== 'all') {
+          units = disMap[activeCustomerDis] || 0;
+          if (units <= 0) return;
+          val = rawTotalU > 0 ? (rawTotalV * (units / rawTotalU)) : 0;
         }
+
+        if (targetQ !== undefined) {
+          const qUnits = (item[4] && item[4][targetQ] !== undefined) ? item[4][targetQ] : 0;
+          units = activeCustomerDis !== 'all' ? (rawTotalU > 0 ? qUnits * (units / rawTotalU) : 0) : qUnits;
+          val = rawTotalU > 0 ? (rawTotalV * (units / rawTotalU)) : 0;
+        }
+
         if (units <= 0) return;
+
+        let prefDis = 'Unknown';
+        let prefDisU = 0;
+        Object.entries(disMap).forEach(([d, du]) => {
+          if (du > prefDisU) { prefDisU = du; prefDis = d; }
+        });
+        const prefPct = rawTotalU > 0 ? Math.round((prefDisU / rawTotalU) * 100) : 100;
+
         const key = name + '||' + code;
         if (!accMap[key]) {
-          accMap[key] = { name: name, code: code, brick: brick, units: 0, val: 0 };
+          accMap[key] = {
+            name: name, code: code, brick: brick, units: 0, val: 0,
+            primaryDis: prefDis, primaryPct: prefPct
+          };
         }
         accMap[key].units += units;
         accMap[key].val += val;
@@ -7229,10 +7660,10 @@ function exportCustomerExcel() {
     const sorted = Object.values(accMap).sort((a, b) => b.units - a.units).slice(0, 10);
 
     rows.push([`>>> TOP 10 ACCOUNTS: ${cfg.name.toUpperCase()} (Total Units: ${Math.round(totalU)}, Total EGP: ${Math.round(totalV)})`]);
-    rows.push(['Rank', 'Account Name', 'Code', 'Brick', 'Units Sold', 'Value (EGP)', 'Territory Share %']);
+    rows.push(['Rank', 'Account Name', 'Code', 'Brick', 'Primary Sourcing Distributor', 'Units Sold', 'Value (EGP)', 'Territory Share %']);
 
     if (sorted.length === 0) {
-      rows.push(['-', 'No sales recorded in selected bricks', '-', '-', 0, 0, '0%']);
+      rows.push(['-', 'No sales recorded in selected bricks for active filters', '-', '-', '-', 0, 0, '0%']);
     } else {
       sorted.forEach((a, i) => {
         const share = totalU > 0 ? (a.units / totalU * 100).toFixed(1) + '%' : '0%';
@@ -7241,6 +7672,7 @@ function exportCustomerExcel() {
           a.name,
           a.code || '',
           a.brick,
+          `${a.primaryDis} (${a.primaryPct}%)`,
           Math.round(a.units),
           Math.round(a.val),
           share
@@ -7251,9 +7683,32 @@ function exportCustomerExcel() {
   });
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, 'Top 10 Accounts by Product');
+  XLSX.utils.book_append_sheet(wb, ws, 'Top 10 Accounts');
 
-  const filename = `EVA_Delta_Customer_Top10_${activeCustomerPeriod}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  // Sheet 2: Distributor Market Share
+  const disRows = [
+    ['EVA INSULIN — DISTRIBUTOR MARKET SHARE IN SELECTED TERRITORY'],
+    ['Distributor', 'Channel Type', 'Units Sold', 'Value (EGP)', 'Ordering Outlets', 'Market Share %']
+  ];
+  let grandTotU = Object.values(disSummaryStats).reduce((sum, d) => sum + d.units, 0);
+  Object.entries(disSummaryStats)
+    .sort((a, b) => b[1].units - a[1].units)
+    .forEach(([dName, dData]) => {
+      const share = grandTotU > 0 ? (dData.units / grandTotU * 100).toFixed(1) + '%' : '0%';
+      const cfg = DISTRIBUTOR_CONFIG[dName] || { type: 'General' };
+      disRows.push([
+        dName,
+        cfg.type,
+        Math.round(dData.units),
+        Math.round(dData.val),
+        dData.accounts.size,
+        share
+      ]);
+    });
+  const wsDis = XLSX.utils.aoa_to_sheet(disRows);
+  XLSX.utils.book_append_sheet(wb, wsDis, 'Distributor Analysis');
+
+  const filename = `EVA_Delta_Customer_Distributor_${activeCustomerDis}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, filename);
   showToast(`Excel file exported: ${filename}`);
 }
