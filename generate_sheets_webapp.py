@@ -2918,6 +2918,7 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         <div class="brick-panel-title">
           <span>Select Representative Bricks:</span>
           <span class="brick-scope-pill" id="cust-scope-pill">0 Bricks Selected</span>
+          <span id="cust-user-scope-label" style="font-size:11.5px; font-weight:600; color:var(--text-muted); background:var(--surface-alt); padding:3px 10px; border-radius:6px; border:1px solid var(--border);">👤 Account</span>
         </div>
         <div class="brick-panel-actions">
           <button class="btn-brick-tool" onclick="selectAllGovBricks(activeGovFilter)">Select Visible</button>
@@ -4183,6 +4184,9 @@ let currentUser = null;
 
 function logoutUser() {
   currentUser = null;
+  selectedBricks.clear();
+  activeGovFilter = 'all';
+  brickSearchQuery = '';
   localStorage.removeItem(AUTH_STORAGE_KEY_USER);
   lockDashboard();
   const input = document.getElementById('login-email-input');
@@ -4221,11 +4225,13 @@ function unlockDashboard(user) {
     userPill.style.display = 'flex';
   }
 
+  // Always initialize customer sales with this specific user's territory
+  initCustomerSales(user);
+
   if (!isDashboardInitialized) {
     isDashboardInitialized = true;
     renderHome();
     loadDataJson();
-    initCustomerSales();
   }
 
   // Role-based routing:
@@ -6775,41 +6781,46 @@ const GOVERNORATES = [
   'all', 'Dakhleiah', 'Gharbeia', 'Menofeya', 'Sharkeia', 'Kalubia', 'Domiat', 'Port Said & Sinai', 'Shobra'
 ];
 
-function initCustomerSales() {
-  // Load saved bricks from localStorage or default to rep's territory
+function getUserBricksStorageKey(email) {
+  const e = (email || (currentUser ? currentUser.email : '') || 'guest').toLowerCase().trim();
+  return 'eva_saved_bricks_' + encodeURIComponent(e);
+}
+
+function initCustomerSales(user) {
+  const activeUser = user || currentUser;
+  const userEmail = activeUser ? activeUser.email : null;
+  selectedBricks.clear();
+
   let saved = null;
-  try {
-    const raw = localStorage.getItem('eva_saved_bricks');
-    if (raw) saved = JSON.parse(raw);
-  } catch(e) {}
+  if (userEmail) {
+    try {
+      const key = getUserBricksStorageKey(userEmail);
+      const raw = localStorage.getItem(key);
+      if (raw) saved = JSON.parse(raw);
+    } catch(e) {}
+  }
 
   if (Array.isArray(saved) && saved.length > 0) {
     selectedBricks = new Set(saved);
   } else {
-    // Default selection: If rep is logged in, select bricks in their region
-    const repGov = getRepSuggestedGov();
-    if (repGov && repGov !== 'all') {
-      selectAllGovBricks(repGov, false);
+    // Clean isolated state: each user starts empty and chooses their own bricks
+    selectedBricks.clear();
+  }
+
+  // Update user scope badge
+  const userBadge = document.getElementById('cust-user-scope-label');
+  if (userBadge) {
+    if (activeUser && activeUser.name) {
+      userBadge.textContent = `👤 ${activeUser.name} (${activeUser.email})`;
+      userBadge.style.display = 'inline-block';
     } else {
-      // Default to Menofeya bricks as an initial active territory
-      selectAllGovBricks('Menofeya', false);
+      userBadge.style.display = 'none';
     }
   }
 
   renderGovFilterStrip();
   renderBrickChecklist();
   renderCustomerView();
-}
-
-function getRepSuggestedGov() {
-  if (!currentUser || !currentUser.repKey) return null;
-  const rep = REPS.find(r => r.key === currentUser.repKey);
-  if (!rep) return null;
-  const note = (rep.name + ' ' + (rep.note || '')).toLowerCase();
-  for (const g of GOVERNORATES) {
-    if (g !== 'all' && note.includes(g.toLowerCase())) return g;
-  }
-  return null;
 }
 
 function renderGovFilterStrip() {
@@ -6910,14 +6921,17 @@ function clearAllBricks() {
 }
 
 function saveSelectionState() {
+  if (!currentUser || !currentUser.email) return;
   try {
-    localStorage.setItem('eva_saved_bricks', JSON.stringify(Array.from(selectedBricks)));
+    const key = getUserBricksStorageKey(currentUser.email);
+    localStorage.setItem(key, JSON.stringify(Array.from(selectedBricks)));
   } catch(e) {}
 }
 
 function saveDefaultBricks() {
   saveSelectionState();
-  showToast(`Territory preset saved (${selectedBricks.size} bricks). Will auto-load on future visits!`);
+  const userName = currentUser ? currentUser.name : 'your account';
+  showToast(`Territory preset saved for ${userName} (${selectedBricks.size} bricks). Will auto-load whenever you log in!`);
 }
 
 function setCustomerPeriod(period) {
