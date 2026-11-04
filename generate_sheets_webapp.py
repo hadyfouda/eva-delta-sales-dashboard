@@ -418,456 +418,6 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
   }
 
-  /* ── PRINT MEDIA OPTIMIZATIONS (A4 LANDSCAPE) ── */
-  @page {
-    size: A4 landscape;
-    margin: 8mm 10mm;
-  }
-
-  @media print {
-    html, body {
-      background: #ffffff !important;
-      color: #0f172a !important;
-      width: 100% !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: visible !important;
-      font-size: 10px !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* Hide non-printable elements during report or simulator print */
-    body.printing-report > *:not(#deficitModal),
-    body:has(#deficitModal.active) > *:not(#deficitModal) {
-      display: none !important;
-    }
-
-    body.printing-sim > *:not(#upaSimModal),
-    body:has(#upaSimModal.active) > *:not(#upaSimModal) {
-      display: none !important;
-    }
-
-    /* Fallback if printing main dashboard directly */
-    body:not(.printing-report):not(.printing-sim) > .modal-overlay,
-    body:not(.printing-report):not(.printing-sim) > #toastNotification,
-    body:not(.printing-report):not(.printing-sim) #topbar {
-      display: none !important;
-    }
-
-    #deficitModal.modal-overlay,
-    #upaSimModal.modal-overlay {
-      display: block !important;
-      position: static !important;
-      width: 100% !important;
-      height: auto !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: transparent !important;
-      backdrop-filter: none !important;
-      overflow: visible !important;
-    }
-
-    .report-modal-box {
-      display: block !important;
-      position: static !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      height: auto !important;
-      max-height: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      box-shadow: none !important;
-      overflow: visible !important;
-    }
-
-    .report-modal-header {
-      background: #090c12 !important;
-      color: #ffffff !important;
-      padding: 10px 16px !important;
-      border-radius: 6px !important;
-      margin-bottom: 12px !important;
-      border-bottom: 3px solid #f59e0b !important;
-      page-break-after: avoid !important;
-    }
-
-    .report-actions-toolbar,
-    .report-modal-close,
-    .col-action,
-    .report-section-title button {
-      display: none !important;
-    }
-
-    .report-modal-body {
-      display: block !important;
-      width: 100% !important;
-      height: auto !important;
-      max-height: none !important;
-      overflow: visible !important;
-      padding: 0 !important;
-      background: #ffffff !important;
-    }
-
-    /* KPI Grid in single landscape row */
-    .report-kpi-grid {
-      display: grid !important;
-      grid-template-columns: repeat(6, 1fr) !important;
-      gap: 8px !important;
-      margin-bottom: 12px !important;
-      page-break-inside: avoid !important;
-    }
-
-    #upaSimModal .report-kpi-grid {
-      grid-template-columns: repeat(3, 1fr) !important;
-      gap: 10px !important;
-      margin-bottom: 14px !important;
-    }
-
-    .report-kpi-card {
-      padding: 8px 10px !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 6px !important;
-      background: #f8fafc !important;
-      box-shadow: none !important;
-      page-break-inside: avoid !important;
-    }
-
-    .report-kpi-title {
-      font-size: 8.5px !important;
-      margin-bottom: 2px !important;
-      color: #475569 !important;
-    }
-
-    .report-kpi-val {
-      font-size: 14px !important;
-      margin-bottom: 2px !important;
-      color: #0f172a !important;
-    }
-
-    .report-kpi-sub {
-      font-size: 8px !important;
-      color: #64748b !important;
-      line-height: 1.2 !important;
-    }
-
-    .report-section-title {
-      font-size: 11.5px !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      margin: 10px 0 6px 0 !important;
-      page-break-after: avoid !important;
-    }
-
-    .report-table-box {
-      display: block !important;
-      width: 100% !important;
-      overflow: visible !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 6px !important;
-      margin-bottom: 12px !important;
-      box-shadow: none !important;
-      page-break-inside: auto !important;
-    }
-
-    .report-table {
-      width: 100% !important;
-      table-layout: fixed !important;
-      border-collapse: collapse !important;
-      font-size: 9.5px !important;
-    }
-
-    .report-table thead {
-      display: table-header-group !important;
-    }
-
-    .report-table tr {
-      page-break-inside: avoid !important;
-    }
-
-    .report-table th {
-      background: #090c12 !important;
-      color: #ffffff !important;
-      padding: 5px 4px !important;
-      font-size: 8.5px !important;
-      font-weight: 800 !important;
-      text-transform: uppercase !important;
-      text-align: center !important;
-      border: 1px solid #334155 !important;
-      white-space: normal !important;
-      min-width: 0 !important;
-    }
-
-    .report-table td {
-      padding: 4px 4px !important;
-      font-size: 9px !important;
-      border: 1px solid #cbd5e1 !important;
-      vertical-align: middle !important;
-      line-height: 1.2 !important;
-      min-width: 0 !important;
-      white-space: normal !important;
-      word-break: break-word !important;
-    }
-
-    .report-table tr.total-row td {
-      background: #fef3c7 !important;
-      color: #000000 !important;
-      font-weight: 800 !important;
-      font-size: 9px !important;
-      border-top: 2px solid #d97706 !important;
-    }
-
-    /* Specific column widths for Manager Matrix in Print (10 visible columns = 100%) */
-    .matrix-table th:nth-child(1), .matrix-table td:nth-child(1) { width: 13% !important; text-align: left !important; }
-    .matrix-table th:nth-child(2), .matrix-table td:nth-child(2) { width: 11% !important; text-align: left !important; }
-    .matrix-table th:nth-child(3), .matrix-table td:nth-child(3) { width: 8.5% !important; text-align: center !important; }
-    .matrix-table th:nth-child(4), .matrix-table td:nth-child(4) { width: 8.5% !important; text-align: center !important; }
-    .matrix-table th:nth-child(5), .matrix-table td:nth-child(5) { width: 8.5% !important; text-align: center !important; }
-    .matrix-table th:nth-child(6), .matrix-table td:nth-child(6) { width: 8.5% !important; text-align: center !important; }
-    .matrix-table th:nth-child(7), .matrix-table td:nth-child(7) { width: 11% !important; text-align: center !important; }
-    .matrix-table th:nth-child(8), .matrix-table td:nth-child(8) { width: 10% !important; text-align: center !important; }
-    .matrix-table th:nth-child(9), .matrix-table td:nth-child(9) { width: 10.5% !important; text-align: center !important; }
-    .matrix-table th:nth-child(10), .matrix-table td:nth-child(10) { width: 10.5% !important; text-align: center !important; }
-
-    /* Specific column widths for Medicine Table in Print (7 columns = 100%) */
-    .medicine-table th:nth-child(1), .medicine-table td:nth-child(1) { width: 25% !important; text-align: left !important; }
-    .medicine-table th:nth-child(2), .medicine-table td:nth-child(2) { width: 8% !important; text-align: center !important; }
-    .medicine-table th:nth-child(3), .medicine-table td:nth-child(3) { width: 13% !important; text-align: center !important; }
-    .medicine-table th:nth-child(4), .medicine-table td:nth-child(4) { width: 13% !important; text-align: center !important; }
-    .medicine-table th:nth-child(5), .medicine-table td:nth-child(5) { width: 15% !important; text-align: center !important; }
-    .medicine-table th:nth-child(6), .medicine-table td:nth-child(6) { width: 13% !important; text-align: center !important; }
-    .medicine-table th:nth-child(7), .medicine-table td:nth-child(7) { width: 13% !important; text-align: center !important; }
-
-    .priority-tag {
-      padding: 1px 4px !important;
-      font-size: 8px !important;
-      border-radius: 3px !important;
-      display: inline-block !important;
-      font-weight: 800 !important;
-      white-space: nowrap !important;
-    }
-    .priority-critical {
-      background: #fee2e2 !important;
-      color: #991b1b !important;
-      border: 1px solid #fca5a5 !important;
-    }
-    .priority-warning {
-      background: #fef3c7 !important;
-      color: #92400e !important;
-      border: 1px solid #fcd34d !important;
-    }
-    .priority-success {
-      background: #dcfce7 !important;
-      color: #166534 !important;
-      border: 1px solid #86efac !important;
-    }
-
-    .report-insight-box {
-      background: #f8fafc !important;
-      border: 1px solid #cbd5e1 !important;
-      border-left: 4px solid #f59e0b !important;
-      padding: 8px 12px !important;
-      font-size: 9px !important;
-      border-radius: 6px !important;
-      page-break-inside: avoid !important;
-      margin-top: 8px !important;
-    }
-    /* ── SIMULATOR PRINT SPECIFIC OPTIMIZATIONS ── */
-    #upaSimModal div[style*="overflow-x:auto"],
-    #upaSimModal div[style*="overflow-x: auto"] {
-      overflow: visible !important;
-    }
-
-    .master-preset-strip,
-    .prod-presets-row,
-    .prod-slider-wrap,
-    #upaEqualizeSlider,
-    .btn-reset-overrides,
-    .rep-unit-edit-btn,
-    .rep-reset-btn,
-    .upa-rep-select,
-    .col-sim-action,
-    .rep-inline-edit-row {
-      display: none !important;
-    }
-
-    .sim-context-bar {
-      background: #0f172a !important;
-      color: #ffffff !important;
-      border: 1px solid #334155 !important;
-      padding: 8px 12px !important;
-      margin-bottom: 12px !important;
-      border-radius: 6px !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      page-break-after: avoid !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .sim-scope-locked-pill {
-      background: rgba(59, 130, 246, 0.25) !important;
-      border: 1px solid #3b82f6 !important;
-      color: #93c5fd !important;
-      padding: 3px 8px !important;
-      border-radius: 6px !important;
-      font-size: 11px !important;
-      font-weight: 800 !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .sim-scope-select {
-      background: #0f172a !important;
-      color: #ffffff !important;
-      border: 1px solid #3b82f6 !important;
-      font-size: 11px !important;
-      padding: 3px 8px !important;
-      border-radius: 6px !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .sim-locked-quarters-pill {
-      background: rgba(16, 185, 129, 0.2) !important;
-      border: 1px solid #10b981 !important;
-      color: #059669 !important;
-      padding: 3px 8px !important;
-      border-radius: 6px !important;
-      font-size: 10px !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .comm-deck-grid {
-      display: grid !important;
-      grid-template-columns: repeat(3, 1fr) !important;
-      gap: 10px !important;
-      margin-bottom: 14px !important;
-      page-break-inside: avoid !important;
-    }
-
-    .prod-forecast-card {
-      background: #ffffff !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 8px !important;
-      padding: 8px 10px !important;
-      box-shadow: none !important;
-      page-break-inside: avoid !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .prod-baseline-pills {
-      background: #f8fafc !important;
-      border: 1px solid #e2e8f0 !important;
-      padding: 5px 6px !important;
-      margin-bottom: 6px !important;
-      font-size: 9px !important;
-    }
-
-    .prod-input-group {
-      background: #f8fafc !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 6px !important;
-      padding: 4px 6px !important;
-      margin-bottom: 6px !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .prod-unit-input {
-      font-size: 14px !important;
-      font-weight: 900 !important;
-      color: #0f172a !important;
-      border: none !important;
-      background: transparent !important;
-    }
-
-    .upa-equalize-card {
-      background: #fffbeb !important;
-      border: 1.5px solid #f59e0b !important;
-      border-radius: 8px !important;
-      padding: 10px 14px !important;
-      margin-bottom: 14px !important;
-      box-shadow: none !important;
-      page-break-inside: avoid !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .upa-equalize-grid {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr !important;
-      gap: 12px !important;
-    }
-
-    #upaEqualizeInput {
-      font-size: 14px !important;
-      font-weight: 900 !important;
-      color: #b45309 !important;
-      border: none !important;
-      background: transparent !important;
-    }
-
-    .upa-stats-panel {
-      background: #ffffff !important;
-      border: 1px solid #fed7aa !important;
-      border-radius: 6px !important;
-      padding: 8px 10px !important;
-      font-size: 9.5px !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #upaSimModal .report-table {
-      width: 100% !important;
-      table-layout: fixed !important;
-      border-collapse: collapse !important;
-      font-size: 9px !important;
-    }
-
-    #upaSimModal .report-table th {
-      background: #090c12 !important;
-      color: #ffffff !important;
-      padding: 5px 4px !important;
-      font-size: 8px !important;
-      font-weight: 800 !important;
-      border: 1px solid #334155 !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #upaSimModal .report-table td {
-      padding: 4px 4px !important;
-      font-size: 8.5px !important;
-      border: 1px solid #cbd5e1 !important;
-      vertical-align: middle !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    #upaSimModal .report-table th:nth-child(1), #upaSimModal .report-table td:nth-child(1) { width: 15% !important; text-align: left !important; }
-    #upaSimModal .report-table th:nth-child(2), #upaSimModal .report-table td:nth-child(2) { width: 9% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(3), #upaSimModal .report-table td:nth-child(3) { width: 9% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(4), #upaSimModal .report-table td:nth-child(4) { width: 9% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(5), #upaSimModal .report-table td:nth-child(5) { width: 11% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(6), #upaSimModal .report-table td:nth-child(6) { width: 11% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(7), #upaSimModal .report-table td:nth-child(7) { width: 10% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(8), #upaSimModal .report-table td:nth-child(8) { width: 10% !important; text-align: right !important; }
-    #upaSimModal .report-table th:nth-child(9), #upaSimModal .report-table td:nth-child(9) { width: 8% !important; text-align: center !important; }
-    #upaSimModal .report-table th:nth-child(10), #upaSimModal .report-table td:nth-child(10) { width: 8% !important; text-align: center !important; }
-    #upaSimModal .report-table th:nth-child(11), #upaSimModal .report-table td:nth-child(11) { display: none !important; }
-
-    #upaSimModal .report-table tfoot tr td {
-      background: #f1f5f9 !important;
-      font-weight: 800 !important;
-      border-top: 2px solid #94a3b8 !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-  }
-
   /* ── MAIN CONTAINER ── */
   #main { padding: 32px 32px; max-width: 1480px; margin: 0 auto; width: 100%; }
 
@@ -2041,6 +1591,536 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     align-items: center;
     gap: 8px;
   }
+
+
+  /* ── PRINT MEDIA OPTIMIZATIONS (A4 LANDSCAPE) ── */
+  @page {
+    size: A4 landscape;
+    margin: 8mm 10mm;
+  }
+
+  @media print {
+    *, *:before, *:after {
+      animation: none !important;
+      transition: none !important;
+      box-shadow: none !important;
+    }
+
+    html, body {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      font-size: 10px !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Robust Isolation: Hide non-modal elements when either modal is active */
+    body.modal-sim-open > *:not(#upaSimModal),
+    body.printing-sim > *:not(#upaSimModal),
+    body:has(#upaSimModal.active) > *:not(#upaSimModal) {
+      display: none !important;
+    }
+
+    body.modal-deficit-open > *:not(#deficitModal),
+    body.printing-report > *:not(#deficitModal),
+    body:has(#deficitModal.active) > *:not(#deficitModal) {
+      display: none !important;
+    }
+
+    /* Inactive modals and overlays are always hidden */
+    .modal-overlay:not(.active),
+    #auth-overlay,
+    #toastNotification,
+    #topbar {
+      display: none !important;
+    }
+
+    /* Overrides inline overflow: hidden on body */
+    html, body {
+      overflow: visible !important;
+      overflow-y: visible !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+    }
+
+    /* Active modal prints cleanly as static full-width document */
+    #deficitModal.modal-overlay.active,
+    #upaSimModal.modal-overlay.active,
+    #deficitModal.active,
+    #upaSimModal.active {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      overflow: visible !important;
+      overflow-y: visible !important;
+      inset: auto !important;
+      z-index: auto !important;
+    }
+
+    #upaSimModal .report-modal-box,
+    #deficitModal .report-modal-box {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+      overflow-y: visible !important;
+      animation: none !important;
+    }
+
+    #upaSimModal .report-modal-body,
+    #deficitModal .report-modal-body {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      overflow-y: visible !important;
+    }
+
+    .report-modal-box {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+
+    .report-modal-header {
+      background: #090c12 !important;
+      color: #ffffff !important;
+      padding: 10px 16px !important;
+      border-radius: 6px !important;
+      margin-bottom: 12px !important;
+      border-bottom: 3px solid #f59e0b !important;
+      page-break-after: avoid !important;
+    }
+
+    .report-actions-toolbar,
+    .report-modal-close,
+    .col-action,
+    .report-section-title button {
+      display: none !important;
+    }
+
+    .report-modal-body {
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+    }
+
+    /* KPI Grid in single landscape row */
+    .report-kpi-grid {
+      display: grid !important;
+      grid-template-columns: repeat(6, 1fr) !important;
+      gap: 8px !important;
+      margin-bottom: 12px !important;
+      page-break-inside: avoid !important;
+    }
+
+    #upaSimModal .report-kpi-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 10px !important;
+      margin-bottom: 14px !important;
+    }
+
+    .report-kpi-card {
+      padding: 8px 10px !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      background: #f8fafc !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+    }
+
+    .report-kpi-title {
+      font-size: 8.5px !important;
+      margin-bottom: 2px !important;
+      color: #475569 !important;
+    }
+
+    .report-kpi-val {
+      font-size: 14px !important;
+      margin-bottom: 2px !important;
+      color: #0f172a !important;
+    }
+
+    .report-kpi-sub {
+      font-size: 8px !important;
+      color: #64748b !important;
+      line-height: 1.2 !important;
+    }
+
+    .report-section-title {
+      font-size: 11.5px !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      margin: 10px 0 6px 0 !important;
+      page-break-after: avoid !important;
+    }
+
+    .report-table-box {
+      display: block !important;
+      width: 100% !important;
+      overflow: visible !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      margin-bottom: 12px !important;
+      box-shadow: none !important;
+      page-break-inside: auto !important;
+    }
+
+    .report-table {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      font-size: 9.5px !important;
+    }
+
+    .report-table thead {
+      display: table-header-group !important;
+    }
+
+    .report-table tr {
+      page-break-inside: avoid !important;
+    }
+
+    .report-table th {
+      background: #090c12 !important;
+      color: #ffffff !important;
+      padding: 5px 4px !important;
+      font-size: 8.5px !important;
+      font-weight: 800 !important;
+      text-transform: uppercase !important;
+      text-align: center !important;
+      border: 1px solid #334155 !important;
+      white-space: normal !important;
+      min-width: 0 !important;
+    }
+
+    .report-table td {
+      padding: 4px 4px !important;
+      font-size: 9px !important;
+      border: 1px solid #cbd5e1 !important;
+      vertical-align: middle !important;
+      line-height: 1.2 !important;
+      min-width: 0 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+
+    .report-table tr.total-row td {
+      background: #fef3c7 !important;
+      color: #000000 !important;
+      font-weight: 800 !important;
+      font-size: 9px !important;
+      border-top: 2px solid #d97706 !important;
+    }
+
+    /* Specific column widths for Manager Matrix in Print (10 visible columns = 100%) */
+    .matrix-table th:nth-child(1), .matrix-table td:nth-child(1) { width: 13% !important; text-align: left !important; }
+    .matrix-table th:nth-child(2), .matrix-table td:nth-child(2) { width: 11% !important; text-align: left !important; }
+    .matrix-table th:nth-child(3), .matrix-table td:nth-child(3) { width: 8.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(4), .matrix-table td:nth-child(4) { width: 8.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(5), .matrix-table td:nth-child(5) { width: 8.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(6), .matrix-table td:nth-child(6) { width: 8.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(7), .matrix-table td:nth-child(7) { width: 11% !important; text-align: center !important; }
+    .matrix-table th:nth-child(8), .matrix-table td:nth-child(8) { width: 10% !important; text-align: center !important; }
+    .matrix-table th:nth-child(9), .matrix-table td:nth-child(9) { width: 10.5% !important; text-align: center !important; }
+    .matrix-table th:nth-child(10), .matrix-table td:nth-child(10) { width: 10.5% !important; text-align: center !important; }
+
+    /* Specific column widths for Medicine Table in Print (7 columns = 100%) */
+    .medicine-table th:nth-child(1), .medicine-table td:nth-child(1) { width: 25% !important; text-align: left !important; }
+    .medicine-table th:nth-child(2), .medicine-table td:nth-child(2) { width: 8% !important; text-align: center !important; }
+    .medicine-table th:nth-child(3), .medicine-table td:nth-child(3) { width: 13% !important; text-align: center !important; }
+    .medicine-table th:nth-child(4), .medicine-table td:nth-child(4) { width: 13% !important; text-align: center !important; }
+    .medicine-table th:nth-child(5), .medicine-table td:nth-child(5) { width: 15% !important; text-align: center !important; }
+    .medicine-table th:nth-child(6), .medicine-table td:nth-child(6) { width: 13% !important; text-align: center !important; }
+    .medicine-table th:nth-child(7), .medicine-table td:nth-child(7) { width: 13% !important; text-align: center !important; }
+
+    .priority-tag {
+      padding: 1px 4px !important;
+      font-size: 8px !important;
+      border-radius: 3px !important;
+      display: inline-block !important;
+      font-weight: 800 !important;
+      white-space: nowrap !important;
+    }
+    .priority-critical {
+      background: #fee2e2 !important;
+      color: #991b1b !important;
+      border: 1px solid #fca5a5 !important;
+    }
+    .priority-warning {
+      background: #fef3c7 !important;
+      color: #92400e !important;
+      border: 1px solid #fcd34d !important;
+    }
+    .priority-success {
+      background: #dcfce7 !important;
+      color: #166534 !important;
+      border: 1px solid #86efac !important;
+    }
+
+    .report-insight-box {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      border-left: 4px solid #f59e0b !important;
+      padding: 8px 12px !important;
+      font-size: 9px !important;
+      border-radius: 6px !important;
+      page-break-inside: avoid !important;
+      margin-top: 8px !important;
+    }
+    /* ── SIMULATOR PRINT SPECIFIC OPTIMIZATIONS ── */
+    #upaSimModal div[style*="overflow-x:auto"],
+    #upaSimModal div[style*="overflow-x: auto"] {
+      overflow: visible !important;
+    }
+
+    .master-preset-strip,
+    .prod-presets-row,
+    .prod-slider-wrap,
+    #upaEqualizeSlider,
+    .btn-reset-overrides,
+    .rep-unit-edit-btn,
+    .rep-reset-btn,
+    .upa-rep-select,
+    .col-sim-action,
+    .rep-inline-edit-row {
+      display: none !important;
+    }
+
+    #upaSimModal .report-modal-header {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1.5px solid #cbd5e1 !important;
+      border-top: 4px solid #f59e0b !important;
+      padding: 10px 14px !important;
+      border-radius: 6px !important;
+      margin-bottom: 12px !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      page-break-after: avoid !important;
+    }
+    #upaSimModal .report-modal-header * {
+      color: #0f172a !important;
+    }
+    #upaSimModal .report-modal-header div[style*="color:#94a3b8"],
+    #upaSimModal .report-modal-header div[style*="color: #94a3b8"] {
+      color: #475569 !important;
+    }
+
+    .sim-context-bar {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1.5px solid #cbd5e1 !important;
+      padding: 8px 12px !important;
+      margin-bottom: 12px !important;
+      border-radius: 6px !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      page-break-after: avoid !important;
+    }
+    .sim-context-bar * {
+      color: #0f172a !important;
+    }
+    .sim-scope-badge {
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
+      border: 1px solid #7dd3fc !important;
+    }
+    .sim-scope-locked-pill {
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
+      border: 1px solid #7dd3fc !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+    }
+    .sim-scope-select {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+      font-size: 11px !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+    }
+    .sim-locked-quarters-pill {
+      background: #dcfce7 !important;
+      color: #15803d !important;
+      border: 1px solid #86efac !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      font-size: 10px !important;
+    }
+
+    .comm-deck-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 10px !important;
+      margin-bottom: 14px !important;
+      page-break-inside: avoid !important;
+    }
+
+    .prod-forecast-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 8px !important;
+      padding: 8px 10px !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .prod-baseline-pills {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 5px 6px !important;
+      margin-bottom: 6px !important;
+      font-size: 9px !important;
+    }
+
+    .prod-input-group {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      padding: 4px 6px !important;
+      margin-bottom: 6px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .prod-unit-input {
+      font-size: 14px !important;
+      font-weight: 900 !important;
+      color: #0f172a !important;
+      border: none !important;
+      background: transparent !important;
+    }
+
+    .upa-equalize-card {
+      background: #fffbeb !important;
+      border: 1.5px solid #f59e0b !important;
+      border-radius: 8px !important;
+      padding: 10px 14px !important;
+      margin-bottom: 14px !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .upa-equalize-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px !important;
+    }
+
+    #upaEqualizeInput {
+      font-size: 14px !important;
+      font-weight: 900 !important;
+      color: #b45309 !important;
+      border: none !important;
+      background: transparent !important;
+    }
+
+    .upa-stats-panel {
+      background: #ffffff !important;
+      border: 1px solid #fed7aa !important;
+      border-radius: 6px !important;
+      padding: 8px 10px !important;
+      font-size: 9.5px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #upaSimModal .report-table {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      font-size: 9px !important;
+    }
+
+    #upaSimModal .report-table th {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1.5px solid #94a3b8 !important;
+      padding: 5px 4px !important;
+      font-size: 8.5px !important;
+      font-weight: 800 !important;
+    }
+    #upaSimModal .report-table td {
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    #upaSimModal .report-table td {
+      padding: 4px 4px !important;
+      font-size: 8.5px !important;
+      border: 1px solid #cbd5e1 !important;
+      vertical-align: middle !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    #upaSimModal .report-table th:nth-child(1), #upaSimModal .report-table td:nth-child(1) { width: 15% !important; text-align: left !important; }
+    #upaSimModal .report-table th:nth-child(2), #upaSimModal .report-table td:nth-child(2) { width: 9% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(3), #upaSimModal .report-table td:nth-child(3) { width: 9% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(4), #upaSimModal .report-table td:nth-child(4) { width: 9% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(5), #upaSimModal .report-table td:nth-child(5) { width: 11% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(6), #upaSimModal .report-table td:nth-child(6) { width: 11% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(7), #upaSimModal .report-table td:nth-child(7) { width: 10% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(8), #upaSimModal .report-table td:nth-child(8) { width: 10% !important; text-align: right !important; }
+    #upaSimModal .report-table th:nth-child(9), #upaSimModal .report-table td:nth-child(9) { width: 8% !important; text-align: center !important; }
+    #upaSimModal .report-table th:nth-child(10), #upaSimModal .report-table td:nth-child(10) { width: 8% !important; text-align: center !important; }
+    #upaSimModal .report-table th:nth-child(11), #upaSimModal .report-table td:nth-child(11) { display: none !important; }
+
+    #upaSimModal .report-table tfoot tr td {
+      background: #f1f5f9 !important;
+      font-weight: 800 !important;
+      border-top: 2px solid #94a3b8 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+
 
 </style>
 </head>
@@ -4126,11 +4206,13 @@ function openDeficitReport(targetType) {
   }
 
   modal.classList.add('active');
+  document.body.classList.add('modal-deficit-open');
 }
 
 function closeDeficitReport() {
   const modal = document.getElementById('deficitModal');
   if (modal) modal.classList.remove('active');
+  document.body.classList.remove('modal-deficit-open', 'printing-report');
 }
 
 function printDeficitReport() {
@@ -4980,6 +5062,7 @@ function openUpaSimulator(repKey) {
   const modal = document.getElementById('upaSimModal');
   if (!modal) return;
   modal.classList.add('active');
+  document.body.classList.add('modal-sim-open');
   document.body.style.overflow = 'hidden';
   renderUpaSimulator(true);
 }
@@ -4988,6 +5071,7 @@ function closeUpaSimulator() {
   const modal = document.getElementById('upaSimModal');
   if (!modal) return;
   modal.classList.remove('active');
+  document.body.classList.remove('modal-sim-open', 'printing-sim');
   document.body.style.overflow = '';
 }
 
@@ -5965,14 +6049,10 @@ function printUpaSimReport() {
   if (!modal || !modal.classList.contains('active')) {
     openUpaSimulator(getEffectiveRepScope());
   }
-  document.body.classList.add('printing-sim');
-  document.body.classList.remove('printing-report');
-  window.onafterprint = () => {
-    document.body.classList.remove('printing-sim');
-  };
+  document.body.classList.add('modal-sim-open', 'printing-sim');
   setTimeout(() => {
     window.print();
-  }, 120);
+  }, 50);
 }
 
 // Global print listeners to handle Ctrl+P or browser menu print smoothly
