@@ -5,6 +5,10 @@ with open(r'C:\Users\ALMadina\.gemini\antigravity\scratch\delta-team-dashboard\l
 
 from data import PRODUCTS, REPS_DATA
 
+with open(os.path.join(os.path.dirname(__file__), 'customer_sales_data.json'), 'r', encoding='utf-8') as f:
+    CUSTOMER_DATA = json.load(f)
+
+
 REPS_EN = []
 for r in REPS_DATA:
     rep_copy = dict(r)
@@ -2121,6 +2125,557 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     }
   }
 
+/* ═══════════════════════════════════════════════════════════════
+   PER CUSTOMER SALES & TOPBAR NAVIGATION STYLES
+   ═══════════════════════════════════════════════════════════════ */
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px;
+}
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.nav-tab:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(180, 83, 9, 0.3) 100%);
+  color: #fbbf24;
+  border-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+}
+.nav-tab-badge {
+  background: #f59e0b;
+  color: #090c10;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#view-customer {
+  padding: 24px 28px 48px 28px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.cust-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.cust-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cust-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+  color: #090c10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+.cust-header-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  letter-spacing: -0.3px;
+}
+.cust-header-sub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.cust-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Brick Selector Panel */
+.brick-panel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.brick-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.brick-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.brick-scope-pill {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.brick-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-brick-tool {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-brick-tool:hover {
+  background: #e2e8f0;
+  color: var(--text-primary);
+}
+
+.gov-filter-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.gov-filter-chip {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.gov-filter-chip:hover {
+  background: #e2e8f0;
+  color: var(--text-primary);
+}
+.gov-filter-chip.active {
+  background: #090c10;
+  color: #f59e0b;
+  border-color: #090c10;
+}
+
+.brick-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.brick-search-input {
+  flex: 1;
+  min-width: 240px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-primary);
+  outline: none;
+  font-family: inherit;
+}
+.brick-search-input:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.brick-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.brick-chip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  font-size: 11.5px;
+  color: var(--text-primary);
+}
+.brick-chip-item:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+.brick-chip-item.selected {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  font-weight: 700;
+  color: #92400e;
+}
+.brick-chip-item input[type="checkbox"] {
+  accent-color: #f59e0b;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+.brick-chip-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.brick-chip-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.05);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.cust-period-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cust-period-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cust-period-pill {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cust-period-pill:hover {
+  background: var(--surface-alt);
+}
+.cust-period-pill.active {
+  background: #f59e0b;
+  color: #090c10;
+  border-color: #d97706;
+}
+
+/* Summary KPI Grid */
+.cust-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+@media (max-width: 900px) {
+  .cust-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.cust-kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.cust-kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.cust-kpi-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.cust-kpi-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* 4 Products 2x2 Grid */
+.cust-products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+@media (max-width: 1100px) {
+  .cust-products-grid { grid-template-columns: 1fr; }
+}
+
+.prod-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+}
+.prod-card-header {
+  padding: 14px 18px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.prod-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.prod-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.prod-card-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.prod-card-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.prod-card-metric {
+  text-align: right;
+}
+.prod-card-metric-val {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+.prod-card-metric-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.prod-mix .prod-card-icon { background: #fef3c7; color: #b45309; }
+.prod-mix .prod-card-header { border-top: 4px solid #f59e0b; }
+
+.prod-rapid .prod-card-icon { background: #e0f2fe; color: #0369a1; }
+.prod-rapid .prod-card-header { border-top: 4px solid #0284c7; }
+
+.prod-glarg-comm .prod-card-icon { background: #dcfce7; color: #15803d; }
+.prod-glarg-comm .prod-card-header { border-top: 4px solid #16a34a; }
+
+.prod-glarg-upa .prod-card-icon { background: #f3e8ff; color: #7e22ce; }
+.prod-glarg-upa .prod-card-header { border-top: 4px solid #9333ea; }
+
+.cust-table-wrap {
+  overflow-x: auto;
+  flex: 1;
+}
+.cust-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.cust-table th {
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.cust-table th.num, .cust-table td.num {
+  text-align: right;
+}
+.cust-table th.center, .cust-table td.center {
+  text-align: center;
+}
+.cust-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.cust-table tr:hover td {
+  background: rgba(245, 158, 11, 0.04);
+}
+.cust-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+.rank-1 { background: #fef3c7; color: #b45309; border: 1.5px solid #f59e0b; }
+.rank-2 { background: #f1f5f9; color: #475569; border: 1.5px solid #94a3b8; }
+.rank-3 { background: #ffedd5; color: #c2410c; border: 1.5px solid #fb923c; }
+.rank-other { background: var(--surface-alt); color: var(--text-muted); }
+
+.cust-name-cell {
+  overflow: hidden;
+}
+.cust-name-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cust-name-code {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.cust-brick-badge {
+  display: inline-block;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cust-share-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.cust-share-bar {
+  width: 36px;
+  height: 5px;
+  background: var(--surface-alt);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cust-share-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* Print Specific Rules for Customer View */
+@media print {
+  body.printing-customer > *:not(#main),
+  body.printing-customer #view-home,
+  body.printing-customer #view-rep,
+  body.printing-customer .brick-panel-card,
+  body.printing-customer .cust-header-actions,
+  body.printing-customer #topbar,
+  body.printing-customer .modal-overlay {
+    display: none !important;
+  }
+  body.printing-customer #view-customer {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  body.printing-customer .cust-products-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  body.printing-customer .prod-card {
+    page-break-inside: avoid !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+}
 
 </style>
 </head>
@@ -2138,6 +2693,17 @@ HTML_CONTENT = r'''<!DOCTYPE html>
       <div class="brand-sub">Sales Performance & Deficit Tracking System 2026</div>
     </div>
   </div>
+  <nav class="topbar-nav" id="topbar-nav">
+    <button class="nav-tab active" id="nav-btn-dashboard" onclick="showDashboardTab()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+      <span id="nav-btn-dashboard-text">Performance Dashboard</span>
+    </button>
+    <button class="nav-tab" id="nav-btn-customer" onclick="showCustomerView()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-3"/></svg>
+      <span>Per Customer Sales</span>
+      <span class="nav-tab-badge">Top 10</span>
+    </button>
+  </nav>
   <div class="topbar-right">
     <div id="topbar-user-pill" class="user-profile-pill"></div>
     <div class="topbar-date" id="topbar-date"></div>
@@ -2321,6 +2887,98 @@ HTML_CONTENT = r'''<!DOCTYPE html>
         <div class="chart-box"><canvas id="repLineChart"></canvas></div>
       </div>
     </div>
+  </div>
+
+
+  <!-- VIEW: PER CUSTOMER SALES (TOP 10 ACCOUNTS) -->
+  <div id="view-customer" class="view">
+    <div class="cust-header-bar">
+      <div class="cust-header-left">
+        <div class="cust-header-icon">🏥</div>
+        <div>
+          <div class="cust-header-title">Per Customer Sales Analysis</div>
+          <div class="cust-header-sub">Top 10 hospital & pharmacy accounts by volume for each of the 4 insulin products across selected bricks</div>
+        </div>
+      </div>
+      <div class="cust-header-actions">
+        <button class="btn btn-primary" onclick="exportCustomerExcel()" style="background:#10b981; border-color:#059669; color:#ffffff; font-weight:800;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export Top Accounts (.xlsx)</span>
+        </button>
+        <button class="btn btn-secondary" onclick="printCustomerReport()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span>Print Report</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BRICK SELECTOR PANEL -->
+    <div class="brick-panel-card">
+      <div class="brick-panel-header">
+        <div class="brick-panel-title">
+          <span>Select Representative Bricks:</span>
+          <span class="brick-scope-pill" id="cust-scope-pill">0 Bricks Selected</span>
+        </div>
+        <div class="brick-panel-actions">
+          <button class="btn-brick-tool" onclick="selectAllGovBricks(activeGovFilter)">Select Visible</button>
+          <button class="btn-brick-tool" onclick="selectAllBricks()">Select All (50)</button>
+          <button class="btn-brick-tool" onclick="clearAllBricks()">Clear All</button>
+          <button class="btn-brick-tool" onclick="saveDefaultBricks()" style="background:#fef3c7; color:#92400e; border-color:#fcd34d;">⭐ Save as My Default</button>
+        </div>
+      </div>
+
+      <!-- GOVERNORATE QUICK FILTER -->
+      <div class="gov-filter-strip" id="gov-filter-strip"></div>
+
+      <!-- SEARCH BAR -->
+      <div class="brick-search-row">
+        <input type="text" id="brickSearchInput" class="brick-search-input" placeholder="🔍 Search brick name or territory..." oninput="onBrickSearch(this.value)">
+      </div>
+
+      <!-- BRICK CHECKBOX GRID -->
+      <div class="brick-chip-grid" id="brickChipGrid"></div>
+
+      <!-- TIME HORIZON FILTER -->
+      <div class="cust-period-row">
+        <div style="font-size:12px; font-weight:800; color:var(--text-secondary);">
+          Time Horizon Filter:
+        </div>
+        <div class="cust-period-pills">
+          <button class="cust-period-pill active" data-period="all" onclick="setCustomerPeriod('all')">Full Year (YTD)</button>
+          <button class="cust-period-pill" data-period="Q1" onclick="setCustomerPeriod('Q1')">Q1 (Jan-Mar)</button>
+          <button class="cust-period-pill" data-period="Q2" onclick="setCustomerPeriod('Q2')">Q2 (Apr-Jun)</button>
+          <button class="cust-period-pill" data-period="Q3" onclick="setCustomerPeriod('Q3')">Q3 (Jul-Sep)</button>
+          <button class="cust-period-pill" data-period="Q4" onclick="setCustomerPeriod('Q4')">Q4 (Oct)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY KPI ROW -->
+    <div class="cust-kpi-grid">
+      <div class="cust-kpi-card">
+        <div class="cust-kpi-label">Selected Territory Scope</div>
+        <div class="cust-kpi-value" id="kpi-cust-scope">0 Bricks</div>
+        <div class="cust-kpi-sub" id="kpi-cust-govs">No territory active</div>
+      </div>
+      <div class="cust-kpi-card">
+        <div class="cust-kpi-label">Total Units Sold</div>
+        <div class="cust-kpi-value" id="kpi-cust-units">0</div>
+        <div class="cust-kpi-sub">Across 4 insulin products</div>
+      </div>
+      <div class="cust-kpi-card">
+        <div class="cust-kpi-label">Total Sales Value (EGP)</div>
+        <div class="cust-kpi-value" id="kpi-cust-value">EGP 0</div>
+        <div class="cust-kpi-sub">Net revenue realized</div>
+      </div>
+      <div class="cust-kpi-card">
+        <div class="cust-kpi-label">Active Buying Outlets</div>
+        <div class="cust-kpi-value" id="kpi-cust-accounts">0 Outlets</div>
+        <div class="cust-kpi-sub" id="kpi-cust-topacc">Top: None</div>
+      </div>
+    </div>
+
+    <!-- THE 4 PRODUCTS 2x2 GRID -->
+    <div class="cust-products-grid" id="custProductsGrid"></div>
   </div>
 
 </main>
@@ -3567,14 +4225,18 @@ function unlockDashboard(user) {
     isDashboardInitialized = true;
     renderHome();
     loadDataJson();
+    initCustomerSales();
   }
 
   // Role-based routing:
   // - Medical Reps -> strictly their own personal page
   // - Dr. Sherif (Manager) -> Full team dashboard overview
+  const dashLabel = document.getElementById('nav-btn-dashboard-text');
   if (user && user.repKey) {
+    if (dashLabel) dashLabel.textContent = 'My Performance';
     showRep(user.repKey);
   } else {
+    if (dashLabel) dashLabel.textContent = 'Performance Dashboard';
     showHome();
   }
 }
@@ -3624,8 +4286,14 @@ function showHome() {
 
   currentActiveRepKey = 'team';
   destroyCharts();
+  const vCust = document.getElementById('view-customer');
+  if (vCust) vCust.classList.remove('active');
   document.getElementById('view-rep').classList.remove('active');
   document.getElementById('view-home').classList.add('active');
+  const nDash = document.getElementById('nav-btn-dashboard');
+  const nCust = document.getElementById('nav-btn-customer');
+  if (nDash) nDash.classList.add('active');
+  if (nCust) nCust.classList.remove('active');
   document.getElementById('back-btn').classList.remove('visible');
   renderHome();
 }
@@ -5348,24 +6016,25 @@ function renderUpaSimulator(rebuildControls = true) {
   }
 
   const effectiveScope = getEffectiveRepScope();
-  const isSingleRep = (effectiveScope && effectiveScope !== 'all');
-  const activeRep = isSingleRep ? REPS.find(r => r.key === effectiveScope) : null;
-  const scopeTitle = isSingleRep ? activeRep.name : 'Delta Region Team';
+  const activeRep = (effectiveScope && effectiveScope !== 'all') ? (REPS.find(r => r.key === effectiveScope) || null) : null;
+  const isSingleRep = !!activeRep;
+  const scopeTitle = activeRep ? activeRep.name : 'Delta Region Team';
 
   const sim = computeSeparatedSimulation(commForecastUnits, currentUpaEqualizeRate, repCommCustomUnits);
-  const repSimData = isSingleRep ? sim.reps.find(r => r.key === effectiveScope) : null;
+  const repSimData = (isSingleRep && sim.reps) ? (sim.reps.find(r => r.key === effectiveScope) || null) : null;
+  const isSingleRepValid = !!(isSingleRep && repSimData);
 
   // Active metrics based on scope
-  const activeQ4TargetPts = isSingleRep ? repSimData.simQ4Tp : sim.team.simQ4Tp;
+  const activeQ4TargetPts = isSingleRepValid ? repSimData.simQ4Tp : (sim.team ? sim.team.simQ4Tp : 0);
   const activeQ4TargetVal = activeQ4TargetPts / 2;
-  const activeQ4SimPts = isSingleRep ? repSimData.simQ4Sp : sim.team.simQ4Sp;
+  const activeQ4SimPts = isSingleRepValid ? repSimData.simQ4Sp : (sim.team ? sim.team.simQ4Sp : 0);
   const activeQ4SimVal = activeQ4SimPts / 2;
-  const activeQ4SimRatio = isSingleRep ? repSimData.simQ4Ratio : sim.team.simQ4Ratio;
-  const activeQ4OrigRatio = isSingleRep ? repSimData.origQ4Ratio : sim.team.origQ4Ratio;
+  const activeQ4SimRatio = isSingleRepValid ? repSimData.simQ4Ratio : (sim.team ? sim.team.simQ4Ratio : 0);
+  const activeQ4OrigRatio = isSingleRepValid ? repSimData.origQ4Ratio : (sim.team ? sim.team.origQ4Ratio : 0);
   const activeQ4Diff = activeQ4SimRatio - activeQ4OrigRatio;
 
-  const activeYtdSimRatio = isSingleRep ? repSimData.simYtdRatio : sim.team.simYtdRatio;
-  const activeYtdOrigRatio = isSingleRep ? repSimData.origYtdRatio : sim.team.origYtdRatio;
+  const activeYtdSimRatio = isSingleRepValid ? repSimData.simYtdRatio : (sim.team ? sim.team.simYtdRatio : 0);
+  const activeYtdOrigRatio = isSingleRepValid ? repSimData.origYtdRatio : (sim.team ? sim.team.origYtdRatio : 0);
   const activeYtdDiff = activeYtdSimRatio - activeYtdOrigRatio;
   const activeIs100Met = activeYtdSimRatio >= 100;
   const activeIs120Met = activeYtdSimRatio >= 120;
@@ -5657,7 +6326,7 @@ function renderUpaSimulator(rebuildControls = true) {
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <span style="font-size:12px; font-weight:800; color:#0f172a;">
-              Equalized Line Achievement Rate (نسبة تحقيق اللاين لتعديل التارجت):
+              Equalized Line Achievement Rate:
             </span>
             <div style="display:inline-flex; align-items:center; background:#ffffff; border:2px solid #f59e0b; border-radius:8px; padding:3px 8px;">
               <input type="number" id="upaEqualizeInput" style="width:55px; border:none; background:transparent; font-size:16px; font-weight:900; text-align:right; outline:none;" min="10" max="250" step="0.5" value="${currentUpaEqualizeRate.toFixed(1)}" oninput="setUpaEqualizeRate(this.value)">
@@ -6040,7 +6709,7 @@ function downloadUpaSimExcel() {
   const wsReps = XLSX.utils.aoa_to_sheet(repRows);
   XLSX.utils.book_append_sheet(wb, wsReps, 'Reps Dual Simulation');
 
-  const filename = `EVA_Delta_Q4_Simulation_${isSingleRep ? activeRep.name.replace(/\s+/g, '_') : 'Team'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const filename = `EVA_Delta_Q4_Simulation_${activeRep ? activeRep.name.replace(/\s+/g, '_') : 'Team'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
 
@@ -6056,6 +6725,532 @@ function printUpaSimReport() {
 }
 
 // Global print listeners to handle Ctrl+P or browser menu print smoothly
+
+/* ═══════════════════════════════════════════════════════════════
+   PER CUSTOMER SALES & TOP 10 ACCOUNTS CONTROLLER
+   ═══════════════════════════════════════════════════════════════ */
+const CUSTOMER_DATA = __CUSTOMER_DATA_JSON__;
+
+let selectedBricks = new Set();
+let activeGovFilter = 'all';
+let activeCustomerPeriod = 'all'; // 'all', 'Q1', 'Q2', 'Q3', 'Q4'
+let brickSearchQuery = '';
+
+const PRODUCT_CONFIG = {
+  mix: {
+    key: 'mix',
+    name: 'Humaxin Mix 70/30',
+    desc: 'Biphasic Human Insulin 5 Cartridges',
+    icon: '💉',
+    cls: 'prod-mix',
+    fillColor: '#f59e0b'
+  },
+  rapid: {
+    key: 'rapid',
+    name: 'Humaxin Rapid',
+    desc: 'Fast-Acting Human Insulin 5 Cartridges',
+    icon: '⚡',
+    cls: 'prod-rapid',
+    fillColor: '#0284c7'
+  },
+  glarg_comm: {
+    key: 'glarg_comm',
+    name: 'Glargivin 100 IU (Commercial)',
+    desc: 'Basal Insulin Retail Market 5 Cartridges',
+    icon: '💎',
+    cls: 'prod-glarg-comm',
+    fillColor: '#16a34a'
+  },
+  glarg_upa: {
+    key: 'glarg_upa',
+    name: 'Glargivin UPA (Tender)',
+    desc: 'Institutional & Health Insurance Tender Supply',
+    icon: '🏛️',
+    cls: 'prod-glarg-upa',
+    fillColor: '#9333ea'
+  }
+};
+
+const GOVERNORATES = [
+  'all', 'Dakhleiah', 'Gharbeia', 'Menofeya', 'Sharkeia', 'Kalubia', 'Domiat', 'Port Said & Sinai', 'Shobra'
+];
+
+function initCustomerSales() {
+  // Load saved bricks from localStorage or default to rep's territory
+  let saved = null;
+  try {
+    const raw = localStorage.getItem('eva_saved_bricks');
+    if (raw) saved = JSON.parse(raw);
+  } catch(e) {}
+
+  if (Array.isArray(saved) && saved.length > 0) {
+    selectedBricks = new Set(saved);
+  } else {
+    // Default selection: If rep is logged in, select bricks in their region
+    const repGov = getRepSuggestedGov();
+    if (repGov && repGov !== 'all') {
+      selectAllGovBricks(repGov, false);
+    } else {
+      // Default to Menofeya bricks as an initial active territory
+      selectAllGovBricks('Menofeya', false);
+    }
+  }
+
+  renderGovFilterStrip();
+  renderBrickChecklist();
+  renderCustomerView();
+}
+
+function getRepSuggestedGov() {
+  if (!currentUser || !currentUser.repKey) return null;
+  const rep = REPS.find(r => r.key === currentUser.repKey);
+  if (!rep) return null;
+  const note = (rep.name + ' ' + (rep.note || '')).toLowerCase();
+  for (const g of GOVERNORATES) {
+    if (g !== 'all' && note.includes(g.toLowerCase())) return g;
+  }
+  return null;
+}
+
+function renderGovFilterStrip() {
+  const container = document.getElementById('gov-filter-strip');
+  if (!container) return;
+
+  container.innerHTML = GOVERNORATES.map(gov => {
+    const label = gov === 'all' ? 'All Delta (50)' : gov;
+    const isActive = activeGovFilter === gov;
+    return `<button class="gov-filter-chip ${isActive ? 'active' : ''}" onclick="filterGov('${gov}')">${label}</button>`;
+  }).join('');
+}
+
+function renderBrickChecklist() {
+  const container = document.getElementById('brickChipGrid');
+  if (!container || !CUSTOMER_DATA || !CUSTOMER_DATA.brickList) return;
+
+  const q = brickSearchQuery.toLowerCase().trim();
+  const list = CUSTOMER_DATA.brickList.filter(b => {
+    const info = CUSTOMER_DATA.bricks[b];
+    if (activeGovFilter !== 'all' && info.gov !== activeGovFilter) return false;
+    if (q && !b.toLowerCase().includes(q) && !info.gov.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (list.length === 0) {
+    container.innerHTML = `<div style="grid-column:1/-1; padding:20px; text-align:center; color:var(--text-muted); font-size:12px;">No bricks match your search.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(brick => {
+    const isChecked = selectedBricks.has(brick);
+    const info = CUSTOMER_DATA.bricks[brick];
+    // count buying accounts
+    let accCount = 0;
+    Object.values(info.prods).forEach(arr => accCount += (arr ? arr.length : 0));
+
+    return `
+      <label class="brick-chip-item ${isChecked ? 'selected' : ''}" onclick="toggleBrick('${brick.replace(/'/g, "\\'")}')">
+        <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleBrick('${brick.replace(/'/g, "\\'")}')">
+        <span class="brick-chip-name" title="${brick}">${brick}</span>
+        <span class="brick-chip-count">${accCount}</span>
+      </label>
+    `;
+  }).join('');
+}
+
+function filterGov(gov) {
+  activeGovFilter = gov;
+  renderGovFilterStrip();
+  renderBrickChecklist();
+}
+
+function onBrickSearch(val) {
+  brickSearchQuery = val || '';
+  renderBrickChecklist();
+}
+
+function toggleBrick(brick) {
+  if (selectedBricks.has(brick)) {
+    selectedBricks.delete(brick);
+  } else {
+    selectedBricks.add(brick);
+  }
+  saveSelectionState();
+  renderBrickChecklist();
+  renderCustomerView();
+}
+
+function selectAllGovBricks(gov, reRender = true) {
+  if (!CUSTOMER_DATA || !CUSTOMER_DATA.brickList) return;
+  CUSTOMER_DATA.brickList.forEach(b => {
+    const info = CUSTOMER_DATA.bricks[b];
+    if (gov === 'all' || info.gov === gov) {
+      selectedBricks.add(b);
+    }
+  });
+  saveSelectionState();
+  if (reRender) {
+    renderBrickChecklist();
+    renderCustomerView();
+  }
+}
+
+function selectAllBricks() {
+  if (!CUSTOMER_DATA || !CUSTOMER_DATA.brickList) return;
+  CUSTOMER_DATA.brickList.forEach(b => selectedBricks.add(b));
+  saveSelectionState();
+  renderBrickChecklist();
+  renderCustomerView();
+}
+
+function clearAllBricks() {
+  selectedBricks.clear();
+  saveSelectionState();
+  renderBrickChecklist();
+  renderCustomerView();
+}
+
+function saveSelectionState() {
+  try {
+    localStorage.setItem('eva_saved_bricks', JSON.stringify(Array.from(selectedBricks)));
+  } catch(e) {}
+}
+
+function saveDefaultBricks() {
+  saveSelectionState();
+  showToast(`Territory preset saved (${selectedBricks.size} bricks). Will auto-load on future visits!`);
+}
+
+function setCustomerPeriod(period) {
+  activeCustomerPeriod = period;
+  document.querySelectorAll('.cust-period-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-period') === period);
+  });
+  renderCustomerView();
+}
+
+function showCustomerView() {
+  document.getElementById('view-home').classList.remove('active');
+  document.getElementById('view-rep').classList.remove('active');
+  document.getElementById('view-customer').classList.add('active');
+
+  const navDash = document.getElementById('nav-btn-dashboard');
+  const navCust = document.getElementById('nav-btn-customer');
+  if (navDash) navDash.classList.remove('active');
+  if (navCust) navCust.classList.add('active');
+
+  // Back button text
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.classList.add('visible');
+    const full = backBtn.querySelector('.back-text-full');
+    if (full) full.textContent = (currentUser && currentUser.repKey) ? 'My Performance' : 'Team Overview';
+  }
+
+  renderCustomerView();
+}
+
+function showDashboardTab() {
+  document.getElementById('view-customer').classList.remove('active');
+  const navDash = document.getElementById('nav-btn-dashboard');
+  const navCust = document.getElementById('nav-btn-customer');
+  if (navDash) navDash.classList.add('active');
+  if (navCust) navCust.classList.remove('active');
+
+  if (currentUser && currentUser.repKey) {
+    showRep(currentUser.repKey);
+  } else {
+    showHome();
+  }
+}
+
+function renderCustomerView() {
+  const scopePill = document.getElementById('cust-scope-pill');
+  if (scopePill) {
+    scopePill.textContent = `${selectedBricks.size} Brick${selectedBricks.size === 1 ? '' : 's'} Selected`;
+  }
+
+  // Aggregate selected bricks data
+  const qIdxMap = { Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
+  const targetQ = qIdxMap[activeCustomerPeriod];
+
+  const prodAgg = {
+    mix: { accounts: {}, totalU: 0, totalV: 0 },
+    rapid: { accounts: {}, totalU: 0, totalV: 0 },
+    glarg_comm: { accounts: {}, totalU: 0, totalV: 0 },
+    glarg_upa: { accounts: {}, totalU: 0, totalV: 0 }
+  };
+
+  const allBuyingAccounts = new Set();
+  const govsInScope = new Set();
+  let overallTopAcc = { name: '', units: 0 };
+  const overallAccUnits = {};
+
+  selectedBricks.forEach(brick => {
+    const bInfo = CUSTOMER_DATA.bricks[brick];
+    if (!bInfo) return;
+    govsInScope.add(bInfo.gov);
+
+    Object.keys(prodAgg).forEach(pk => {
+      const rawList = bInfo.prods[pk] || [];
+      rawList.forEach(item => {
+        // item: [name, code, total_units, total_val, [q1, q2, q3, q4]]
+        const name = item[0];
+        const code = item[1];
+        let units = item[2];
+        let val = item[3];
+
+        if (targetQ !== undefined) {
+          units = (item[4] && item[4][targetQ] !== undefined) ? item[4][targetQ] : 0;
+          // Approximate quarterly value based on unit proportion
+          val = item[2] > 0 ? (val * (units / item[2])) : 0;
+        }
+
+        if (units <= 0) return;
+
+        allBuyingAccounts.add(name);
+        overallAccUnits[name] = (overallAccUnits[name] || 0) + units;
+        if (overallAccUnits[name] > overallTopAcc.units) {
+          overallTopAcc = { name: name, units: overallAccUnits[name] };
+        }
+
+        const accKey = name + '||' + code;
+        if (!prodAgg[pk].accounts[accKey]) {
+          prodAgg[pk].accounts[accKey] = {
+            name: name,
+            code: code,
+            brick: brick,
+            units: 0,
+            val: 0
+          };
+        }
+        prodAgg[pk].accounts[accKey].units += units;
+        prodAgg[pk].accounts[accKey].val += val;
+        prodAgg[pk].totalU += units;
+        prodAgg[pk].totalV += val;
+      });
+    });
+  });
+
+  // Calculate overall KPIs
+  let grandTotalUnits = 0;
+  let grandTotalValue = 0;
+  Object.values(prodAgg).forEach(p => {
+    grandTotalUnits += p.totalU;
+    grandTotalValue += p.totalV;
+  });
+
+  // Update KPI Cards
+  const kpiScope = document.getElementById('kpi-cust-scope');
+  const kpiGovs = document.getElementById('kpi-cust-govs');
+  const kpiUnits = document.getElementById('kpi-cust-units');
+  const kpiVal = document.getElementById('kpi-cust-value');
+  const kpiAccs = document.getElementById('kpi-cust-accounts');
+  const kpiTopAcc = document.getElementById('kpi-cust-topacc');
+
+  if (kpiScope) kpiScope.textContent = `${selectedBricks.size} Brick${selectedBricks.size === 1 ? '' : 's'}`;
+  if (kpiGovs) kpiGovs.textContent = govsInScope.size > 0 ? Array.from(govsInScope).slice(0, 3).join(', ') + (govsInScope.size > 3 ? '...' : '') : 'Select bricks above';
+  if (kpiUnits) kpiUnits.textContent = Math.round(grandTotalUnits).toLocaleString() + ' Units';
+  if (kpiVal) kpiVal.textContent = 'EGP ' + Math.round(grandTotalValue).toLocaleString();
+  if (kpiAccs) kpiAccs.textContent = `${allBuyingAccounts.size} Outlets`;
+  if (kpiTopAcc) kpiTopAcc.textContent = overallTopAcc.name ? `Top: ${overallTopAcc.name.slice(0, 24)} (${overallTopAcc.units.toLocaleString()} u)` : 'Top: None';
+
+  // Render 4 Product Cards
+  const grid = document.getElementById('custProductsGrid');
+  if (!grid) return;
+
+  if (selectedBricks.size === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1; background:var(--surface); border:2px dashed var(--border-dark); border-radius:14px; padding:48px 24px; text-align:center;">
+        <div style="font-size:36px; margin-bottom:12px;">👈</div>
+        <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:6px;">No Bricks Selected</div>
+        <div style="font-size:13px; color:var(--text-muted); max-width:440px; margin:0 auto 16px auto;">Please select one or more of your territory bricks using the selector above to calculate the Top 10 buying accounts.</div>
+        <button class="btn btn-primary" onclick="selectAllGovBricks('all')" style="background:#f59e0b; color:#090c10; font-weight:800; border:none;">Select All Delta Bricks</button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = Object.keys(PRODUCT_CONFIG).map(pk => {
+    const cfg = PRODUCT_CONFIG[pk];
+    const dataObj = prodAgg[pk];
+    const accList = Object.values(dataObj.accounts);
+    accList.sort((a, b) => b.units - a.units);
+    const top10 = accList.slice(0, 10);
+
+    let rowsHtml = '';
+    if (top10.length === 0) {
+      rowsHtml = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No sales recorded for this product in selected bricks during this period.</td></tr>`;
+    } else {
+      rowsHtml = top10.map((acc, idx) => {
+        const rank = idx + 1;
+        let rankCls = 'rank-other';
+        if (rank === 1) rankCls = 'rank-1';
+        else if (rank === 2) rankCls = 'rank-2';
+        else if (rank === 3) rankCls = 'rank-3';
+
+        const share = dataObj.totalU > 0 ? (acc.units / dataObj.totalU * 100) : 0;
+
+        return `
+          <tr>
+            <td class="center" style="width:36px;">
+              <span class="rank-badge ${rankCls}">${rank}</span>
+            </td>
+            <td style="width:40%;">
+              <div class="cust-name-cell">
+                <div class="cust-name-title" title="${acc.name}">${acc.name}</div>
+                <div class="cust-name-code">Code: ${acc.code || 'N/A'}</div>
+              </div>
+            </td>
+            <td style="width:24%;">
+              <span class="cust-brick-badge" title="${acc.brick}">${acc.brick}</span>
+            </td>
+            <td class="num" style="width:14%; font-weight:800; color:var(--text-primary);">
+              ${Math.round(acc.units).toLocaleString()} <span style="font-size:10px; font-weight:500; color:var(--text-muted);">u</span>
+            </td>
+            <td class="num" style="width:20%; font-weight:700; color:var(--text-secondary);">
+              ${Math.round(acc.val).toLocaleString()} <span style="font-size:10px; color:var(--text-muted);">EGP</span>
+            </td>
+            <td class="num" style="width:12%;">
+              <div class="cust-share-cell">
+                <span style="font-size:11px; font-weight:800; color:var(--text-primary);">${share.toFixed(1)}%</span>
+                <div class="cust-share-bar">
+                  <div class="cust-share-fill" style="width:${Math.min(share, 100)}%; background:${cfg.fillColor};"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    return `
+      <div class="prod-card ${cfg.cls}">
+        <div class="prod-card-header">
+          <div class="prod-card-title-group">
+            <div class="prod-card-icon">${cfg.icon}</div>
+            <div>
+              <div class="prod-card-name">${cfg.name}</div>
+              <div class="prod-card-desc">${cfg.desc}</div>
+            </div>
+          </div>
+          <div class="prod-card-metric">
+            <div class="prod-card-metric-val">${Math.round(dataObj.totalU).toLocaleString()} Units</div>
+            <div class="prod-card-metric-sub">EGP ${Math.round(dataObj.totalV).toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="cust-table-wrap">
+          <table class="cust-table">
+            <thead>
+              <tr>
+                <th class="center" style="width:36px;">#</th>
+                <th style="width:40%;">Account Name</th>
+                <th style="width:24%;">Brick</th>
+                <th class="num" style="width:14%;">Units</th>
+                <th class="num" style="width:20%;">Value</th>
+                <th class="num" style="width:12%;">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function exportCustomerExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('XLSX library loading, please try again in a second.');
+    return;
+  }
+  if (selectedBricks.size === 0) {
+    showToast('Please select at least one brick before exporting.');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+  const qIdxMap = { Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
+  const targetQ = qIdxMap[activeCustomerPeriod];
+
+  // Build rows for each product
+  const rows = [];
+  rows.push(['EVA INSULIN — DELTA TEAM PER CUSTOMER SALES REPORT']);
+  rows.push(['Period:', activeCustomerPeriod === 'all' ? 'Full Year (YTD 2026)' : activeCustomerPeriod]);
+  rows.push(['Selected Bricks Count:', selectedBricks.size]);
+  rows.push(['Selected Bricks:', Array.from(selectedBricks).join(', ')]);
+  rows.push([]);
+
+  Object.keys(PRODUCT_CONFIG).forEach(pk => {
+    const cfg = PRODUCT_CONFIG[pk];
+    const accMap = {};
+    let totalU = 0;
+    let totalV = 0;
+
+    selectedBricks.forEach(brick => {
+      const bInfo = CUSTOMER_DATA.bricks[brick];
+      if (!bInfo) return;
+      (bInfo.prods[pk] || []).forEach(item => {
+        const name = item[0];
+        const code = item[1];
+        let units = item[2];
+        let val = item[3];
+        if (targetQ !== undefined) {
+          units = (item[4] && item[4][targetQ] !== undefined) ? item[4][targetQ] : 0;
+          val = item[2] > 0 ? (val * (units / item[2])) : 0;
+        }
+        if (units <= 0) return;
+        const key = name + '||' + code;
+        if (!accMap[key]) {
+          accMap[key] = { name: name, code: code, brick: brick, units: 0, val: 0 };
+        }
+        accMap[key].units += units;
+        accMap[key].val += val;
+        totalU += units;
+        totalV += val;
+      });
+    });
+
+    const sorted = Object.values(accMap).sort((a, b) => b.units - a.units).slice(0, 10);
+
+    rows.push([`>>> TOP 10 ACCOUNTS: ${cfg.name.toUpperCase()} (Total Units: ${Math.round(totalU)}, Total EGP: ${Math.round(totalV)})`]);
+    rows.push(['Rank', 'Account Name', 'Code', 'Brick', 'Units Sold', 'Value (EGP)', 'Territory Share %']);
+
+    if (sorted.length === 0) {
+      rows.push(['-', 'No sales recorded in selected bricks', '-', '-', 0, 0, '0%']);
+    } else {
+      sorted.forEach((a, i) => {
+        const share = totalU > 0 ? (a.units / totalU * 100).toFixed(1) + '%' : '0%';
+        rows.push([
+          i + 1,
+          a.name,
+          a.code || '',
+          a.brick,
+          Math.round(a.units),
+          Math.round(a.val),
+          share
+        ]);
+      });
+    }
+    rows.push([]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, 'Top 10 Accounts by Product');
+
+  const filename = `EVA_Delta_Customer_Top10_${activeCustomerPeriod}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  showToast(`Excel file exported: ${filename}`);
+}
+
+function printCustomerReport() {
+  document.body.classList.add('printing-customer');
+  setTimeout(() => {
+    window.print();
+  }, 60);
+}
+
 window.addEventListener('beforeprint', () => {
   const simModal = document.getElementById('upaSimModal');
   const deficitModal = document.getElementById('deficitModal');
@@ -6078,6 +7273,7 @@ window.addEventListener('afterprint', () => {
 full_html = HTML_CONTENT.replace('__LOGO_B64__', logo_b64)
 full_html = full_html.replace('__PRODUCTS_JSON__', json.dumps(PRODUCTS, ensure_ascii=False, indent=2))
 full_html = full_html.replace('__REPS_JSON__', json.dumps(REPS_EN, ensure_ascii=False, indent=2))
+full_html = full_html.replace('__CUSTOMER_DATA_JSON__', json.dumps(CUSTOMER_DATA, ensure_ascii=False))
 
 output_path = r"C:\Users\ALMadina\.gemini\antigravity\scratch\delta-team-dashboard\index.html"
 with open(output_path, 'w', encoding='utf-8') as f:
