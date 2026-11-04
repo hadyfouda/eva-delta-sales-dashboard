@@ -1709,6 +1709,82 @@
     gap: 6px;
   }
 
+
+  /* ── SEPARATED SIMULATOR LAYOUT: COMMERCIAL FORECAST VS UPA EQUALIZATION ── */
+  .sim-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .sim-section-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sim-section-desc {
+    font-size: 11.5px;
+    color: #64748b;
+  }
+
+  .comm-deck-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 992px) {
+    .comm-deck-grid { grid-template-columns: 1fr; }
+  }
+
+  .upa-equalize-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.08);
+  }
+  .upa-equalize-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .upa-equalize-grid { grid-template-columns: 1fr; }
+  }
+
+  .upa-stats-panel {
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .upa-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+  }
+  .upa-stat-lbl {
+    color: #64748b;
+    font-weight: 600;
+  }
+  .upa-stat-val {
+    font-weight: 800;
+    color: #0f172a;
+  }
+
 </style>
 </head>
 <body>
@@ -6261,7 +6337,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ── Q4 PRODUCT UNITS FORECAST & GLARGIVIN UPA DUAL SIMULATOR ── */
 
-const SIM_PROD_META = {
+// 3 Commercial retail products (Forecast modifies SALES UNITS; Target is FIXED)
+const COMM_PROD_META = {
   1260: { 
     id: 1260, 
     name: 'Humaxin Mix 70/30', 
@@ -6270,8 +6347,7 @@ const SIM_PROD_META = {
     icon: '📦', 
     price: 232.128, 
     ptsPerUnit: 464.256, 
-    color: '#3b82f6', 
-    isUpa: false 
+    color: '#3b82f6' 
   },
   1259: { 
     id: 1259, 
@@ -6281,8 +6357,7 @@ const SIM_PROD_META = {
     icon: '⚡', 
     price: 232.128, 
     ptsPerUnit: 464.256, 
-    color: '#10b981', 
-    isUpa: false 
+    color: '#10b981' 
   },
   1110: { 
     id: 1110, 
@@ -6292,31 +6367,32 @@ const SIM_PROD_META = {
     icon: '💉', 
     price: 669.60, 
     ptsPerUnit: 1339.20, 
-    color: '#8b5cf6', 
-    isUpa: false 
-  },
-  1251: { 
-    id: 1251, 
-    name: 'Glargivin UPA', 
-    short: 'Glargivin UPA', 
-    pack: '5 Cartridges (Institutional Tender)', 
-    icon: '🏛️', 
-    price: 603.25, 
-    ptsPerUnit: 1206.50, 
-    color: '#f59e0b', 
-    isUpa: true 
+    color: '#8b5cf6' 
   }
 };
 
-// Global state for product units forecasting
-let prodForecastUnits = {}; // { [pid]: number of units } (Team level)
-let repCustomForecastUnits = {}; // { [repKey]: { [pid]: number of units } }
-let currentUpaSimMode = 'target'; // 'target' (rebalancing target = sales/X) or 'sales' (direct units credit)
-let currentUpaRepFilter = 'all'; // 'all' (Team) or specific repKey
-let activeEditingRepKey = null; // for inline rep editor
+// Institutional Tender product (Rate modifies TARGET; Sales is FIXED at tender delivery)
+const UPA_PID = 1251;
+const UPA_META = {
+  id: 1251,
+  name: 'Glargivin UPA',
+  short: 'Glargivin UPA',
+  pack: '5 Cartridges (Institutional Tender)',
+  icon: '🏛️',
+  price: 603.25,
+  ptsPerUnit: 1206.50,
+  color: '#f59e0b'
+};
 
-// Compute baseline Q4 product stats for any target scope (team or specific rep)
-function getProductStatsForScope(scopeKey) {
+// Global simulation state
+let commForecastUnits = {}; // { [pid]: number of units } (Commercial sales forecast)
+let currentUpaEqualizeRate = 100.0; // UPA target rebalancing percentage (default 100%)
+let currentUpaRepFilter = 'all'; // 'all' (Team) or specific repKey
+let repCommCustomUnits = {}; // { [repKey]: { [pid]: number of units } }
+let activeEditingRepKey = null;
+
+// Baseline product stats (Target & Sales) for any scope
+function getProductBaselineStats(scopeKey) {
   const stats = {
     1260: { targetUnits: 0, actualUnits: 0, targetPoints: 0, actualPoints: 0, targetValue: 0, actualValue: 0 },
     1259: { targetUnits: 0, actualUnits: 0, targetPoints: 0, actualPoints: 0, targetValue: 0, actualValue: 0 },
@@ -6351,118 +6427,115 @@ function getProductStatsForScope(scopeKey) {
   return stats;
 }
 
-// Initialize default units (85% commercial, 100% UPA)
-function initDefaultUnits() {
-  const stats = getProductStatsForScope('all');
-  prodForecastUnits = {
-    1260: stats[1260].targetUnits * 0.85,
-    1259: stats[1259].targetUnits * 0.85,
-    1110: stats[1110].targetUnits * 0.85,
-    1251: stats[1251].targetUnits * 1.00
+// Initialize default commercial forecast units (default 85% of target)
+function initDefaultCommUnits() {
+  const teamStats = getProductBaselineStats('all');
+  commForecastUnits = {
+    1260: teamStats[1260].targetUnits * 0.85,
+    1259: teamStats[1259].targetUnits * 0.85,
+    1110: teamStats[1110].targetUnits * 0.85
   };
+  currentUpaEqualizeRate = 100.0;
 }
 
-// Master preset setter
-function setMasterTeamPreset(type) {
+// Set master commercial preset
+function setCommForecastPreset(type) {
   const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
-  const scopeStats = getProductStatsForScope(currentUpaRepFilter);
+  const scopeStats = getProductBaselineStats(currentUpaRepFilter);
 
   if (isSingleRep) {
-    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
+    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
     if (type === 'actual') {
-      Object.keys(SIM_PROD_META).forEach(pid => {
-        repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
+      Object.keys(COMM_PROD_META).forEach(pid => {
+        repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
       });
-    } else if (type === '85comm_100upa') {
-      repCustomForecastUnits[currentUpaRepFilter][1260] = scopeStats[1260].targetUnits * 0.85;
-      repCustomForecastUnits[currentUpaRepFilter][1259] = scopeStats[1259].targetUnits * 0.85;
-      repCustomForecastUnits[currentUpaRepFilter][1110] = scopeStats[1110].targetUnits * 0.85;
-      repCustomForecastUnits[currentUpaRepFilter][1251] = scopeStats[1251].targetUnits * 1.00;
     } else {
       const pct = parseFloat(type) / 100.0;
-      Object.keys(SIM_PROD_META).forEach(pid => {
-        repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
+      Object.keys(COMM_PROD_META).forEach(pid => {
+        repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
       });
     }
   } else {
     if (type === 'actual') {
-      Object.keys(SIM_PROD_META).forEach(pid => {
-        prodForecastUnits[pid] = scopeStats[pid].actualUnits;
+      Object.keys(COMM_PROD_META).forEach(pid => {
+        commForecastUnits[pid] = scopeStats[pid].actualUnits;
       });
-    } else if (type === '85comm_100upa') {
-      prodForecastUnits[1260] = scopeStats[1260].targetUnits * 0.85;
-      prodForecastUnits[1259] = scopeStats[1259].targetUnits * 0.85;
-      prodForecastUnits[1110] = scopeStats[1110].targetUnits * 0.85;
-      prodForecastUnits[1251] = scopeStats[1251].targetUnits * 1.00;
     } else {
       const pct = parseFloat(type) / 100.0;
-      Object.keys(SIM_PROD_META).forEach(pid => {
-        prodForecastUnits[pid] = scopeStats[pid].targetUnits * pct;
+      Object.keys(COMM_PROD_META).forEach(pid => {
+        commForecastUnits[pid] = scopeStats[pid].targetUnits * pct;
       });
     }
   }
   renderUpaSimulator(true);
 }
 
-// Individual product preset chip setter
-function setProductPresetChip(pid, type) {
+// Set commercial product preset chip
+function setCommProductPresetChip(pid, type) {
   const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
-  const scopeStats = getProductStatsForScope(currentUpaRepFilter);
+  const scopeStats = getProductBaselineStats(currentUpaRepFilter);
 
   if (isSingleRep) {
-    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
+    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
     if (type === 'actual') {
-      repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
+      repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
     } else {
       const pct = parseFloat(type) / 100.0;
-      repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
+      repCommCustomUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
     }
   } else {
     if (type === 'actual') {
-      prodForecastUnits[pid] = scopeStats[pid].actualUnits;
+      commForecastUnits[pid] = scopeStats[pid].actualUnits;
     } else {
       const pct = parseFloat(type) / 100.0;
-      prodForecastUnits[pid] = scopeStats[pid].targetUnits * pct;
+      commForecastUnits[pid] = scopeStats[pid].targetUnits * pct;
     }
   }
   renderUpaSimulator(true);
 }
 
-// Individual product unit input handler
-function onProductUnitChange(pid, val) {
+// Commercial product unit input change
+function onCommProductUnitChange(pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
   const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
 
   if (isSingleRep) {
-    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
-    repCustomForecastUnits[currentUpaRepFilter][pid] = num;
+    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
+    repCommCustomUnits[currentUpaRepFilter][pid] = num;
   } else {
-    prodForecastUnits[pid] = num;
+    commForecastUnits[pid] = num;
   }
   renderUpaSimulator(false);
 }
 
-// Individual product slider handler
-function onProductSliderChange(pid, val) {
+// Commercial slider change
+function onCommProductSliderChange(pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
   const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
 
   if (isSingleRep) {
-    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
-    repCustomForecastUnits[currentUpaRepFilter][pid] = num;
+    if (!repCommCustomUnits[currentUpaRepFilter]) repCommCustomUnits[currentUpaRepFilter] = {};
+    repCommCustomUnits[currentUpaRepFilter][pid] = num;
   } else {
-    prodForecastUnits[pid] = num;
+    commForecastUnits[pid] = num;
   }
-  const inputEl = document.getElementById(`prodUnitInput_${pid}`);
+  const inputEl = document.getElementById(`commUnitInput_${pid}`);
   if (inputEl) inputEl.value = Math.round(num);
   renderUpaSimulator(false);
 }
 
-function setUpaEqualizationMode(mode) {
-  currentUpaSimMode = mode;
-  renderUpaSimulator(true);
+// UPA Equalization Rate change (modifies TARGET, leaves sales fixed)
+function setUpaEqualizeRate(val) {
+  let num = parseFloat(val);
+  if (isNaN(num) || num < 0) num = 0;
+  currentUpaEqualizeRate = num;
+  const inputEl = document.getElementById('upaEqualizeInput');
+  const sliderEl = document.getElementById('upaEqualizeSlider');
+  if (inputEl) inputEl.value = currentUpaEqualizeRate.toFixed(1);
+  if (sliderEl) sliderEl.value = Math.min(Math.max(currentUpaEqualizeRate, 0), 150);
+  renderUpaSimulator(false);
 }
 
 function setUpaRepFilter(filter) {
@@ -6472,8 +6545,8 @@ function setUpaRepFilter(filter) {
 
 function openUpaSimulator(repKey) {
   currentUpaRepFilter = repKey || 'all';
-  if (!prodForecastUnits[1260]) {
-    initDefaultUnits();
+  if (!commForecastUnits[1260]) {
+    initDefaultCommUnits();
   }
   const modal = document.getElementById('upaSimModal');
   if (!modal) return;
@@ -6489,7 +6562,6 @@ function closeUpaSimulator() {
   document.body.style.overflow = '';
 }
 
-// Rep unit overrides management
 function openRepUnitEditor(repKey) {
   activeEditingRepKey = repKey;
   renderUpaSimulator(false);
@@ -6500,44 +6572,67 @@ function closeRepUnitEditor() {
   renderUpaSimulator(false);
 }
 
-function onRepCustomUnitChange(repKey, pid, val) {
+function onRepCustomCommUnitChange(repKey, pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
-  if (!repCustomForecastUnits[repKey]) repCustomForecastUnits[repKey] = {};
-  repCustomForecastUnits[repKey][pid] = num;
+  if (!repCommCustomUnits[repKey]) repCommCustomUnits[repKey] = {};
+  repCommCustomUnits[repKey][pid] = num;
   renderUpaSimulator(false);
 }
 
 function resetSingleRepUnitOverrides(repKey) {
-  delete repCustomForecastUnits[repKey];
+  delete repCommCustomUnits[repKey];
   renderUpaSimulator(true);
 }
 
 function resetAllRepUnitOverrides() {
-  repCustomForecastUnits = {};
+  repCommCustomUnits = {};
   renderUpaSimulator(true);
 }
 
-/* ── SIMULATION ENGINE: UNITS TO ACHIEVEMENT % ── */
-function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
-  const teamStats = getProductStatsForScope('all');
-  unitsDict = unitsDict || prodForecastUnits;
-  repOverrides = repOverrides || repCustomForecastUnits;
+/* ── STRICT MATHEMATICAL ENGINE ──
+   1. Commercial: Target is FIXED, Sales modified via forecast units
+   2. UPA: Sales is FIXED (tender delivered), Target modified via equalization rate
+*/
+function computeSeparatedSimulation(commUnits, upaRatePct, repOverrides) {
+  const teamStats = getProductBaselineStats('all');
+  commUnits = commUnits || commForecastUnits;
+  repOverrides = repOverrides || repCommCustomUnits;
+  const R_upa = upaRatePct / 100.0;
 
-  // Glargivin UPA Line rate derived directly from its forecast units
-  const upaTgtUnits = teamStats[1251].targetUnits;
-  const upaFcUnits = unitsDict[1251] !== undefined ? unitsDict[1251] : teamStats[1251].actualUnits;
-  const upaAchPct = upaTgtUnits > 0 ? (upaFcUnits / upaTgtUnits * 100) : 100.0;
-  const F_upa = upaAchPct / 100.0;
+  // Commercial products team forecast points
+  let teamCommOrigTp = 0;
+  let teamCommSimSp = 0;
+  let teamCommOrigSp = 0;
 
-  let team = {
-    origQ4Sp: 0, origQ4Tp: 0, origQ4Sv: 0,
-    simQ4Sp: 0, simQ4Tp: 0, simQ4Sv: 0,
-    spQ1Q3: 0, tpQ1Q3: 0,
-    origYtdSp: 0, origYtdTp: 0,
-    simYtdSp: 0, simYtdTp: 0
-  };
+  Object.keys(COMM_PROD_META).forEach(pid => {
+    const meta = COMM_PROD_META[pid];
+    const s = teamStats[pid];
+    teamCommOrigTp += s.targetPoints;
+    teamCommOrigSp += s.actualPoints;
+    const u = commUnits[pid] !== undefined ? commUnits[pid] : s.actualUnits;
+    teamCommSimSp += (u * meta.ptsPerUnit);
+  });
 
+  // UPA team points: Sales is FIXED, Target is EQUALIZED
+  const teamUpaActSp = teamStats[UPA_PID].actualPoints; // FIXED
+  const teamUpaOrigTp = teamStats[UPA_PID].targetPoints;
+  const teamUpaSimTp = R_upa > 0 ? (teamUpaActSp / R_upa) : teamUpaOrigTp; // MODIFIED TARGET
+  const teamUpaActUnits = teamStats[UPA_PID].actualUnits;
+  const teamUpaSimTargetUnits = R_upa > 0 ? (teamUpaActUnits / R_upa) : teamStats[UPA_PID].targetUnits;
+
+  // Total Team Q4
+  const teamSimQ4Sp = teamCommSimSp + teamUpaActSp;
+  const teamSimQ4Tp = teamCommOrigTp + teamUpaSimTp;
+  const teamSimQ4Sv = teamSimQ4Sp / 2;
+  const teamSimQ4Tv = teamSimQ4Tp / 2;
+
+  const teamOrigQ4Sp = teamCommOrigSp + teamUpaActSp;
+  const teamOrigQ4Tp = teamCommOrigTp + teamUpaOrigTp;
+  const teamOrigQ4Ratio = teamOrigQ4Tp > 0 ? (teamOrigQ4Sp / teamOrigQ4Tp) * 100 : 0;
+  const teamSimQ4Ratio = teamSimQ4Tp > 0 ? (teamSimQ4Sp / teamSimQ4Tp) * 100 : 0;
+
+  let teamSpQ1Q3 = 0, teamTpQ1Q3 = 0;
   const repsSim = [];
 
   REPS.forEach(r => {
@@ -6546,12 +6641,13 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
     const q4Prods = q4 && q4.products ? q4.products : [];
     if (!q4Prods.length) return;
 
-    let repOrigQ4Sp = 0, repOrigQ4Tp = 0, repOrigQ4Sv = 0;
-    let repSimQ4Sp = 0, repSimQ4Tp = 0, repSimQ4Sv = 0;
+    let repCommOrigTp = 0;
+    let repCommOrigSp = 0;
+    let repCommSimSp = 0;
     const repProdsMap = {};
     const hasOverrides = !!(repOverrides[r.key] && Object.keys(repOverrides[r.key]).length > 0);
 
-    // Q1-Q3 points (historical locked actuals)
+    // Q1-Q3 locked historical actuals
     let spQ1Q3 = 0, tpQ1Q3 = 0;
     ['Q1', 'Q2', 'Q3'].forEach(q => {
       const qd = r.quarters && r.quarters[q];
@@ -6566,109 +6662,86 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
       }
     });
 
-    q4Prods.forEach(p => {
-      const pid = p.pid;
-      const meta = SIM_PROD_META[pid];
-      if (!meta) return;
+    // 1. Commercial products calculation
+    Object.keys(COMM_PROD_META).forEach(pid => {
+      const meta = COMM_PROD_META[pid];
+      const cp = q4Prods.find(p => p.pid === Number(pid)) || {};
+      const actU = Number(cp.salesUnits || 0);
+      const tgtU = Number(cp.targetUnits || 0);
+      const sv = Number(cp.salesValue || 0);
+      const actSp = (cp.salesPoints !== null && cp.salesPoints !== undefined) ? Number(cp.salesPoints) : (sv * 2);
+      const tgtSp = (cp.targetPoints !== null && cp.targetPoints !== undefined) ? Number(cp.targetPoints) : ((cp.targetValue || 0) * 2);
 
-      const actU = Number(p.salesUnits || 0);
-      const tgtU = Number(p.targetUnits || 0);
-      const sv = (p.salesValue !== null && p.salesValue !== undefined) ? Number(p.salesValue) : 0;
-      const actSp = (p.salesPoints !== null && p.salesPoints !== undefined) ? Number(p.salesPoints) : (sv * 2);
-      const tgtSp = (p.targetPoints !== null && p.targetPoints !== undefined) ? Number(p.targetPoints) : ((p.targetValue || 0) * 2);
+      repCommOrigTp += tgtSp;
+      repCommOrigSp += actSp;
 
-      repOrigQ4Sp += actSp;
-      repOrigQ4Tp += tgtSp;
-      repOrigQ4Sv += sv;
-
-      // Determine rep's forecast units for this product
-      let repFcUnits = 0;
-      const isPidOverridden = (repOverrides[r.key] && repOverrides[r.key][pid] !== undefined);
-
-      if (isPidOverridden) {
-        repFcUnits = Number(repOverrides[r.key][pid]);
+      let fcUnits = 0;
+      const isOverridden = (repOverrides[r.key] && repOverrides[r.key][pid] !== undefined);
+      if (isOverridden) {
+        fcUnits = Number(repOverrides[r.key][pid]);
       } else {
         const teamTgt = teamStats[pid].targetUnits;
-        const teamFc = unitsDict[pid] !== undefined ? unitsDict[pid] : teamStats[pid].actualUnits;
+        const teamFc = commUnits[pid] !== undefined ? commUnits[pid] : teamStats[pid].actualUnits;
         const ratio = teamTgt > 0 ? (teamFc / teamTgt) : 1.0;
-        repFcUnits = Math.max(actU, tgtU * ratio);
+        fcUnits = Math.max(actU, tgtU * ratio);
       }
 
-      const repFcPoints = repFcUnits * meta.ptsPerUnit;
-      const repFcValue = repFcUnits * meta.price;
+      const fcPoints = fcUnits * meta.ptsPerUnit;
+      repCommSimSp += fcPoints;
 
-      // Glargivin UPA Equalization calculation
-      if (pid === 1251) {
-        if (upaMode === 'target') {
-          // Target Rebalancing: Target adjusts so sales / target = upaAchPct
-          const simUpaTp = F_upa > 0 ? (actSp / F_upa) : tgtSp;
-          repSimQ4Tp += simUpaTp;
-          repSimQ4Sp += actSp;
-          repSimQ4Sv += (actSp / 2);
-          repProdsMap[pid] = {
-            units: actU,
-            points: actSp,
-            targetUnits: tgtU,
-            actualUnits: actU,
-            simTargetPoints: simUpaTp,
-            origTargetPoints: tgtSp,
-            isOverridden: isPidOverridden
-          };
-        } else {
-          // Direct units / sales credit
-          repSimQ4Tp += tgtSp;
-          repSimQ4Sp += repFcPoints;
-          repSimQ4Sv += repFcValue;
-          repProdsMap[pid] = {
-            units: repFcUnits,
-            points: repFcPoints,
-            targetUnits: tgtU,
-            actualUnits: actU,
-            simTargetPoints: tgtSp,
-            origTargetPoints: tgtSp,
-            isOverridden: isPidOverridden
-          };
-        }
-      } else {
-        // Commercial products
-        repSimQ4Tp += tgtSp;
-        repSimQ4Sp += repFcPoints;
-        repSimQ4Sv += repFcValue;
-        repProdsMap[pid] = {
-          units: repFcUnits,
-          points: repFcPoints,
-          targetUnits: tgtU,
-          actualUnits: actU,
-          simTargetPoints: tgtSp,
-          origTargetPoints: tgtSp,
-          isOverridden: isPidOverridden
-        };
-      }
+      repProdsMap[pid] = {
+        units: fcUnits,
+        points: fcPoints,
+        targetUnits: tgtU,
+        actualUnits: actU,
+        origTargetPoints: tgtSp,
+        simTargetPoints: tgtSp, // Target is FIXED
+        isOverridden
+      };
     });
 
-    const origQ4Ratio = repOrigQ4Tp > 0 ? (repOrigQ4Sp / repOrigQ4Tp) * 100 : 0;
-    const simQ4Ratio = repSimQ4Tp > 0 ? (repSimQ4Sp / repSimQ4Tp) * 100 : 0;
+    // 2. Glargivin UPA calculation (Sales is FIXED, Target is EQUALIZED)
+    const upa = q4Prods.find(p => p.pid === UPA_PID) || {};
+    const repUpaActU = Number(upa.salesUnits || 0);
+    const repUpaTgtU = Number(upa.targetUnits || 0);
+    const repUpaSv = Number(upa.salesValue || 0);
+    const repUpaActSp = (upa.salesPoints !== null && upa.salesPoints !== undefined) ? Number(upa.salesPoints) : (repUpaSv * 2);
+    const repUpaOrigTp = (upa.targetPoints !== null && upa.targetPoints !== undefined) ? Number(upa.targetPoints) : ((upa.targetValue || 0) * 2);
 
-    const origYtdSp = spQ1Q3 + repOrigQ4Sp;
-    const origYtdTp = tpQ1Q3 + repOrigQ4Tp;
-    const origYtdRatio = origYtdTp > 0 ? (origYtdSp / origYtdTp) * 100 : 0;
+    const repUpaSimTp = R_upa > 0 ? (repUpaActSp / R_upa) : repUpaOrigTp; // MODIFIED TARGET
+    const repUpaSimTargetUnits = R_upa > 0 ? (repUpaActU / R_upa) : repUpaTgtU;
 
-    const simYtdSp = spQ1Q3 + repSimQ4Sp;
-    const simYtdTp = tpQ1Q3 + repSimQ4Tp;
-    const simYtdRatio = simYtdTp > 0 ? (simYtdSp / simYtdTp) * 100 : 0;
+    repProdsMap[UPA_PID] = {
+      units: repUpaActU, // FIXED at delivered sales
+      points: repUpaActSp, // FIXED at delivered sales
+      targetUnits: repUpaTgtU,
+      actualUnits: repUpaActU,
+      simTargetPoints: repUpaSimTp, // REBALANCED TARGET
+      simTargetUnits: repUpaSimTargetUnits,
+      origTargetPoints: repUpaOrigTp,
+      isOverridden: false
+    };
 
-    team.origQ4Sp += repOrigQ4Sp;
-    team.origQ4Tp += repOrigQ4Tp;
-    team.origQ4Sv += repOrigQ4Sv;
-    team.simQ4Sp += repSimQ4Sp;
-    team.simQ4Tp += repSimQ4Tp;
-    team.simQ4Sv += repSimQ4Sv;
-    team.spQ1Q3 += spQ1Q3;
-    team.tpQ1Q3 += tpQ1Q3;
-    team.origYtdSp += origYtdSp;
-    team.origYtdTp += origYtdTp;
-    team.simYtdSp += simYtdSp;
-    team.simYtdTp += simYtdTp;
+    // Rep Q4 Totals
+    const repSimQ4Sp = repCommSimSp + repUpaActSp;
+    const repSimQ4Tp = repCommOrigTp + repUpaSimTp;
+    const repOrigQ4Sp = repCommOrigSp + repUpaActSp;
+    const repOrigQ4Tp = repCommOrigTp + repUpaOrigTp;
+
+    const repSimQ4Ratio = repSimQ4Tp > 0 ? (repSimQ4Sp / repSimQ4Tp) * 100 : 0;
+    const repOrigQ4Ratio = repOrigQ4Tp > 0 ? (repOrigQ4Sp / repOrigQ4Tp) * 100 : 0;
+
+    // Rep Full-Year YTD
+    const repSimYtdSp = spQ1Q3 + repSimQ4Sp;
+    const repSimYtdTp = tpQ1Q3 + repSimQ4Tp;
+    const repOrigYtdSp = spQ1Q3 + repOrigQ4Sp;
+    const repOrigYtdTp = tpQ1Q3 + repOrigQ4Tp;
+
+    const repSimYtdRatio = repSimYtdTp > 0 ? (repSimYtdSp / repSimYtdTp) * 100 : 0;
+    const repOrigYtdRatio = repOrigYtdTp > 0 ? (repOrigYtdSp / repOrigYtdTp) * 100 : 0;
+
+    teamSpQ1Q3 += spQ1Q3;
+    teamTpQ1Q3 += tpQ1Q3;
 
     repsSim.push({
       rep: r,
@@ -6678,44 +6751,67 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
       hasOverrides,
       prodsMap: repProdsMap,
       spQ1Q3, tpQ1Q3,
-      origQ4Sp: repOrigQ4Sp, 
-      origQ4Tp: repOrigQ4Tp, 
-      origQ4Ratio, 
-      origQ4Sv: repOrigQ4Sv,
-      simQ4Sp: repSimQ4Sp, 
-      simQ4Tp: repSimQ4Tp, 
-      simQ4Ratio, 
-      simQ4Sv: repSimQ4Sv,
-      origYtdSp, origYtdTp, origYtdRatio,
-      simYtdSp, simYtdTp, simYtdRatio,
-      q4RatioDiff: simQ4Ratio - origQ4Ratio,
-      ytdRatioDiff: simYtdRatio - origYtdRatio,
-      ptsDiff: simYtdSp - origYtdSp,
-      is100Met: simYtdRatio >= 100,
-      is120Met: simYtdRatio >= 120
+      origQ4Sp: repOrigQ4Sp,
+      origQ4Tp: repOrigQ4Tp,
+      origQ4Ratio: repOrigQ4Ratio,
+      simQ4Sp: repSimQ4Sp,
+      simQ4Tp: repSimQ4Tp,
+      simQ4Ratio: repSimQ4Ratio,
+      origYtdSp: repOrigYtdSp,
+      origYtdTp: repOrigYtdTp,
+      origYtdRatio: repOrigYtdRatio,
+      simYtdSp: repSimYtdSp,
+      simYtdTp: repSimYtdTp,
+      simYtdRatio: repSimYtdRatio,
+      q4RatioDiff: repSimQ4Ratio - repOrigQ4Ratio,
+      ytdRatioDiff: repSimYtdRatio - repOrigYtdRatio,
+      is100Met: repSimYtdRatio >= 100,
+      is120Met: repSimYtdRatio >= 120
     });
   });
 
-  team.origQ4Ratio = team.origQ4Tp > 0 ? (team.origQ4Sp / team.origQ4Tp) * 100 : 0;
-  team.simQ4Ratio = team.simQ4Tp > 0 ? (team.simQ4Sp / team.simQ4Tp) * 100 : 0;
-  team.origYtdRatio = team.origYtdTp > 0 ? (team.origYtdSp / team.origYtdTp) * 100 : 0;
-  team.simYtdRatio = team.simYtdTp > 0 ? (team.simYtdSp / team.simYtdTp) * 100 : 0;
-  team.q4RatioDiff = team.simQ4Ratio - team.origQ4Ratio;
-  team.ytdRatioDiff = team.simYtdRatio - team.origYtdRatio;
-  team.ptsDiff = team.simYtdSp - team.origYtdSp;
+  const teamSimYtdSp = teamSpQ1Q3 + teamSimQ4Sp;
+  const teamSimYtdTp = teamTpQ1Q3 + teamSimQ4Tp;
+  const teamOrigYtdSp = teamSpQ1Q3 + teamOrigQ4Sp;
+  const teamOrigYtdTp = teamTpQ1Q3 + teamOrigQ4Tp;
 
-  // Milestone checks
-  team.is100Met = team.simYtdRatio >= 100;
-  team.is120Met = team.simYtdRatio >= 120;
-  team.gap100Pts = team.is100Met ? (team.simYtdSp - team.simYtdTp) : (team.simYtdTp - team.simYtdSp);
-  const target120Pts = team.simYtdTp * 1.20;
-  team.gap120Pts = team.is120Met ? (team.simYtdSp - target120Pts) : (target120Pts - team.simYtdSp);
+  const teamSimYtdRatio = teamSimYtdTp > 0 ? (teamSimYtdSp / teamSimYtdTp) * 100 : 0;
+  const teamOrigYtdRatio = teamOrigYtdTp > 0 ? (teamOrigYtdSp / teamOrigYtdTp) * 100 : 0;
+
+  const team = {
+    origQ4Sp: teamOrigQ4Sp,
+    origQ4Tp: teamOrigQ4Tp,
+    origQ4Ratio: teamOrigQ4Ratio,
+    simQ4Sp: teamSimQ4Sp,
+    simQ4Tp: teamSimQ4Tp,
+    simQ4Ratio: teamSimQ4Ratio,
+    simQ4Sv: teamSimQ4Sv,
+    simQ4Tv: teamSimQ4Tv,
+    q4RatioDiff: teamSimQ4Ratio - teamOrigQ4Ratio,
+    spQ1Q3: teamSpQ1Q3,
+    tpQ1Q3: teamTpQ1Q3,
+    origYtdSp: teamOrigYtdSp,
+    origYtdTp: teamOrigYtdTp,
+    origYtdRatio: teamOrigYtdRatio,
+    simYtdSp: teamSimYtdSp,
+    simYtdTp: teamSimYtdTp,
+    simYtdRatio: teamSimYtdRatio,
+    ytdRatioDiff: teamSimYtdRatio - teamOrigYtdRatio,
+    is100Met: teamSimYtdRatio >= 100,
+    is120Met: teamSimYtdRatio >= 120,
+    gap100Pts: teamSimYtdRatio >= 100 ? (teamSimYtdSp - teamSimYtdTp) : (teamSimYtdTp - teamSimYtdSp),
+    gap120Pts: (teamSimYtdTp * 1.20) - teamSimYtdSp
+  };
 
   return {
     team,
     reps: repsSim,
-    upaAchPct,
-    upaMode
+    upaRatePct,
+    teamUpaActSp,
+    teamUpaSimTp,
+    teamUpaOrigTp,
+    teamUpaActUnits,
+    teamUpaSimTargetUnits
   };
 }
 
@@ -6724,20 +6820,19 @@ function renderUpaSimulator(rebuildControls = true) {
   const bodyEl = document.getElementById('upaSimModalBody');
   if (!bodyEl) return;
 
-  if (!prodForecastUnits[1260]) {
-    initDefaultUnits();
+  if (!commForecastUnits[1260]) {
+    initDefaultCommUnits();
   }
 
   const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
   const activeRep = isSingleRep ? REPS.find(r => r.key === currentUpaRepFilter) : null;
   const scopeTitle = isSingleRep ? activeRep.name : 'Delta Region Team';
-  const scopeSubtitle = isSingleRep ? `${activeRep.name} (${activeRep.area || 'Delta Region'})` : 'Grand Aggregate (9 Representatives)';
 
-  const sim = computeUnitsSimulation(prodForecastUnits, currentUpaSimMode, repCustomForecastUnits);
+  const sim = computeSeparatedSimulation(commForecastUnits, currentUpaEqualizeRate, repCommCustomUnits);
   const repSimData = isSingleRep ? sim.reps.find(r => r.key === currentUpaRepFilter) : null;
 
-  // Focus data for KPI cards based on scope
-  const activeQ4TargetPts = isSingleRep ? repSimData.origQ4Tp : sim.team.origQ4Tp;
+  // Active metrics based on scope
+  const activeQ4TargetPts = isSingleRep ? repSimData.simQ4Tp : sim.team.simQ4Tp;
   const activeQ4TargetVal = activeQ4TargetPts / 2;
   const activeQ4SimPts = isSingleRep ? repSimData.simQ4Sp : sim.team.simQ4Sp;
   const activeQ4SimVal = activeQ4SimPts / 2;
@@ -6751,25 +6846,43 @@ function renderUpaSimulator(rebuildControls = true) {
   const activeIs100Met = activeYtdSimRatio >= 100;
   const activeIs120Met = activeYtdSimRatio >= 120;
 
-  // Scope product stats (Q4 Target Units and Sold Units for this scope)
-  const scopeStats = getProductStatsForScope(currentUpaRepFilter);
+  const scopeStats = getProductBaselineStats(currentUpaRepFilter);
 
-  const overrideKeys = Object.keys(repCustomForecastUnits);
-  const hasOverrides = overrideKeys.length > 0;
-  const overrideCount = overrideKeys.length;
+  // UPA scope stats
+  const scopeUpaActUnits = scopeStats[UPA_PID].actualUnits;
+  const scopeUpaOrigTgtUnits = scopeStats[UPA_PID].targetUnits;
+  const scopeUpaActSp = scopeStats[UPA_PID].actualPoints;
+  const scopeUpaOrigTp = scopeStats[UPA_PID].targetPoints;
+  const scopeUpaSimTp = (currentUpaEqualizeRate > 0) ? (scopeUpaActSp / (currentUpaEqualizeRate / 100.0)) : scopeUpaOrigTp;
+  const scopeUpaSimTgtUnits = (currentUpaEqualizeRate > 0) ? (scopeUpaActUnits / (currentUpaEqualizeRate / 100.0)) : scopeUpaOrigTgtUnits;
+  const scopeUpaReliefPts = scopeUpaOrigTp - scopeUpaSimTp;
 
-  const masterPresets = [
+  const commPresets = [
     { label: '33.1% (Actual Units)', val: 'actual' },
     { label: '75% Target', val: '75' },
     { label: '80% Target', val: '80' },
     { label: '85% Target', val: '85' },
     { label: '90% Target', val: '90' },
     { label: '95% Target', val: '95' },
-    { label: '100% Target (Quota)', val: '100' },
-    { label: '110% Target', val: '110' },
-    { label: '120% (Incentive)', val: '120' },
-    { label: '85% Comm + 100% UPA', val: '85comm_100upa' }
+    { label: '100% (Quota)', val: '100' },
+    { label: '110%', val: '110' },
+    { label: '120% (Incentive)', val: '120' }
   ];
+
+  const upaPresets = [
+    { label: '35.8% (Original Target)', val: 35.77 },
+    { label: '70%', val: 70 },
+    { label: '80%', val: 80 },
+    { label: '85%', val: 85 },
+    { label: '90%', val: 90 },
+    { label: '100% (Standard Quota)', val: 100 },
+    { label: '110%', val: 110 },
+    { label: '120% (Incentive)', val: 120 }
+  ];
+
+  const overrideKeys = Object.keys(repCommCustomUnits);
+  const hasOverrides = overrideKeys.length > 0;
+  const overrideCount = overrideKeys.length;
 
   let html = `
     <!-- CONTEXT & TARGET CLARIFICATION BAR -->
@@ -6793,7 +6906,7 @@ function renderUpaSimulator(rebuildControls = true) {
     </div>
 
     <!-- TOP EXECUTIVE KPI CARDS -->
-    <div class="report-kpi-grid" style="margin-bottom: 20px;">
+    <div class="report-kpi-grid" style="margin-bottom: 22px;">
       <!-- CARD 1: Q4 TARGET & FORECAST ACHIEVEMENT (HERO) -->
       <div class="report-kpi-card" style="border-top: 4px solid #3b82f6;">
         <div class="report-kpi-title">
@@ -6807,8 +6920,8 @@ function renderUpaSimulator(rebuildControls = true) {
           </span>
         </div>
         <div class="report-kpi-sub">
-          Forecast: <strong>${fmt(activeQ4SimPts)} pts</strong> (${fmt(activeQ4SimVal)} EGP)
-          <br><span style="color:#64748b;">Q4 Target Quota: <strong>${fmt(activeQ4TargetPts)} pts</strong> (${fmt(activeQ4TargetVal)} EGP)</span>
+          Forecast Sales: <strong>${fmt(activeQ4SimPts)} pts</strong> (${fmt(activeQ4SimVal)} EGP)
+          <br><span style="color:#64748b;">Equalized Q4 Target: <strong>${fmt(activeQ4TargetPts)} pts</strong> (${fmt(activeQ4TargetVal)} EGP)</span>
         </div>
       </div>
 
@@ -6841,7 +6954,7 @@ function renderUpaSimulator(rebuildControls = true) {
         </div>
         <div class="report-kpi-sub">
           ${activeIs100Met 
-            ? `Annual Target Met for <strong>${scopeTitle}</strong>` 
+            ? `Surplus: <strong style="color:#10b981;">+${fmt(sim.team.gap100Pts)} pts</strong> ahead of annual quota` 
             : `Needs more Q4 volume to close annual quota`}
         </div>
       </div>
@@ -6858,55 +6971,56 @@ function renderUpaSimulator(rebuildControls = true) {
         <div class="report-kpi-sub">
           ${activeIs120Met 
             ? `120% Elite Tier Achieved!` 
-            : `Targeting 120% full-year quota acceleration`}
+            : `Gap to 120%: <strong>${fmt(Math.max(sim.team.gap120Pts, 0))} pts</strong>`}
         </div>
       </div>
     </div>
 
-    <!-- MASTER SCENARIO PRESETS BAR -->
-    <div class="master-preset-strip">
-      <span class="master-preset-label">
-        <span style="font-size:15px;">⚡</span> Quick Scenarios for ${scopeTitle}:
-      </span>
-      ${masterPresets.map(p => `
-        <button class="master-preset-btn" onclick="setMasterTeamPreset('${p.val}')">
-          ${p.label}
-        </button>
-      `).join('')}
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PART 1: COMMERCIAL PRODUCTS CLOSING SALES FORECAST (UNITS)   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="sim-section-header">
+      <div>
+        <div class="sim-section-title">
+          <span>📦</span>
+          <span>Part 1: Q4 Commercial Portfolio Closing Forecast (Retail Units)</span>
+          <span style="font-size:11px; background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:6px; font-weight:700;">Target is Fixed • Forecast Modifies Sales Units</span>
+        </div>
+        <div class="sim-section-desc">
+          Enter expected closing sales units for commercial products. Official Q4 quotas remain fixed.
+        </div>
+      </div>
 
-      <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-        <span style="font-size:11px; color:#64748b; font-weight:700;">UPA Mode:</span>
-        <button class="upa-mode-btn ${currentUpaSimMode === 'target' ? 'active' : ''}" style="padding:4px 9px; font-size:10.5px;" onclick="setUpaEqualizationMode('target')" title="Rebalances UPA target so sales/target = equalized line rate">
-          Target Rebalancing
-        </button>
-        <button class="upa-mode-btn ${currentUpaSimMode === 'sales' ? 'active' : ''}" style="padding:4px 9px; font-size:10.5px;" onclick="setUpaEqualizationMode('sales')" title="Credits points directly from forecast units">
-          Sales Credit
-        </button>
+      <!-- Commercial Quick Presets -->
+      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <span style="font-size:11px; font-weight:700; color:#64748b;">Commercial Presets:</span>
+        ${commPresets.map(p => `
+          <button class="master-preset-btn" style="padding:3px 8px; font-size:10.5px;" onclick="setCommForecastPreset('${p.val}')">
+            ${p.label}
+          </button>
+        `).join('')}
       </div>
     </div>
 
-    <!-- 4 PRODUCT UNITS FORECAST CARDS (EXACT Q4 TARGET PER PRODUCT) -->
-    <div class="prod-deck-grid">
-      ${Object.keys(SIM_PROD_META).map(pid => {
-        const meta = SIM_PROD_META[pid];
+    <div class="comm-deck-grid">
+      ${Object.keys(COMM_PROD_META).map(pid => {
+        const meta = COMM_PROD_META[pid];
         const s = scopeStats[pid];
         const tgtUnits = s.targetUnits;
         const actUnits = s.actualUnits;
 
-        // Current forecast units for this product in current scope
         let curUnits = 0;
         if (isSingleRep) {
-          if (repCustomForecastUnits[currentUpaRepFilter] && repCustomForecastUnits[currentUpaRepFilter][pid] !== undefined) {
-            curUnits = repCustomForecastUnits[currentUpaRepFilter][pid];
+          if (repCommCustomUnits[currentUpaRepFilter] && repCommCustomUnits[currentUpaRepFilter][pid] !== undefined) {
+            curUnits = repCommCustomUnits[currentUpaRepFilter][pid];
           } else {
-            // Proportional share
-            const teamTgt = getProductStatsForScope('all')[pid].targetUnits;
-            const teamFc = prodForecastUnits[pid] !== undefined ? prodForecastUnits[pid] : teamTgt;
+            const teamTgt = getProductBaselineStats('all')[pid].targetUnits;
+            const teamFc = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : teamTgt;
             const ratio = teamTgt > 0 ? (teamFc / teamTgt) : 1.0;
             curUnits = Math.max(actUnits, tgtUnits * ratio);
           }
         } else {
-          curUnits = prodForecastUnits[pid] !== undefined ? prodForecastUnits[pid] : tgtUnits;
+          curUnits = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : tgtUnits;
         }
 
         const fcPoints = curUnits * meta.ptsPerUnit;
@@ -6928,45 +7042,44 @@ function renderUpaSimulator(rebuildControls = true) {
               </div>
             </div>
 
-            <!-- EXPLICIT Q4 TARGET & ACTUAL ROW -->
             <div class="prod-baseline-pills">
               <div class="prod-baseline-row">
-                <span style="font-weight:700;">${isSingleRep ? activeRep.name : 'Team'} Q4 Target:</span>
-                <span class="prod-baseline-val" style="color:#0f172a; font-weight:800;">${fmt(tgtUnits)} units</span>
+                <span style="font-weight:700;">Fixed Q4 Target:</span>
+                <span class="prod-baseline-val" style="color:#0f172a; font-weight:800;">${fmt(tgtUnits)} units (${fmt(s.targetPoints)} pts)</span>
               </div>
               <div class="prod-baseline-row">
-                <span>Q4 Sold to Date:</span>
+                <span>Sold to Date:</span>
                 <span class="prod-baseline-val" style="color:#0284c7;">${fmt(actUnits)} units (${(tgtUnits > 0 ? (actUnits/tgtUnits*100).toFixed(1) : 0)}%)</span>
               </div>
             </div>
 
             <div class="prod-input-group">
               <div class="prod-input-label">
-                <span>Forecast Closing Units</span>
-                <span style="color:${meta.color}; font-weight:800;">${achPct.toFixed(1)}% Q4 Ach</span>
+                <span>Forecast Closing Sales Units</span>
+                <span style="color:${meta.color}; font-weight:800;">${achPct.toFixed(1)}% Ach</span>
               </div>
               <div class="prod-input-row">
-                <input type="number" id="prodUnitInput_${pid}" class="prod-unit-input" step="10" min="0" value="${Math.round(curUnits)}" oninput="onProductUnitChange(${pid}, this.value)">
+                <input type="number" id="commUnitInput_${pid}" class="prod-unit-input" step="10" min="0" value="${Math.round(curUnits)}" oninput="onCommProductUnitChange(${pid}, this.value)">
                 <span class="prod-unit-suffix">units</span>
               </div>
             </div>
 
             <div class="prod-slider-wrap">
-              <input type="range" class="prod-slider" style="accent-color:${meta.color};" min="0" max="${maxSlider}" step="10" value="${curUnits}" oninput="onProductSliderChange(${pid}, this.value)">
+              <input type="range" class="prod-slider" style="accent-color:${meta.color};" min="0" max="${maxSlider}" step="10" value="${curUnits}" oninput="onCommProductSliderChange(${pid}, this.value)">
             </div>
 
             <div class="prod-presets-row">
-              <button class="prod-preset-chip" onclick="setProductPresetChip(${pid}, 'actual')">Actual</button>
-              <button class="prod-preset-chip" onclick="setProductPresetChip(${pid}, 75)">75%</button>
-              <button class="prod-preset-chip" onclick="setProductPresetChip(${pid}, 85)">85%</button>
-              <button class="prod-preset-chip" onclick="setProductPresetChip(${pid}, 100)">100%</button>
-              <button class="prod-preset-chip" onclick="setProductPresetChip(${pid}, 110)">110%</button>
-              <button class="prod-preset-chip" onclick="setProductPresetChip(${pid}, 120)">120%</button>
+              <button class="prod-preset-chip" onclick="setCommProductPresetChip(${pid}, 'actual')">Actual</button>
+              <button class="prod-preset-chip" onclick="setCommProductPresetChip(${pid}, 75)">75%</button>
+              <button class="prod-preset-chip" onclick="setCommProductPresetChip(${pid}, 85)">85%</button>
+              <button class="prod-preset-chip" onclick="setCommProductPresetChip(${pid}, 100)">100%</button>
+              <button class="prod-preset-chip" onclick="setCommProductPresetChip(${pid}, 110)">110%</button>
+              <button class="prod-preset-chip" onclick="setCommProductPresetChip(${pid}, 120)">120%</button>
             </div>
 
             <div class="prod-card-metrics">
               <div class="prod-metric-row">
-                <span class="prod-metric-label">Forecast Points:</span>
+                <span class="prod-metric-label">Forecast Sales Points:</span>
                 <span class="prod-metric-val">${fmt(fcPoints)} pts</span>
               </div>
               <div class="prod-metric-row">
@@ -6974,7 +7087,7 @@ function renderUpaSimulator(rebuildControls = true) {
                 <span class="prod-metric-val">${fmt(fcValue)} EGP</span>
               </div>
               <div class="prod-metric-row">
-                <span class="prod-metric-label">Q4 Product Ach %:</span>
+                <span class="prod-metric-label">Product Q4 Ach %:</span>
                 <span class="prod-ach-badge" style="background:${achPct >= 100 ? '#dcfce7' : (achPct >= 80 ? '#dbeafe' : '#fef3c7')}; color:${achPct >= 100 ? '#15803d' : (achPct >= 80 ? '#1d4ed8' : '#b45309')};">
                   ${achPct.toFixed(2)}%
                 </span>
@@ -6985,15 +7098,91 @@ function renderUpaSimulator(rebuildControls = true) {
       }).join('')}
     </div>
 
-    <!-- REPRESENTATIVES BREAKDOWN TABLE -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PART 2: GLARGIVIN UPA TENDER TARGET EQUALIZATION              -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="sim-section-header">
+      <div>
+        <div class="sim-section-title">
+          <span>🏛️</span>
+          <span>Part 2: Glargivin UPA Line Target Equalization (Institutional Tender)</span>
+          <span style="font-size:11px; background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:6px; font-weight:700;">Sales are Fixed • Rate Modifies Q4 Target</span>
+        </div>
+        <div class="sim-section-desc">
+          Sales are locked to actual tender delivery (${fmt(scopeUpaActUnits)} units). Simulated percentage recalibrates the Q4 TARGET.
+        </div>
+      </div>
+    </div>
+
+    <div class="upa-equalize-card">
+      <div class="upa-equalize-grid">
+        <!-- LEFT: EQUALIZATION CONTROLS -->
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-size:12px; font-weight:800; color:#0f172a;">
+              Equalized Line Achievement Rate (نسبة تحقيق اللاين لتعديل التارجت):
+            </span>
+            <div style="display:inline-flex; align-items:center; background:#ffffff; border:2px solid #f59e0b; border-radius:8px; padding:3px 8px;">
+              <input type="number" id="upaEqualizeInput" style="width:55px; border:none; background:transparent; font-size:16px; font-weight:900; text-align:right; outline:none;" min="10" max="250" step="0.5" value="${currentUpaEqualizeRate.toFixed(1)}" oninput="setUpaEqualizeRate(this.value)">
+              <span style="font-weight:900; color:#b45309; margin-left:3px;">%</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <input type="range" id="upaEqualizeSlider" class="prod-slider" style="accent-color:#f59e0b;" min="30" max="150" step="0.5" value="${Math.min(currentUpaEqualizeRate, 150)}" oninput="setUpaEqualizeRate(this.value)">
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px;">
+            ${upaPresets.map(p => `
+              <button class="prod-preset-chip ${Math.abs(currentUpaEqualizeRate - p.val) < 0.3 ? 'active' : ''}" onclick="setUpaEqualizeRate(${p.val})">
+                ${p.label}
+              </button>
+            `).join('')}
+          </div>
+
+          <div style="font-size:11px; color:#92400e; background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; padding:8px 12px; line-height:1.45;">
+            <strong>ℹ️ EVA Pharma Policy:</strong> At quarter closure, Glargivin UPA target is equalized across all territories to reflect final line tender sales so that Sales ÷ Target = <strong>${currentUpaEqualizeRate.toFixed(1)}%</strong>.
+          </div>
+        </div>
+
+        <!-- RIGHT: LIVE TARGET REBALANCING STATS -->
+        <div class="upa-stats-panel">
+          <div style="font-size:11.5px; font-weight:800; color:#9a3412; border-bottom:1px solid #ffedd5; padding-bottom:6px; margin-bottom:2px;">
+            📊 UPA Target Rebalancing Impact for ${scopeTitle}
+          </div>
+          <div class="upa-stat-row">
+            <span class="upa-stat-lbl">Actual Tender Sales (Locked):</span>
+            <span class="upa-stat-val" style="color:#0284c7;">${fmt(scopeUpaActUnits)} units (${fmt(scopeUpaActSp)} pts)</span>
+          </div>
+          <div class="upa-stat-row">
+            <span class="upa-stat-lbl">Original Baseline Target:</span>
+            <span class="upa-stat-val" style="color:#64748b; text-decoration:line-through;">${fmt(scopeUpaOrigTgtUnits)} units (${fmt(scopeUpaOrigTp)} pts)</span>
+          </div>
+          <div class="upa-stat-row" style="background:#fef3c7; padding:4px 8px; border-radius:6px;">
+            <span class="upa-stat-lbl" style="color:#92400e; font-weight:800;">Equalized Q4 Target:</span>
+            <span class="upa-stat-val" style="color:#b45309; font-weight:900; font-size:13px;">${fmt(scopeUpaSimTgtUnits)} units (${fmt(scopeUpaSimTp)} pts)</span>
+          </div>
+          <div class="upa-stat-row">
+            <span class="upa-stat-lbl">Target Quota Adjustment:</span>
+            <span class="upa-stat-val" style="color:#10b981; font-weight:800;">
+              ${scopeUpaReliefPts >= 0 ? '-' : '+'}${fmt(Math.abs(scopeUpaReliefPts))} pts (${scopeUpaOrigTp > 0 ? (scopeUpaReliefPts/scopeUpaOrigTp*100).toFixed(1) : 0}%)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- REPRESENTATIVES BREAKDOWN TABLE                               -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div style="background:#ffffff; border-radius:14px; border:1px solid #e2e8f0; padding:18px; margin-bottom:20px; box-shadow:0 4px 14px rgba(15,23,42,0.04);">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
         <div>
           <div style="font-size:14.5px; font-weight:800; color:#0f172a;">
-            Representatives Performance & Q4 Unit Forecast Breakdown
+            Representatives Performance & Q4 Dual Simulation Breakdown
           </div>
           <div style="font-size:11px; color:#64748b; margin-top:2px;">
-            Target and sales are strictly for Quarter 4. Full-year results combine closed Q1-Q3 actuals with Q4 forecast.
+            Mix, Rapid & 100IU reflect forecasted sales units. Glargivin UPA reflects equalized target quota at ${currentUpaEqualizeRate.toFixed(1)}%.
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
@@ -7020,7 +7209,7 @@ function renderUpaSimulator(rebuildControls = true) {
               <th style="text-align:right; min-width:90px;">Mix 70/30 (u)</th>
               <th style="text-align:right; min-width:90px;">Rapid (u)</th>
               <th style="text-align:right; min-width:95px;">Glargivin 100 (u)</th>
-              <th style="text-align:right; min-width:95px;">Glargivin UPA (u)</th>
+              <th style="text-align:right; min-width:105px;">UPA Target (Equalized)</th>
               <th style="text-align:right; min-width:115px;">Sim Q4 Pts</th>
               <th style="text-align:right; min-width:110px;">Forecast Q4 %</th>
               <th style="text-align:right; min-width:110px;">Forecast YTD %</th>
@@ -7041,7 +7230,7 @@ function renderUpaSimulator(rebuildControls = true) {
                         <span class="rep-avatar" style="width:28px; height:28px; font-size:11px; border-radius:6px; flex-shrink:0;">${r.name.slice(0, 2).toUpperCase()}</span>
                         <div>
                           <div style="font-weight:800; color:#0f172a;">${r.name}</div>
-                          <div style="font-size:10px; color:#64748b;">${r.area} ${isOverridden ? '<span style="color:#d97706; font-weight:800;">• Custom</span>' : ''}</div>
+                          <div style="font-size:10px; color:#64748b;">${r.area} ${isOverridden ? '<span style="color:#d97706; font-weight:800;">• Custom Comm</span>' : ''}</div>
                         </div>
                       </div>
                     </td>
@@ -7058,8 +7247,8 @@ function renderUpaSimulator(rebuildControls = true) {
                       <div class="rep-unit-sub">Tgt: ${fmt(r.prodsMap[1110].targetUnits)} • Sold: ${fmt(r.prodsMap[1110].actualUnits)}</div>
                     </td>
                     <td style="text-align:right;">
-                      <div class="rep-unit-pill">${fmt(r.prodsMap[1251].units)}</div>
-                      <div class="rep-unit-sub">Tgt: ${fmt(r.prodsMap[1251].targetUnits)} • Sold: ${fmt(r.prodsMap[1251].actualUnits)}</div>
+                      <div class="rep-unit-pill" style="color:#b45309;">${fmt(r.prodsMap[1251].simTargetPoints)} pts</div>
+                      <div class="rep-unit-sub">Sold: ${fmt(r.prodsMap[1251].units)} u (${fmt(r.prodsMap[1251].points)} pts)</div>
                     </td>
                     <td style="text-align:right; font-weight:700; color:#334155;">
                       ${fmt(r.simQ4Sp)}
@@ -7089,7 +7278,7 @@ function renderUpaSimulator(rebuildControls = true) {
                     </td>
                     <td style="text-align:center;">
                       <div style="display:flex; justify-content:center; align-items:center; gap:4px;">
-                        <button class="rep-unit-edit-btn" onclick="openRepUnitEditor('${r.key}')" title="Customize units for ${r.name}">
+                        <button class="rep-unit-edit-btn" onclick="openRepUnitEditor('${r.key}')" title="Customize commercial units for ${r.name}">
                           ✏️
                         </button>
                         ${isOverridden ? `
@@ -7106,15 +7295,15 @@ function renderUpaSimulator(rebuildControls = true) {
                       <td colspan="11" style="padding:14px 18px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                           <div style="font-weight:800; color:#0f172a; font-size:13px;">
-                            ✏️ Custom Q4 Units for ${r.name} (${r.area})
+                            ✏️ Custom Q4 Commercial Units for ${r.name} (${r.area})
                           </div>
                           <button class="rep-unit-edit-btn" onclick="closeRepUnitEditor()" style="background:#e2e8f0;">
                             Done / Close
                           </button>
                         </div>
-                        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
-                          ${Object.keys(SIM_PROD_META).map(pid => {
-                            const pm = SIM_PROD_META[pid];
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+                          ${Object.keys(COMM_PROD_META).map(pid => {
+                            const pm = COMM_PROD_META[pid];
                             const curRepU = r.prodsMap[pid].units;
                             const repTgtU = r.prodsMap[pid].targetUnits;
                             return `
@@ -7122,9 +7311,9 @@ function renderUpaSimulator(rebuildControls = true) {
                                 <div style="font-size:10.5px; font-weight:800; color:#475569; margin-bottom:2px;">
                                   ${pm.icon} ${pm.short}
                                 </div>
-                                <div style="font-size:9.5px; color:#64748b; margin-bottom:4px;">Q4 Target: ${fmt(repTgtU)} u</div>
+                                <div style="font-size:9.5px; color:#64748b; margin-bottom:4px;">Fixed Q4 Quota: ${fmt(repTgtU)} u</div>
                                 <div style="display:flex; align-items:center; gap:4px;">
-                                  <input type="number" step="5" style="width:100%; border:1px solid #94a3b8; border-radius:6px; padding:4px 6px; font-size:13px; font-weight:800;" value="${Math.round(curRepU)}" onchange="onRepCustomUnitChange('${r.key}', ${pid}, this.value)">
+                                  <input type="number" step="5" style="width:100%; border:1px solid #94a3b8; border-radius:6px; padding:4px 6px; font-size:13px; font-weight:800;" value="${Math.round(curRepU)}" onchange="onRepCustomCommUnitChange('${r.key}', ${pid}, this.value)">
                                   <span style="font-size:10px; color:#64748b;">u</span>
                                 </div>
                               </div>
@@ -7143,10 +7332,10 @@ function renderUpaSimulator(rebuildControls = true) {
                 <div style="color:#0f172a; font-size:12.5px;">DELTA REGION TEAM</div>
                 <div style="font-size:10px; color:#64748b;">Dr. Sherif (9 Representatives)</div>
               </td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1260].targetUnits)} u (Tgt)</td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1259].targetUnits)} u (Tgt)</td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1110].targetUnits)} u (Tgt)</td>
-              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1251].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1260].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1259].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductBaselineStats('all')[1110].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900; color:#b45309;">${fmt(sim.teamUpaSimTp)} pts (Eq. Tgt)</td>
               <td style="text-align:right; font-weight:900; color:#0f172a;">${fmt(sim.team.simQ4Sp)}</td>
               <td style="text-align:right;">
                 <span class="ratio-badge ratio-green" style="font-size:12px;">${sim.team.simQ4Ratio.toFixed(2)}%</span>
@@ -7171,13 +7360,14 @@ function renderUpaSimulator(rebuildControls = true) {
       </div>
     </div>
 
-    <!-- RATIONALE / EXPLANATORY NOTE -->
+    <!-- RATIONALE NOTE -->
     <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; font-size:11.5px; color:#166534; display:flex; gap:10px; align-items:flex-start;">
       <span style="font-size:16px;">💡</span>
       <div style="line-height:1.5;">
-        <strong>Q4 Quarterly Target & Closing Forecast Focus:</strong>
-        This simulator is exclusively dedicated to forecasting <strong>Quarter 4</strong> closing units against <strong>Q4 quarterly targets</strong>.
-        Historical sales for <strong>Q1, Q2, and Q3 are completely locked and finalized</strong>. The full-year (YTD) achievement combines closed Q1-Q3 actuals with simulated Q4 closing results to assess annual milestone standings.
+        <strong>Separated Simulator Logic:</strong>
+        <strong>Commercial Products (Part 1):</strong> Quotas are fixed; simulation forecasts physical sales units to anticipate closing revenue.
+        <strong>Glargivin UPA (Part 2):</strong> Sales are fixed to actual tender volume; simulation rebalances the Q4 quota across territories according to company equalization policy.
+        Both parts combine seamlessly into final Q4 and full-year achievement metrics.
       </div>
     </div>
   `;
@@ -7185,38 +7375,38 @@ function renderUpaSimulator(rebuildControls = true) {
   bodyEl.innerHTML = html;
 }
 
-/* ── EXCEL EXPORT WITH PRODUCT UNITS & REPS ── */
+/* ── EXCEL EXPORT ── */
 function downloadUpaSimExcel() {
   if (typeof XLSX === 'undefined') {
     alert('Excel export library is loading, please try again in a moment.');
     return;
   }
 
-  const sim = computeUnitsSimulation(prodForecastUnits, currentUpaSimMode, repCustomForecastUnits);
+  const sim = computeSeparatedSimulation(commForecastUnits, currentUpaEqualizeRate, repCommCustomUnits);
   const team = sim.team;
-  const teamStats = getProductStatsForScope('all');
+  const teamStats = getProductBaselineStats('all');
 
   const wb = XLSX.utils.book_new();
 
-  // 1. Products Forecast Sheet
-  const prodRows = [
+  // 1. Commercial Forecast Sheet
+  const commRows = [
     ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
-    ['Q4 PRODUCT UNITS CLOSING FORECAST & TARGET EQUALIZATION REPORT'],
+    ['PART 1: COMMERCIAL PRODUCTS CLOSING SALES FORECAST (UNITS)'],
     ['Generated On:', new Date().toLocaleString()],
-    ['Notice:', 'Q1, Q2, and Q3 actuals are closed and finalized. This report models Q4 closing performance.'],
+    ['Notice:', 'Quotas are fixed. Forecast values represent expected physical sales units.'],
     [''],
-    ['Product ID', 'Product Name', 'Package', 'Q4 Target Units', 'Sold Units to Date', 'Ach % So Far', 'Forecast Units', 'Unit Price (EGP)', 'Pts / Unit', 'Forecast Points', 'Forecast Revenue (EGP)', 'Forecast Ach %']
+    ['Product ID', 'Product Name', 'Package', 'Fixed Q4 Target Units', 'Sold Units to Date', 'Ach % So Far', 'Forecast Sales Units', 'Unit Price (EGP)', 'Pts / Unit', 'Forecast Sales Points', 'Forecast Revenue (EGP)', 'Forecast Ach %']
   ];
 
-  Object.keys(SIM_PROD_META).forEach(pid => {
-    const meta = SIM_PROD_META[pid];
+  Object.keys(COMM_PROD_META).forEach(pid => {
+    const meta = COMM_PROD_META[pid];
     const s = teamStats[pid];
-    const fcUnits = prodForecastUnits[pid] !== undefined ? prodForecastUnits[pid] : s.actualUnits;
+    const fcUnits = commForecastUnits[pid] !== undefined ? commForecastUnits[pid] : s.actualUnits;
     const fcPoints = fcUnits * meta.ptsPerUnit;
     const fcValue = fcUnits * meta.price;
     const achPct = s.targetUnits > 0 ? (fcUnits / s.targetUnits * 100) : 0;
 
-    prodRows.push([
+    commRows.push([
       pid,
       meta.name,
       meta.pack,
@@ -7232,26 +7422,39 @@ function downloadUpaSimExcel() {
     ]);
   });
 
-  prodRows.push(['']);
-  prodRows.push(['TEAM TOTALS', '', '', '', '', '', '', '', '', team.simQ4Sp, team.simQ4Sv, team.simQ4Ratio]);
-  prodRows.push(['FULL-YEAR (YTD) FORECAST %', '', '', '', '', '', '', '', '', team.simYtdSp, team.simYtdTp, team.simYtdRatio]);
-  prodRows.push(['100% MILESTONE STATUS', team.is100Met ? 'MET & SURPASSED' : 'IN PROGRESS', '', 'Surplus/Gap Pts:', team.gap100Pts]);
-  prodRows.push(['120% MILESTONE STATUS', team.is120Met ? 'MET & SURPASSED' : 'IN PROGRESS', '', 'Surplus/Gap Pts:', team.gap120Pts]);
+  const wsComm = XLSX.utils.aoa_to_sheet(commRows);
+  XLSX.utils.book_append_sheet(wb, wsComm, 'Commercial Forecast');
 
-  const wsProd = XLSX.utils.aoa_to_sheet(prodRows);
-  XLSX.utils.book_append_sheet(wb, wsProd, 'Q4 Product Forecast');
+  // 2. UPA Equalization Sheet
+  const upaRows = [
+    ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
+    ['PART 2: GLARGIVIN UPA TENDER TARGET EQUALIZATION REPORT'],
+    ['Generated On:', new Date().toLocaleString()],
+    ['Notice:', 'Sales are fixed at tender deliveries. Line rate rebalances the Q4 target quota.'],
+    [''],
+    ['Parameter', 'Units', 'Points', 'Value (EGP)', 'Achievement %'],
+    ['Actual Delivered Tender Sales (Fixed)', teamStats[UPA_PID].actualUnits, sim.teamUpaActSp, sim.teamUpaActSp / 2, (teamStats[UPA_PID].actualPoints / teamStats[UPA_PID].targetPoints * 100)],
+    ['Original Baseline Q4 Quota Target', teamStats[UPA_PID].targetUnits, sim.teamUpaOrigTp, sim.teamUpaOrigTp / 2, '—'],
+    ['Equalized Line Rate', '', '', '', currentUpaEqualizeRate.toFixed(2) + '%'],
+    ['Equalized Q4 Quota Target', sim.teamUpaSimTargetUnits, sim.teamUpaSimTp, sim.teamUpaSimTp / 2, currentUpaEqualizeRate.toFixed(2) + '%'],
+    ['Target Quota Adjustment (Relief)', teamStats[UPA_PID].targetUnits - sim.teamUpaSimTargetUnits, sim.teamUpaOrigTp - sim.teamUpaSimTp, (sim.teamUpaOrigTp - sim.teamUpaSimTp) / 2, '']
+  ];
 
-  // 2. Representatives Sheet
+  const wsUpa = XLSX.utils.aoa_to_sheet(upaRows);
+  XLSX.utils.book_append_sheet(wb, wsUpa, 'UPA Equalization');
+
+  // 3. Reps Combined Sheet
   const repRows = [
     ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
-    ['REPRESENTATIVES Q4 UNIT FORECAST & FULL-YEAR PROJECTION BREAKDOWN'],
+    ['COMBINED Q4 DUAL SIMULATION & FULL-YEAR PROJECTION BREAKDOWN'],
     ['Generated On:', new Date().toLocaleString()],
     [''],
     [
       'Medical Rep', 'Area', 
-      'Mix 70/30 (Units)', 'Rapid (Units)', 'Glargivin 100IU (Units)', 'Glargivin UPA (Units)',
-      'Actual Q4 Pts', 'Forecast Q4 Pts', 'Actual Q4 Ach %', 'Forecast Q4 Ach %',
-      'Actual YTD Ach %', 'Forecast YTD Ach %', '100% Year Status', '120% Year Status', 'Custom Overrides'
+      'Mix 70/30 Forecast (u)', 'Rapid Forecast (u)', 'Glargivin 100IU Forecast (u)', 
+      'UPA Tender Sales (u)', 'UPA Equalized Target (Pts)',
+      'Sim Q4 Sales Pts', 'Sim Q4 Target Pts', 'Forecast Q4 Ach %',
+      'Actual YTD Ach %', 'Forecast YTD Ach %', '100% Year Status', '120% Year Status'
     ]
   ];
 
@@ -7263,30 +7466,30 @@ function downloadUpaSimExcel() {
       r.prodsMap[1259].units,
       r.prodsMap[1110].units,
       r.prodsMap[1251].units,
-      r.origQ4Sp,
+      r.prodsMap[1251].simTargetPoints,
       r.simQ4Sp,
-      r.origQ4Ratio,
+      r.simQ4Tp,
       r.simQ4Ratio,
       r.origYtdRatio,
       r.simYtdRatio,
       r.is100Met ? 'YES' : 'NO',
-      r.is120Met ? 'YES' : 'NO',
-      r.hasOverrides ? 'YES' : 'NO'
+      r.is120Met ? 'YES' : 'NO'
     ]);
   });
 
   repRows.push(['']);
   repRows.push([
     'DELTA REGION TEAM (Dr. Sherif)', 'Grand Aggregate',
-    teamStats[1260].targetUnits, teamStats[1259].targetUnits, teamStats[1110].targetUnits, teamStats[1251].targetUnits,
-    team.origQ4Sp, team.simQ4Sp, team.origQ4Ratio, team.simQ4Ratio,
-    team.origYtdRatio, team.simYtdRatio, team.is100Met ? 'YES' : 'NO', team.is120Met ? 'YES' : 'NO', ''
+    commForecastUnits[1260], commForecastUnits[1259], commForecastUnits[1110],
+    teamStats[UPA_PID].actualUnits, sim.teamUpaSimTp,
+    team.simQ4Sp, team.simQ4Tp, team.simQ4Ratio,
+    team.origYtdRatio, team.simYtdRatio, team.is100Met ? 'YES' : 'NO', team.is120Met ? 'YES' : 'NO'
   ]);
 
   const wsReps = XLSX.utils.aoa_to_sheet(repRows);
-  XLSX.utils.book_append_sheet(wb, wsReps, 'Reps Q4 Breakdown');
+  XLSX.utils.book_append_sheet(wb, wsReps, 'Reps Dual Simulation');
 
-  const filename = `EVA_Delta_Q4_Unit_Forecast_Simulation_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const filename = `EVA_Delta_Q4_Dual_Simulation_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
 
