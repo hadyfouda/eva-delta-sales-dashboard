@@ -1685,6 +1685,61 @@ HTML_CONTENT = r'''<!DOCTYPE html>
     border-color: #2563eb;
   }
 
+
+  .sim-context-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    color: #ffffff;
+  }
+  .sim-context-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sim-scope-badge {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .sim-scope-select {
+    background: #0f172a;
+    color: #ffffff;
+    border: 1.5px solid #3b82f6;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+  }
+  .sim-locked-quarters-pill {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
 </style>
 </head>
 <body>
@@ -4426,14 +4481,14 @@ const SIM_PROD_META = {
 };
 
 // Global state for product units forecasting
-let prodForecastUnits = {}; // { [pid]: number of units }
+let prodForecastUnits = {}; // { [pid]: number of units } (Team level)
+let repCustomForecastUnits = {}; // { [repKey]: { [pid]: number of units } }
 let currentUpaSimMode = 'target'; // 'target' (rebalancing target = sales/X) or 'sales' (direct units credit)
-let currentUpaRepFilter = 'all';
-let repUnitOverrides = {}; // { [repKey]: { [pid]: number of units } }
-let activeEditingRepKey = null; // for rep units edit modal
+let currentUpaRepFilter = 'all'; // 'all' (Team) or specific repKey
+let activeEditingRepKey = null; // for inline rep editor
 
-// Compute baseline team stats for Q4 products from current REPS data
-function getTeamProductStats() {
+// Compute baseline Q4 product stats for any target scope (team or specific rep)
+function getProductStatsForScope(scopeKey) {
   const stats = {
     1260: { targetUnits: 0, actualUnits: 0, targetPoints: 0, actualPoints: 0, targetValue: 0, actualValue: 0 },
     1259: { targetUnits: 0, actualUnits: 0, targetPoints: 0, actualPoints: 0, targetValue: 0, actualValue: 0 },
@@ -4441,7 +4496,11 @@ function getTeamProductStats() {
     1251: { targetUnits: 0, actualUnits: 0, targetPoints: 0, actualPoints: 0, targetValue: 0, actualValue: 0 }
   };
 
-  REPS.forEach(r => {
+  const repsToScan = (scopeKey && scopeKey !== 'all') 
+    ? REPS.filter(r => r.key === scopeKey)
+    : REPS;
+
+  repsToScan.forEach(r => {
     if (r.noData) return;
     const q4 = r.quarters && r.quarters['Q4'];
     if (!q4 || !q4.products) return;
@@ -4466,7 +4525,7 @@ function getTeamProductStats() {
 
 // Initialize default units (85% commercial, 100% UPA)
 function initDefaultUnits() {
-  const stats = getTeamProductStats();
+  const stats = getProductStatsForScope('all');
   prodForecastUnits = {
     1260: stats[1260].targetUnits * 0.85,
     1259: stats[1259].targetUnits * 0.85,
@@ -4477,33 +4536,66 @@ function initDefaultUnits() {
 
 // Master preset setter
 function setMasterTeamPreset(type) {
-  const stats = getTeamProductStats();
-  if (type === 'actual') {
-    Object.keys(SIM_PROD_META).forEach(pid => {
-      prodForecastUnits[pid] = stats[pid].actualUnits;
-    });
-  } else if (type === '85comm_100upa') {
-    prodForecastUnits[1260] = stats[1260].targetUnits * 0.85;
-    prodForecastUnits[1259] = stats[1259].targetUnits * 0.85;
-    prodForecastUnits[1110] = stats[1110].targetUnits * 0.85;
-    prodForecastUnits[1251] = stats[1251].targetUnits * 1.00;
+  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+  const scopeStats = getProductStatsForScope(currentUpaRepFilter);
+
+  if (isSingleRep) {
+    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
+    if (type === 'actual') {
+      Object.keys(SIM_PROD_META).forEach(pid => {
+        repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
+      });
+    } else if (type === '85comm_100upa') {
+      repCustomForecastUnits[currentUpaRepFilter][1260] = scopeStats[1260].targetUnits * 0.85;
+      repCustomForecastUnits[currentUpaRepFilter][1259] = scopeStats[1259].targetUnits * 0.85;
+      repCustomForecastUnits[currentUpaRepFilter][1110] = scopeStats[1110].targetUnits * 0.85;
+      repCustomForecastUnits[currentUpaRepFilter][1251] = scopeStats[1251].targetUnits * 1.00;
+    } else {
+      const pct = parseFloat(type) / 100.0;
+      Object.keys(SIM_PROD_META).forEach(pid => {
+        repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
+      });
+    }
   } else {
-    const pct = parseFloat(type) / 100.0;
-    Object.keys(SIM_PROD_META).forEach(pid => {
-      prodForecastUnits[pid] = stats[pid].targetUnits * pct;
-    });
+    if (type === 'actual') {
+      Object.keys(SIM_PROD_META).forEach(pid => {
+        prodForecastUnits[pid] = scopeStats[pid].actualUnits;
+      });
+    } else if (type === '85comm_100upa') {
+      prodForecastUnits[1260] = scopeStats[1260].targetUnits * 0.85;
+      prodForecastUnits[1259] = scopeStats[1259].targetUnits * 0.85;
+      prodForecastUnits[1110] = scopeStats[1110].targetUnits * 0.85;
+      prodForecastUnits[1251] = scopeStats[1251].targetUnits * 1.00;
+    } else {
+      const pct = parseFloat(type) / 100.0;
+      Object.keys(SIM_PROD_META).forEach(pid => {
+        prodForecastUnits[pid] = scopeStats[pid].targetUnits * pct;
+      });
+    }
   }
   renderUpaSimulator(true);
 }
 
 // Individual product preset chip setter
 function setProductPresetChip(pid, type) {
-  const stats = getTeamProductStats();
-  if (type === 'actual') {
-    prodForecastUnits[pid] = stats[pid].actualUnits;
+  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+  const scopeStats = getProductStatsForScope(currentUpaRepFilter);
+
+  if (isSingleRep) {
+    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
+    if (type === 'actual') {
+      repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].actualUnits;
+    } else {
+      const pct = parseFloat(type) / 100.0;
+      repCustomForecastUnits[currentUpaRepFilter][pid] = scopeStats[pid].targetUnits * pct;
+    }
   } else {
-    const pct = parseFloat(type) / 100.0;
-    prodForecastUnits[pid] = stats[pid].targetUnits * pct;
+    if (type === 'actual') {
+      prodForecastUnits[pid] = scopeStats[pid].actualUnits;
+    } else {
+      const pct = parseFloat(type) / 100.0;
+      prodForecastUnits[pid] = scopeStats[pid].targetUnits * pct;
+    }
   }
   renderUpaSimulator(true);
 }
@@ -4512,7 +4604,14 @@ function setProductPresetChip(pid, type) {
 function onProductUnitChange(pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
-  prodForecastUnits[pid] = num;
+  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+
+  if (isSingleRep) {
+    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
+    repCustomForecastUnits[currentUpaRepFilter][pid] = num;
+  } else {
+    prodForecastUnits[pid] = num;
+  }
   renderUpaSimulator(false);
 }
 
@@ -4520,7 +4619,14 @@ function onProductUnitChange(pid, val) {
 function onProductSliderChange(pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
-  prodForecastUnits[pid] = num;
+  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+
+  if (isSingleRep) {
+    if (!repCustomForecastUnits[currentUpaRepFilter]) repCustomForecastUnits[currentUpaRepFilter] = {};
+    repCustomForecastUnits[currentUpaRepFilter][pid] = num;
+  } else {
+    prodForecastUnits[pid] = num;
+  }
   const inputEl = document.getElementById(`prodUnitInput_${pid}`);
   if (inputEl) inputEl.value = Math.round(num);
   renderUpaSimulator(false);
@@ -4533,7 +4639,7 @@ function setUpaEqualizationMode(mode) {
 
 function setUpaRepFilter(filter) {
   currentUpaRepFilter = filter;
-  renderUpaSimulator(false);
+  renderUpaSimulator(true);
 }
 
 function openUpaSimulator(repKey) {
@@ -4569,64 +4675,39 @@ function closeRepUnitEditor() {
 function onRepCustomUnitChange(repKey, pid, val) {
   let num = parseFloat(val);
   if (isNaN(num) || num < 0) num = 0;
-  if (!repUnitOverrides[repKey]) repUnitOverrides[repKey] = {};
-  repUnitOverrides[repKey][pid] = num;
+  if (!repCustomForecastUnits[repKey]) repCustomForecastUnits[repKey] = {};
+  repCustomForecastUnits[repKey][pid] = num;
   renderUpaSimulator(false);
 }
 
 function resetSingleRepUnitOverrides(repKey) {
-  delete repUnitOverrides[repKey];
-  renderUpaSimulator(false);
+  delete repCustomForecastUnits[repKey];
+  renderUpaSimulator(true);
 }
 
 function resetAllRepUnitOverrides() {
-  repUnitOverrides = {};
-  renderUpaSimulator(false);
+  repCustomForecastUnits = {};
+  renderUpaSimulator(true);
 }
 
 /* ── SIMULATION ENGINE: UNITS TO ACHIEVEMENT % ── */
 function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
-  const stats = getTeamProductStats();
+  const teamStats = getProductStatsForScope('all');
   unitsDict = unitsDict || prodForecastUnits;
-  repOverrides = repOverrides || repUnitOverrides;
+  repOverrides = repOverrides || repCustomForecastUnits;
 
   // Glargivin UPA Line rate derived directly from its forecast units
-  const upaTgtUnits = stats[1251].targetUnits;
-  const upaFcUnits = unitsDict[1251] !== undefined ? unitsDict[1251] : stats[1251].actualUnits;
+  const upaTgtUnits = teamStats[1251].targetUnits;
+  const upaFcUnits = unitsDict[1251] !== undefined ? unitsDict[1251] : teamStats[1251].actualUnits;
   const upaAchPct = upaTgtUnits > 0 ? (upaFcUnits / upaTgtUnits * 100) : 100.0;
   const F_upa = upaAchPct / 100.0;
-
-  // Product-level simulated aggregates
-  const prodSim = {};
-  Object.keys(SIM_PROD_META).forEach(pid => {
-    const meta = SIM_PROD_META[pid];
-    const s = stats[pid];
-    const fcUnits = unitsDict[pid] !== undefined ? unitsDict[pid] : s.actualUnits;
-    const fcPoints = fcUnits * meta.ptsPerUnit;
-    const fcValue = fcUnits * meta.price;
-    const achPct = s.targetUnits > 0 ? (fcUnits / s.targetUnits * 100) : 0;
-    prodSim[pid] = {
-      meta,
-      targetUnits: s.targetUnits,
-      actualUnits: s.actualUnits,
-      forecastUnits: fcUnits,
-      forecastPoints: fcPoints,
-      forecastValue: fcValue,
-      achPct,
-      ptsPerUnit: meta.ptsPerUnit,
-      unitPrice: meta.price
-    };
-  });
 
   let team = {
     origQ4Sp: 0, origQ4Tp: 0, origQ4Sv: 0,
     simQ4Sp: 0, simQ4Tp: 0, simQ4Sv: 0,
     spQ1Q3: 0, tpQ1Q3: 0,
     origYtdSp: 0, origYtdTp: 0,
-    simYtdSp: 0, simYtdTp: 0,
-    totalForecastUnits: 0,
-    totalTargetUnits: 0,
-    totalActualUnits: 0
+    simYtdSp: 0, simYtdTp: 0
   };
 
   const repsSim = [];
@@ -4642,7 +4723,7 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
     const repProdsMap = {};
     const hasOverrides = !!(repOverrides[r.key] && Object.keys(repOverrides[r.key]).length > 0);
 
-    // Q1-Q3 points
+    // Q1-Q3 points (historical locked actuals)
     let spQ1Q3 = 0, tpQ1Q3 = 0;
     ['Q1', 'Q2', 'Q3'].forEach(q => {
       const qd = r.quarters && r.quarters[q];
@@ -4679,8 +4760,8 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
       if (isPidOverridden) {
         repFcUnits = Number(repOverrides[r.key][pid]);
       } else {
-        const teamTgt = stats[pid].targetUnits;
-        const teamFc = unitsDict[pid] !== undefined ? unitsDict[pid] : stats[pid].actualUnits;
+        const teamTgt = teamStats[pid].targetUnits;
+        const teamFc = unitsDict[pid] !== undefined ? unitsDict[pid] : teamStats[pid].actualUnits;
         const ratio = teamTgt > 0 ? (teamFc / teamTgt) : 1.0;
         repFcUnits = Math.max(actU, tgtU * ratio);
       }
@@ -4702,6 +4783,7 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
             targetUnits: tgtU,
             actualUnits: actU,
             simTargetPoints: simUpaTp,
+            origTargetPoints: tgtSp,
             isOverridden: isPidOverridden
           };
         } else {
@@ -4715,6 +4797,7 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
             targetUnits: tgtU,
             actualUnits: actU,
             simTargetPoints: tgtSp,
+            origTargetPoints: tgtSp,
             isOverridden: isPidOverridden
           };
         }
@@ -4729,6 +4812,7 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
           targetUnits: tgtU,
           actualUnits: actU,
           simTargetPoints: tgtSp,
+          origTargetPoints: tgtSp,
           isOverridden: isPidOverridden
         };
       }
@@ -4765,6 +4849,7 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
       area: r.area || 'Delta Region',
       hasOverrides,
       prodsMap: repProdsMap,
+      spQ1Q3, tpQ1Q3,
       origQ4Sp: repOrigQ4Sp, 
       origQ4Tp: repOrigQ4Tp, 
       origQ4Ratio, 
@@ -4801,7 +4886,6 @@ function computeUnitsSimulation(unitsDict, upaMode, repOverrides) {
   return {
     team,
     reps: repsSim,
-    prodSim,
     upaAchPct,
     upaMode
   };
@@ -4816,11 +4900,33 @@ function renderUpaSimulator(rebuildControls = true) {
     initDefaultUnits();
   }
 
-  const sim = computeUnitsSimulation(prodForecastUnits, currentUpaSimMode, repUnitOverrides);
-  const team = sim.team;
-  const prodSim = sim.prodSim;
+  const isSingleRep = (currentUpaRepFilter && currentUpaRepFilter !== 'all');
+  const activeRep = isSingleRep ? REPS.find(r => r.key === currentUpaRepFilter) : null;
+  const scopeTitle = isSingleRep ? activeRep.name : 'Delta Region Team';
+  const scopeSubtitle = isSingleRep ? `${activeRep.name} (${activeRep.area || 'Delta Region'})` : 'Grand Aggregate (9 Representatives)';
 
-  const overrideKeys = Object.keys(repUnitOverrides);
+  const sim = computeUnitsSimulation(prodForecastUnits, currentUpaSimMode, repCustomForecastUnits);
+  const repSimData = isSingleRep ? sim.reps.find(r => r.key === currentUpaRepFilter) : null;
+
+  // Focus data for KPI cards based on scope
+  const activeQ4TargetPts = isSingleRep ? repSimData.origQ4Tp : sim.team.origQ4Tp;
+  const activeQ4TargetVal = activeQ4TargetPts / 2;
+  const activeQ4SimPts = isSingleRep ? repSimData.simQ4Sp : sim.team.simQ4Sp;
+  const activeQ4SimVal = activeQ4SimPts / 2;
+  const activeQ4SimRatio = isSingleRep ? repSimData.simQ4Ratio : sim.team.simQ4Ratio;
+  const activeQ4OrigRatio = isSingleRep ? repSimData.origQ4Ratio : sim.team.origQ4Ratio;
+  const activeQ4Diff = activeQ4SimRatio - activeQ4OrigRatio;
+
+  const activeYtdSimRatio = isSingleRep ? repSimData.simYtdRatio : sim.team.simYtdRatio;
+  const activeYtdOrigRatio = isSingleRep ? repSimData.origYtdRatio : sim.team.origYtdRatio;
+  const activeYtdDiff = activeYtdSimRatio - activeYtdOrigRatio;
+  const activeIs100Met = activeYtdSimRatio >= 100;
+  const activeIs120Met = activeYtdSimRatio >= 120;
+
+  // Scope product stats (Q4 Target Units and Sold Units for this scope)
+  const scopeStats = getProductStatsForScope(currentUpaRepFilter);
+
+  const overrideKeys = Object.keys(repCustomForecastUnits);
   const hasOverrides = overrideKeys.length > 0;
   const overrideCount = overrideKeys.length;
 
@@ -4838,69 +4944,93 @@ function renderUpaSimulator(rebuildControls = true) {
   ];
 
   let html = `
+    <!-- CONTEXT & TARGET CLARIFICATION BAR -->
+    <div class="sim-context-bar">
+      <div class="sim-context-left">
+        <span class="sim-scope-badge">Current Scope:</span>
+        <select class="sim-scope-select" onchange="setUpaRepFilter(this.value)">
+          <option value="all" ${currentUpaRepFilter === 'all' ? 'selected' : ''}>👥 Entire Delta Team (Team Total Q4 Quota: 44,882 u)</option>
+          ${REPS.filter(r => !r.noData).map(r => `
+            <option value="${r.key}" ${currentUpaRepFilter === r.key ? 'selected' : ''}>
+              👤 ${r.name} (Q4 Quota: ${fmt(r.quarters?.Q4?.total?.targetUnits || 0)} u • ${fmt(r.quarters?.Q4?.total?.targetPoints || 0)} pts)
+            </option>
+          `).join('')}
+        </select>
+      </div>
+
+      <div class="sim-locked-quarters-pill" title="Q1, Q2, and Q3 are fully finalized and cannot be modified.">
+        <span>🔒</span>
+        <span>Q1, Q2 & Q3 Actuals are Closed. Simulator models Q4 Targets exclusively.</span>
+      </div>
+    </div>
+
     <!-- TOP EXECUTIVE KPI CARDS -->
     <div class="report-kpi-grid" style="margin-bottom: 20px;">
+      <!-- CARD 1: Q4 TARGET & FORECAST ACHIEVEMENT (HERO) -->
       <div class="report-kpi-card" style="border-top: 4px solid #3b82f6;">
         <div class="report-kpi-title">
-          <span>FORECASTED Q4 TOTAL ACH %</span>
+          <span>FORECASTED Q4 TARGET & ACH %</span>
           <span style="font-size:16px;">🎯</span>
         </div>
-        <div class="report-kpi-val" style="color: ${team.simQ4Ratio >= 100 ? '#10b981' : (team.simQ4Ratio >= 85 ? '#3b82f6' : '#f59e0b')};">
-          ${team.simQ4Ratio.toFixed(2)}%
-          <span class="ratio-badge ${team.q4RatioDiff >= 0 ? 'ratio-green' : 'ratio-red'}" style="font-size:11px; margin-left:6px;">
-            ${team.q4RatioDiff >= 0 ? '+' : ''}${team.q4RatioDiff.toFixed(2)}%
+        <div class="report-kpi-val" style="color: ${activeQ4SimRatio >= 100 ? '#10b981' : (activeQ4SimRatio >= 85 ? '#3b82f6' : '#f59e0b')};">
+          ${activeQ4SimRatio.toFixed(2)}%
+          <span class="ratio-badge ${activeQ4Diff >= 0 ? 'ratio-green' : 'ratio-red'}" style="font-size:11px; margin-left:6px;">
+            ${activeQ4Diff >= 0 ? '+' : ''}${activeQ4Diff.toFixed(2)}%
           </span>
         </div>
         <div class="report-kpi-sub">
-          <strong>${fmt(team.simQ4Sp)} pts</strong> • ${fmt(team.simQ4Sv)} EGP
-          <br><span style="color:#64748b;">Current Actual: ${team.origQ4Ratio.toFixed(2)}% (${fmt(team.origQ4Sp)} pts)</span>
+          Forecast: <strong>${fmt(activeQ4SimPts)} pts</strong> (${fmt(activeQ4SimVal)} EGP)
+          <br><span style="color:#64748b;">Q4 Target Quota: <strong>${fmt(activeQ4TargetPts)} pts</strong> (${fmt(activeQ4TargetVal)} EGP)</span>
         </div>
       </div>
 
+      <!-- CARD 2: FULL-YEAR (YTD) ACHIEVEMENT -->
       <div class="report-kpi-card kpi-surplus" style="border-top: 4px solid #10b981;">
         <div class="report-kpi-title">
           <span>FORECASTED FULL-YEAR (YTD) ACH %</span>
           <span style="font-size:16px;">🏆</span>
         </div>
-        <div class="report-kpi-val" style="color: ${team.simYtdRatio >= 100 ? '#10b981' : (team.simYtdRatio >= 90 ? '#3b82f6' : '#f59e0b')};">
-          ${team.simYtdRatio.toFixed(2)}%
-          <span class="ratio-badge ${team.ytdRatioDiff >= 0 ? 'ratio-green' : 'ratio-red'}" style="font-size:11px; margin-left:6px;">
-            ${team.ytdRatioDiff >= 0 ? '+' : ''}${team.ytdRatioDiff.toFixed(2)}%
+        <div class="report-kpi-val" style="color: ${activeYtdSimRatio >= 100 ? '#10b981' : (activeYtdSimRatio >= 90 ? '#3b82f6' : '#f59e0b')};">
+          ${activeYtdSimRatio.toFixed(2)}%
+          <span class="ratio-badge ${activeYtdDiff >= 0 ? 'ratio-green' : 'ratio-red'}" style="font-size:11px; margin-left:6px;">
+            ${activeYtdDiff >= 0 ? '+' : ''}${activeYtdDiff.toFixed(2)}%
           </span>
         </div>
         <div class="report-kpi-sub">
-          Current Baseline YTD: <strong>${team.origYtdRatio.toFixed(2)}%</strong>
-          <br>${team.is100Met ? '<span style="color:#10b981; font-weight:700;">100% Annual Milestone Surpassed! 🎉</span>' : '<span style="color:#f59e0b; font-weight:700;">Within striking distance of 100%</span>'}
+          Current Baseline YTD: <strong>${activeYtdOrigRatio.toFixed(2)}%</strong>
+          <br>${activeIs100Met ? '<span style="color:#10b981; font-weight:700;">100% Annual Milestone Surpassed! 🎉</span>' : '<span style="color:#f59e0b; font-weight:700;">Approaching 100% Annual Quota</span>'}
         </div>
       </div>
 
-      <div class="report-kpi-card" style="border-top: 4px solid ${team.is100Met ? '#10b981' : '#f59e0b'};">
+      <!-- CARD 3: 100% ANNUAL STATUS -->
+      <div class="report-kpi-card" style="border-top: 4px solid ${activeIs100Met ? '#10b981' : '#f59e0b'};">
         <div class="report-kpi-title">
           <span>100% ANNUAL MILESTONE STATUS</span>
           <span style="font-size:16px;">⭐</span>
         </div>
-        <div class="report-kpi-val" style="font-size: 20px; color: ${team.is100Met ? '#10b981' : '#f59e0b'};">
-          ${team.is100Met ? 'MET & SURPASSED' : 'DEFICIT / IN PROGRESS'}
+        <div class="report-kpi-val" style="font-size: 20px; color: ${activeIs100Met ? '#10b981' : '#f59e0b'};">
+          ${activeIs100Met ? 'MET & SURPASSED' : 'IN PROGRESS'}
         </div>
         <div class="report-kpi-sub">
-          ${team.is100Met 
-            ? `Surplus: <strong style="color:#10b981;">+${fmt(team.gap100Pts)} pts</strong> ahead of quota` 
-            : `Remaining to 100%: <strong style="color:#f59e0b;">${fmt(team.gap100Pts)} pts</strong>`}
+          ${activeIs100Met 
+            ? `Annual Target Met for <strong>${scopeTitle}</strong>` 
+            : `Needs more Q4 volume to close annual quota`}
         </div>
       </div>
 
-      <div class="report-kpi-card" style="border-top: 4px solid ${team.is120Met ? '#8b5cf6' : '#64748b'};">
+      <!-- CARD 4: 120% INCENTIVE STATUS -->
+      <div class="report-kpi-card" style="border-top: 4px solid ${activeIs120Met ? '#8b5cf6' : '#64748b'};">
         <div class="report-kpi-title">
           <span>120% INCENTIVE MILESTONE</span>
           <span style="font-size:16px;">🚀</span>
         </div>
-        <div class="report-kpi-val" style="font-size: 20px; color: ${team.is120Met ? '#8b5cf6' : '#64748b'};">
-          ${team.is120Met ? 'MET & QUALIFIED' : 'IN PROGRESS'}
+        <div class="report-kpi-val" style="font-size: 20px; color: ${activeIs120Met ? '#8b5cf6' : '#64748b'};">
+          ${activeIs120Met ? 'MET & QUALIFIED' : 'IN PROGRESS'}
         </div>
         <div class="report-kpi-sub">
-          ${team.is120Met 
-            ? `Surplus: <strong style="color:#8b5cf6;">+${fmt(team.gap120Pts)} pts</strong> above 120%` 
-            : `Gap to 120%: <strong>${fmt(team.gap120Pts)} pts</strong>`}
+          ${activeIs120Met 
+            ? `120% Elite Tier Achieved!` 
+            : `Targeting 120% full-year quota acceleration`}
         </div>
       </div>
     </div>
@@ -4908,7 +5038,7 @@ function renderUpaSimulator(rebuildControls = true) {
     <!-- MASTER SCENARIO PRESETS BAR -->
     <div class="master-preset-strip">
       <span class="master-preset-label">
-        <span style="font-size:15px;">⚡</span> Quick Line Scenarios:
+        <span style="font-size:15px;">⚡</span> Quick Scenarios for ${scopeTitle}:
       </span>
       ${masterPresets.map(p => `
         <button class="master-preset-btn" onclick="setMasterTeamPreset('${p.val}')">
@@ -4927,14 +5057,33 @@ function renderUpaSimulator(rebuildControls = true) {
       </div>
     </div>
 
-    <!-- 4 PRODUCT UNITS FORECAST CARDS -->
+    <!-- 4 PRODUCT UNITS FORECAST CARDS (EXACT Q4 TARGET PER PRODUCT) -->
     <div class="prod-deck-grid">
       ${Object.keys(SIM_PROD_META).map(pid => {
-        const ps = prodSim[pid];
-        const meta = ps.meta;
-        const curUnits = ps.forecastUnits;
-        const tgtUnits = ps.targetUnits;
-        const actUnits = ps.actualUnits;
+        const meta = SIM_PROD_META[pid];
+        const s = scopeStats[pid];
+        const tgtUnits = s.targetUnits;
+        const actUnits = s.actualUnits;
+
+        // Current forecast units for this product in current scope
+        let curUnits = 0;
+        if (isSingleRep) {
+          if (repCustomForecastUnits[currentUpaRepFilter] && repCustomForecastUnits[currentUpaRepFilter][pid] !== undefined) {
+            curUnits = repCustomForecastUnits[currentUpaRepFilter][pid];
+          } else {
+            // Proportional share
+            const teamTgt = getProductStatsForScope('all')[pid].targetUnits;
+            const teamFc = prodForecastUnits[pid] !== undefined ? prodForecastUnits[pid] : teamTgt;
+            const ratio = teamTgt > 0 ? (teamFc / teamTgt) : 1.0;
+            curUnits = Math.max(actUnits, tgtUnits * ratio);
+          }
+        } else {
+          curUnits = prodForecastUnits[pid] !== undefined ? prodForecastUnits[pid] : tgtUnits;
+        }
+
+        const fcPoints = curUnits * meta.ptsPerUnit;
+        const fcValue = curUnits * meta.price;
+        const achPct = tgtUnits > 0 ? (curUnits / tgtUnits * 100) : 0;
         const maxSlider = Math.max(tgtUnits * 1.5, curUnits * 1.1, 100);
 
         return `
@@ -4951,13 +5100,14 @@ function renderUpaSimulator(rebuildControls = true) {
               </div>
             </div>
 
+            <!-- EXPLICIT Q4 TARGET & ACTUAL ROW -->
             <div class="prod-baseline-pills">
               <div class="prod-baseline-row">
-                <span>Q4 Target:</span>
-                <span class="prod-baseline-val">${fmt(tgtUnits)} units</span>
+                <span style="font-weight:700;">${isSingleRep ? activeRep.name : 'Team'} Q4 Target:</span>
+                <span class="prod-baseline-val" style="color:#0f172a; font-weight:800;">${fmt(tgtUnits)} units</span>
               </div>
               <div class="prod-baseline-row">
-                <span>Sold to Date:</span>
+                <span>Q4 Sold to Date:</span>
                 <span class="prod-baseline-val" style="color:#0284c7;">${fmt(actUnits)} units (${(tgtUnits > 0 ? (actUnits/tgtUnits*100).toFixed(1) : 0)}%)</span>
               </div>
             </div>
@@ -4965,7 +5115,7 @@ function renderUpaSimulator(rebuildControls = true) {
             <div class="prod-input-group">
               <div class="prod-input-label">
                 <span>Forecast Closing Units</span>
-                <span style="color:${meta.color}; font-weight:800;">${ps.achPct.toFixed(1)}% Ach</span>
+                <span style="color:${meta.color}; font-weight:800;">${achPct.toFixed(1)}% Q4 Ach</span>
               </div>
               <div class="prod-input-row">
                 <input type="number" id="prodUnitInput_${pid}" class="prod-unit-input" step="10" min="0" value="${Math.round(curUnits)}" oninput="onProductUnitChange(${pid}, this.value)">
@@ -4989,16 +5139,16 @@ function renderUpaSimulator(rebuildControls = true) {
             <div class="prod-card-metrics">
               <div class="prod-metric-row">
                 <span class="prod-metric-label">Forecast Points:</span>
-                <span class="prod-metric-val">${fmt(ps.forecastPoints)} pts</span>
+                <span class="prod-metric-val">${fmt(fcPoints)} pts</span>
               </div>
               <div class="prod-metric-row">
                 <span class="prod-metric-label">Forecast Revenue:</span>
-                <span class="prod-metric-val">${fmt(ps.forecastValue)} EGP</span>
+                <span class="prod-metric-val">${fmt(fcValue)} EGP</span>
               </div>
               <div class="prod-metric-row">
-                <span class="prod-metric-label">Product Ach %:</span>
-                <span class="prod-ach-badge" style="background:${ps.achPct >= 100 ? '#dcfce7' : (ps.achPct >= 80 ? '#dbeafe' : '#fef3c7')}; color:${ps.achPct >= 100 ? '#15803d' : (ps.achPct >= 80 ? '#1d4ed8' : '#b45309')};">
-                  ${ps.achPct.toFixed(2)}%
+                <span class="prod-metric-label">Q4 Product Ach %:</span>
+                <span class="prod-ach-badge" style="background:${achPct >= 100 ? '#dcfce7' : (achPct >= 80 ? '#dbeafe' : '#fef3c7')}; color:${achPct >= 100 ? '#15803d' : (achPct >= 80 ? '#1d4ed8' : '#b45309')};">
+                  ${achPct.toFixed(2)}%
                 </span>
               </div>
             </div>
@@ -5015,7 +5165,7 @@ function renderUpaSimulator(rebuildControls = true) {
             Representatives Performance & Q4 Unit Forecast Breakdown
           </div>
           <div style="font-size:11px; color:#64748b; margin-top:2px;">
-            Units distributed proportionally to quota with protection of actual sales. Customize individual reps if needed.
+            Target and sales are strictly for Quarter 4. Full-year results combine closed Q1-Q3 actuals with Q4 forecast.
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
@@ -5069,19 +5219,19 @@ function renderUpaSimulator(rebuildControls = true) {
                     </td>
                     <td style="text-align:right;">
                       <div class="rep-unit-pill">${fmt(r.prodsMap[1260].units)}</div>
-                      <div class="rep-unit-sub">Sold: ${fmt(r.prodsMap[1260].actualUnits)}</div>
+                      <div class="rep-unit-sub">Tgt: ${fmt(r.prodsMap[1260].targetUnits)} • Sold: ${fmt(r.prodsMap[1260].actualUnits)}</div>
                     </td>
                     <td style="text-align:right;">
                       <div class="rep-unit-pill">${fmt(r.prodsMap[1259].units)}</div>
-                      <div class="rep-unit-sub">Sold: ${fmt(r.prodsMap[1259].actualUnits)}</div>
+                      <div class="rep-unit-sub">Tgt: ${fmt(r.prodsMap[1259].targetUnits)} • Sold: ${fmt(r.prodsMap[1259].actualUnits)}</div>
                     </td>
                     <td style="text-align:right;">
                       <div class="rep-unit-pill">${fmt(r.prodsMap[1110].units)}</div>
-                      <div class="rep-unit-sub">Sold: ${fmt(r.prodsMap[1110].actualUnits)}</div>
+                      <div class="rep-unit-sub">Tgt: ${fmt(r.prodsMap[1110].targetUnits)} • Sold: ${fmt(r.prodsMap[1110].actualUnits)}</div>
                     </td>
                     <td style="text-align:right;">
                       <div class="rep-unit-pill">${fmt(r.prodsMap[1251].units)}</div>
-                      <div class="rep-unit-sub">Sold: ${fmt(r.prodsMap[1251].actualUnits)}</div>
+                      <div class="rep-unit-sub">Tgt: ${fmt(r.prodsMap[1251].targetUnits)} • Sold: ${fmt(r.prodsMap[1251].actualUnits)}</div>
                     </td>
                     <td style="text-align:right; font-weight:700; color:#334155;">
                       ${fmt(r.simQ4Sp)}
@@ -5138,11 +5288,13 @@ function renderUpaSimulator(rebuildControls = true) {
                           ${Object.keys(SIM_PROD_META).map(pid => {
                             const pm = SIM_PROD_META[pid];
                             const curRepU = r.prodsMap[pid].units;
+                            const repTgtU = r.prodsMap[pid].targetUnits;
                             return `
                               <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px;">
-                                <div style="font-size:10.5px; font-weight:800; color:#475569; margin-bottom:4px;">
+                                <div style="font-size:10.5px; font-weight:800; color:#475569; margin-bottom:2px;">
                                   ${pm.icon} ${pm.short}
                                 </div>
+                                <div style="font-size:9.5px; color:#64748b; margin-bottom:4px;">Q4 Target: ${fmt(repTgtU)} u</div>
                                 <div style="display:flex; align-items:center; gap:4px;">
                                   <input type="number" step="5" style="width:100%; border:1px solid #94a3b8; border-radius:6px; padding:4px 6px; font-size:13px; font-weight:800;" value="${Math.round(curRepU)}" onchange="onRepCustomUnitChange('${r.key}', ${pid}, this.value)">
                                   <span style="font-size:10px; color:#64748b;">u</span>
@@ -5163,26 +5315,26 @@ function renderUpaSimulator(rebuildControls = true) {
                 <div style="color:#0f172a; font-size:12.5px;">DELTA REGION TEAM</div>
                 <div style="font-size:10px; color:#64748b;">Dr. Sherif (9 Representatives)</div>
               </td>
-              <td style="text-align:right; font-weight:900;">${fmt(prodSim[1260].forecastUnits)} u</td>
-              <td style="text-align:right; font-weight:900;">${fmt(prodSim[1259].forecastUnits)} u</td>
-              <td style="text-align:right; font-weight:900;">${fmt(prodSim[1110].forecastUnits)} u</td>
-              <td style="text-align:right; font-weight:900;">${fmt(prodSim[1251].forecastUnits)} u</td>
-              <td style="text-align:right; font-weight:900; color:#0f172a;">${fmt(team.simQ4Sp)}</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1260].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1259].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1110].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900;">${fmt(getProductStatsForScope('all')[1251].targetUnits)} u (Tgt)</td>
+              <td style="text-align:right; font-weight:900; color:#0f172a;">${fmt(sim.team.simQ4Sp)}</td>
               <td style="text-align:right;">
-                <span class="ratio-badge ratio-green" style="font-size:12px;">${team.simQ4Ratio.toFixed(2)}%</span>
-                <div style="font-size:10px; color:#10b981; margin-top:2px;">(+${team.q4RatioDiff.toFixed(2)}%)</div>
+                <span class="ratio-badge ratio-green" style="font-size:12px;">${sim.team.simQ4Ratio.toFixed(2)}%</span>
+                <div style="font-size:10px; color:#10b981; margin-top:2px;">(+${sim.team.q4RatioDiff.toFixed(2)}%)</div>
               </td>
               <td style="text-align:right;">
-                <span class="ratio-badge ${team.simYtdRatio >= 100 ? 'ratio-green' : 'ratio-blue'}" style="font-size:12.5px;">
-                  ${team.simYtdRatio.toFixed(2)}%
+                <span class="ratio-badge ${sim.team.simYtdRatio >= 100 ? 'ratio-green' : 'ratio-blue'}" style="font-size:12.5px;">
+                  ${sim.team.simYtdRatio.toFixed(2)}%
                 </span>
-                <div style="font-size:10px; color:#64748b; margin-top:2px;">was ${team.origYtdRatio.toFixed(2)}% (+${team.ytdRatioDiff.toFixed(2)}%)</div>
+                <div style="font-size:10px; color:#64748b; margin-top:2px;">was ${sim.team.origYtdRatio.toFixed(2)}% (+${sim.team.ytdRatioDiff.toFixed(2)}%)</div>
               </td>
               <td style="text-align:center;">
-                ${team.is100Met ? '<span style="color:#10b981; font-weight:900;">✓ 100% MET</span>' : '<span style="color:#f59e0b;">IN PROGRESS</span>'}
+                ${sim.team.is100Met ? '<span style="color:#10b981; font-weight:900;">✓ 100% MET</span>' : '<span style="color:#f59e0b;">IN PROGRESS</span>'}
               </td>
               <td style="text-align:center;">
-                ${team.is120Met ? '<span style="color:#8b5cf6; font-weight:900;">✓ 120% MET</span>' : '<span style="color:#94a3b8;">✗</span>'}
+                ${sim.team.is120Met ? '<span style="color:#8b5cf6; font-weight:900;">✓ 120% MET</span>' : '<span style="color:#94a3b8;">✗</span>'}
               </td>
               <td></td>
             </tr>
@@ -5195,9 +5347,9 @@ function renderUpaSimulator(rebuildControls = true) {
     <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; font-size:11.5px; color:#166534; display:flex; gap:10px; align-items:flex-start;">
       <span style="font-size:16px;">💡</span>
       <div style="line-height:1.5;">
-        <strong>Unit-Based Closing Forecast Rationale:</strong>
-        This simulator enables management to forecast exact physical unit closures per medicine across the portfolio. 
-        Each representative's forecast units are derived from their quota share, guaranteeing that total expected points, quarterly achievement percentage (<strong>${team.simQ4Ratio.toFixed(2)}%</strong>), and annual cumulative performance (<strong>${team.simYtdRatio.toFixed(2)}%</strong>) directly reflect market reality and commercial agreements.
+        <strong>Q4 Quarterly Target & Closing Forecast Focus:</strong>
+        This simulator is exclusively dedicated to forecasting <strong>Quarter 4</strong> closing units against <strong>Q4 quarterly targets</strong>.
+        Historical sales for <strong>Q1, Q2, and Q3 are completely locked and finalized</strong>. The full-year (YTD) achievement combines closed Q1-Q3 actuals with simulated Q4 closing results to assess annual milestone standings.
       </div>
     </div>
   `;
@@ -5212,9 +5364,9 @@ function downloadUpaSimExcel() {
     return;
   }
 
-  const sim = computeUnitsSimulation(prodForecastUnits, currentUpaSimMode, repUnitOverrides);
+  const sim = computeUnitsSimulation(prodForecastUnits, currentUpaSimMode, repCustomForecastUnits);
   const team = sim.team;
-  const prodSim = sim.prodSim;
+  const teamStats = getProductStatsForScope('all');
 
   const wb = XLSX.utils.book_new();
 
@@ -5223,25 +5375,32 @@ function downloadUpaSimExcel() {
     ['EVA PHARMA — DELTA REGION SALES DASHBOARD 2026'],
     ['Q4 PRODUCT UNITS CLOSING FORECAST & TARGET EQUALIZATION REPORT'],
     ['Generated On:', new Date().toLocaleString()],
+    ['Notice:', 'Q1, Q2, and Q3 actuals are closed and finalized. This report models Q4 closing performance.'],
     [''],
-    ['Product ID', 'Product Name', 'Package', 'Q4 Target Units', 'Sold Units', 'Ach % So Far', 'Forecast Units', 'Unit Price (EGP)', 'Pts / Unit', 'Forecast Points', 'Forecast Revenue (EGP)', 'Forecast Ach %']
+    ['Product ID', 'Product Name', 'Package', 'Q4 Target Units', 'Sold Units to Date', 'Ach % So Far', 'Forecast Units', 'Unit Price (EGP)', 'Pts / Unit', 'Forecast Points', 'Forecast Revenue (EGP)', 'Forecast Ach %']
   ];
 
   Object.keys(SIM_PROD_META).forEach(pid => {
-    const ps = prodSim[pid];
+    const meta = SIM_PROD_META[pid];
+    const s = teamStats[pid];
+    const fcUnits = prodForecastUnits[pid] !== undefined ? prodForecastUnits[pid] : s.actualUnits;
+    const fcPoints = fcUnits * meta.ptsPerUnit;
+    const fcValue = fcUnits * meta.price;
+    const achPct = s.targetUnits > 0 ? (fcUnits / s.targetUnits * 100) : 0;
+
     prodRows.push([
       pid,
-      ps.meta.name,
-      ps.meta.pack,
-      ps.targetUnits,
-      ps.actualUnits,
-      ps.targetUnits > 0 ? (ps.actualUnits / ps.targetUnits * 100) : 0,
-      ps.forecastUnits,
-      ps.unitPrice,
-      ps.ptsPerUnit,
-      ps.forecastPoints,
-      ps.forecastValue,
-      ps.achPct
+      meta.name,
+      meta.pack,
+      s.targetUnits,
+      s.actualUnits,
+      s.targetUnits > 0 ? (s.actualUnits / s.targetUnits * 100) : 0,
+      fcUnits,
+      meta.price,
+      meta.ptsPerUnit,
+      fcPoints,
+      fcValue,
+      achPct
     ]);
   });
 
@@ -5252,7 +5411,7 @@ function downloadUpaSimExcel() {
   prodRows.push(['120% MILESTONE STATUS', team.is120Met ? 'MET & SURPASSED' : 'IN PROGRESS', '', 'Surplus/Gap Pts:', team.gap120Pts]);
 
   const wsProd = XLSX.utils.aoa_to_sheet(prodRows);
-  XLSX.utils.book_append_sheet(wb, wsProd, 'Product Forecast');
+  XLSX.utils.book_append_sheet(wb, wsProd, 'Q4 Product Forecast');
 
   // 2. Representatives Sheet
   const repRows = [
@@ -5291,13 +5450,13 @@ function downloadUpaSimExcel() {
   repRows.push(['']);
   repRows.push([
     'DELTA REGION TEAM (Dr. Sherif)', 'Grand Aggregate',
-    prodSim[1260].forecastUnits, prodSim[1259].forecastUnits, prodSim[1110].forecastUnits, prodSim[1251].forecastUnits,
+    teamStats[1260].targetUnits, teamStats[1259].targetUnits, teamStats[1110].targetUnits, teamStats[1251].targetUnits,
     team.origQ4Sp, team.simQ4Sp, team.origQ4Ratio, team.simQ4Ratio,
     team.origYtdRatio, team.simYtdRatio, team.is100Met ? 'YES' : 'NO', team.is120Met ? 'YES' : 'NO', ''
   ]);
 
   const wsReps = XLSX.utils.aoa_to_sheet(repRows);
-  XLSX.utils.book_append_sheet(wb, wsReps, 'Reps Breakdown');
+  XLSX.utils.book_append_sheet(wb, wsReps, 'Reps Q4 Breakdown');
 
   const filename = `EVA_Delta_Q4_Unit_Forecast_Simulation_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, filename);
